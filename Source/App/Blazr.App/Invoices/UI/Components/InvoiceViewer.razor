@@ -1,0 +1,87 @@
+﻿@namespace Blazr.App.UI
+
+@inject IUIEntityProvider<DmoInvoice> UIEntityService
+@inject NavigationManager NavManager
+@inject InvoiceAggregatePresenter Presenter
+<PageTitle>@this.FormTitle</PageTitle>
+
+@if (!this.HideHeader)
+{
+    <div class="d-flex flex-row mb-4 pt-1 pb-2 border-bottom">
+        <div class="flex-fill justify-content-start h4">
+            @this.FormTitle
+        </div>
+        <div class="justify-content-end">
+            @* Action Buttons *@
+        </div>
+    </div>
+}
+
+<div class="row">
+
+    <div class="col-12 col-lg-6 mb-2">
+        <BlazrTextViewControl Label="Id" Value="@_invoice.Id.Value.ToDisplayId()" />
+    </div>
+
+    <div class="col-12 col-lg-6 mb-2">
+        <BlazrTextViewControl Label="Customer Name" Value="@_invoice.CustomerName" />
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col-12 col-lg-6 mb-2">
+        <BlazrTextViewControl Label="Date" Value="@_invoice.Date.AsGlobalDateFormat()" />
+    </div>
+
+    <div class="col-12 col-lg-6 mb-2">
+        <BlazrTextViewControl Label="Total Amount" Value="@_invoice.TotalAmount.AsMoney()" />
+    </div>
+
+
+</div>
+
+@if (!this.HideFooter)
+{
+    <div class="row">
+        <div class="col-12 text-end">
+            <UIButton ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnExit>Exit</UIButton>
+        </div>
+    </div>
+}
+
+@code {
+    protected virtual string FormTitle => $"{this.UIEntityService.SingleDisplayName} Viewer";
+    [CascadingParameter] private IModalDialog? ModalDialog { get; set; }
+
+    [Parameter] public bool HideHeader { get; set; }
+    [Parameter] public bool HideFooter { get; set; }
+
+    private DmoInvoice _invoice => this.Presenter.Invoice.InvoiceRecord.Record;
+    private string _exitUrl { get; set; } = "/";
+
+    protected override void OnInitialized()
+    {
+      this.Presenter.Invoice.StateHasChanged += this.OnInvoiceContextStateChanged;
+    }
+
+    private void OnInvoiceContextStateChanged(object? sender, InvoiceId id)
+    {
+        this.StateHasChanged();
+    }
+
+    protected Task OnExit()
+    {
+        if (this.ModalDialog is null)
+            this.NavManager.NavigateTo(_exitUrl);
+
+        ModalDialog?.Close(new ModalResult());
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        this.Presenter.Invoice.StateHasChanged -= this.OnInvoiceContextStateChanged;
+    }
+}

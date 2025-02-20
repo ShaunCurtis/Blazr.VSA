@@ -1,0 +1,184 @@
+﻿@namespace Blazr.App.UI
+
+@inject InvoiceAggregatePresenter Presenter
+@inject NavigationManager NavManager
+@inject IToastService ToastService
+
+@implements IDisposable
+
+<PageTitle>Invoice Dashboard</PageTitle>
+
+@if (_loading)
+{
+    <div class="text-center">
+        <div class="spinner-border" style="width: 5rem; height: 5rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    return;
+}
+
+<div hidden="@_isClean">
+    <div class="alert alert-danger d-flex align-items-center my-2 p-2" role="alert">
+        @_message
+    </div>
+</div>
+
+<div hidden="@_isNew">
+
+    <div class="d-flex flex-row mb-2 pt-1 border-bottom">
+
+        <div class="flex-fill justify-content-start h4">
+            Invoice Manager
+        </div>
+
+        <div class="justify-content-end">
+
+            <button class="btn btn-sm btn-primary ms-1" @onclick="this.EditAsync">Edit Invoice Data</button>
+            <button hidden="@_isClean" class="btn btn-sm btn-success ms-1" @onclick="this.SaveAsync">Save Invoice</button>
+            <button hidden="@_isClean" class="btn btn-sm btn-success ms-1" @onclick="this.SaveAndExitAsync">Save And Exit</button>
+            <button hidden="@_isClean" class="btn btn-sm btn-danger ms-1" @onclick="this.ExitWithoutSavingAsync">Exit Without Saving</button>
+            <button hidden="@_isDirty" class="btn btn-sm btn-dark ms-1" @onclick="this.ExitAsync">Exit</button>
+
+        </div>
+
+    </div>
+</div>
+
+@if (_isNew)
+{
+    <div>
+        <InvoiceAddForm InvoiceCreated="this.OnInvoiceCreated" />
+    </div>
+}
+else
+{
+    <div>
+        <InvoiceViewer HideHeader="true" HideFooter="true" />
+    </div>
+
+    <div hidden="@_isNew" class="mt-3">
+        <InvoiceItemGridForm />
+    </div>
+}
+
+<NavigationLock OnBeforeInternalNavigation="this.OnLocationChanging" ConfirmExternalNavigation="_isDirty" />
+
+<BsModalDialog @ref=_modalDialog />
+
+@code {
+    [Parameter] public InvoiceId InvoiceId { get; set; } = InvoiceId.Default;
+
+    private bool _loading = true;
+    private bool _isError = false;
+    private IModalDialog _modalDialog = default!;
+
+    private bool _isDirty
+        => this.Presenter.Invoice.IsDirty;
+
+    private bool _isClean
+        => !this.Presenter.Invoice.IsDirty;
+
+    private bool _isNew
+        => this.Presenter.Invoice.InvoiceRecord.Record.Id.IsDefault;
+
+    private string _message
+        => _isError ? this.Presenter.LastResult.Message ?? "Unspecified Error" : "Invoice changes are not currently saved to the data store!";
+
+    private InvoiceWrapper _invoice
+        => this.Presenter.Invoice ?? InvoiceWrapper.Default;
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+
+        return base.SetParametersAsync(parameters);
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        // If we have a default Invoive Id then it's the new pathway
+        // We need to reset the presenter.
+        if (this.InvoiceId.IsDefault)
+            this.Presenter.Reset();
+        else
+            await this.Presenter.LoadAsync(this.InvoiceId);
+
+        this.Presenter.Invoice.StateHasChanged += this.OnAggregateStateChanged;
+        _loading = false;
+    }
+    
+    private Task OnLocationChanging(LocationChangingContext context)
+    {
+        // Need to check if the invoice is dirty before letting the user exit
+        if (_isDirty)
+        {
+            context.PreventNavigation();
+            this.ToastService.ShowError("You can't navigate away from an unsaved invoice.  Choose Save or Exit Without Saving.");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void OnAggregateStateChanged(object? sender, InvoiceId invoiceId)
+    {
+        this.StateHasChanged();
+    }
+
+    private void OnInvoiceCreated()
+    {
+        this.StateHasChanged();
+    }
+
+    private async Task EditAsync()
+    {
+        var options = new ModalOptions();
+
+        var result = await _modalDialog.ShowAsync(typeof(InvoiceEditForm), options);
+        // wait for the modal to close
+
+        // If we have cancelled new invoice we need to exit back to the invoices page
+        if (result.ResultType != ModalResultType.OK && _invoice.InvoiceRecord.State == CommandState.Add)
+        {
+            this.ToastService.ShowInfo("You exited creating the new invoice.");
+            this.Presenter.FakePersistenceToAllowExit();
+            this.NavManager.NavigateTo($"/invoices");
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        var result = await this.Presenter.SaveAsync();
+    }
+
+    private async Task SaveAndExitAsync()
+    {
+        var result = await this.Presenter.SaveAsync();
+        if (result.IsSuccess)
+        {
+            this.NavManager.NavigateTo($"/invoices");
+            return;
+        }
+    }
+
+    private Task ExitAsync()
+    {
+        // Normal exit.  Will be aborted by the Navigation Locker if the composite is dirty
+        this.NavManager.NavigateTo($"/invoices");
+        return Task.CompletedTask;
+    }
+
+    private Task ExitWithoutSavingAsync()
+    {
+        // We aren't saving the composite so we can update the state so we can exit
+        this.Presenter.FakePersistenceToAllowExit();
+
+        this.NavManager.NavigateTo($"/invoices");
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        this.Presenter.Invoice.StateHasChanged -= this.OnAggregateStateChanged;
+    }
+}

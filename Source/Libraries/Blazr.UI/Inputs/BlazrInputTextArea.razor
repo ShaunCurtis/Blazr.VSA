@@ -1,0 +1,38 @@
+﻿@*
+/// ============================================================
+/// Author: Shaun Curtis, Cold Elm Coders
+/// License: Use And Donate
+/// If you use it, donate something to a charity somewhere
+/// ============================================================
+*@
+
+@namespace Blazr.UI.Editor
+@inherits InputTextArea
+
+@if (UpdateOnInput)
+{
+    <textarea class="@this.CssClass"
+              value="@this.CurrentValueAsString"
+          @oninput="(value) => CurrentValueAsString = value?.Value?.ToString() ?? null"
+          @attributes=this.AdditionalAttributes
+          @ref=this.Element />
+}
+else
+{
+    <textarea class="@this.CssClass"
+              value="@this.CurrentValueAsString"
+          @onchange="(value) => CurrentValueAsString = value?.Value?.ToString() ?? null"
+          @attributes=this.AdditionalAttributes
+          @ref=this.Element />
+}
+
+@code {
+    [Parameter] public bool UpdateOnInput { get; set; }
+    [Parameter] public bool SetFirstFocus { get; set; }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && this.SetFirstFocus && this.Element is not null)
+            await this.Element.Value.FocusAsync();
+    }
+}

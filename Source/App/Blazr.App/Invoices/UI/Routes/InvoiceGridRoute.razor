@@ -1,0 +1,10 @@
+﻿@page "/Invoice"
+@page "/Invoices"
+@inherits BlazrControlBase
+@namespace Blazr.App.UI
+
+<InvoiceGridForm GridContextId="RouteId" />
+
+@code {
+    private static Guid RouteId = Guid.NewGuid();
+}
