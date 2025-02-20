@@ -6,28 +6,103 @@ Generically we can define a request for a single item like this:
 ItemResult GetItemAsync(ItemRequest request);
 ```
 
-To build a generic item request pipeline we need to define some structure to the data objects we retrieve.
+## The CQS Request
 
-## The Identity interface
-
-An *Identity* is an object that can be identified by an unique identifier.  I now use `Guid` as my identity [Key] field for all my data classes [and database objects], so define a `IGuidIdentity` interface that all data objects implement.  If you still use `int` or other Id fields then define `IIntIdentity` or similar interfaces.
+We can define a generic request object:
 
 ```
-public interface IGuidIdentity 
-{ 
-    public Guid Uid { get; }
+public readonly record struct RecordQueryRequest<TRecord>
+{
+    public Expression<Func<TRecord, bool>> FindExpression { get; private init; }
+    public CancellationToken Cancellation { get; private init; }
+
+    public RecordQueryRequest(Expression<Func<TRecord, bool>> expression, CancellationToken? cancellation = null)
+    {
+        this.FindExpression = expression;
+        this.Cancellation = cancellation ?? new(); 
+    }
+
+    public static RecordQueryRequest<TRecord> Create(Expression<Func<TRecord, bool>> expression, CancellationToken? cancellation = null)
+        => new RecordQueryRequest<TRecord>(expression, cancellation ?? new());
+}
+```
+## The Mediator Request
+
+All we need is the record Id.  Here's the Customer Record Request:
+
+```csharp
+public readonly record struct CustomerRecordRequest(CustomerId Id) : IRequest<Result<DmoCustomer>>;
+```
+
+## The Mediator Handler
+
+
+```csharp
+public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordRequest, Result<DmoCustomer>>
+{
+    private IRecordRequestBroker _broker;
+
+    public CustomerRecordHandler(IRecordRequestBroker broker)
+    {
+        _broker = broker;
+    }
+
+    public async Task<Result<DmoCustomer>> Handle(CustomerRecordRequest request, CancellationToken cancellationToken)
+    {
+        Expression<Func<DboCustomer, bool>> findExpression = (item) =>
+            item.CustomerID == request.Id.Value;
+
+        var query = new RecordQueryRequest<DboCustomer>(findExpression);
+
+        var result = await _broker.ExecuteAsync<DboCustomer>(query);
+
+        if (!result.HasSucceeded(out DboCustomer? record))
+            return result.ConvertFail<DmoCustomer>();
+
+        var returnItem = DboCustomerMap.Map(record);
+
+        return Result<DmoCustomer>.Success(returnItem);
+    }
 }
 ```
 
-## The Request
+## The CQS Broker
 
-With identity we can define a generic request object:
+```csharp
+public sealed class RecordRequestServerBroker<TDbContext>
+    : IRecordRequestBroker
+    where TDbContext : DbContext
+{
+    private readonly IDbContextFactory<TDbContext> _factory;
 
+    public RecordRequestServerBroker(IDbContextFactory<TDbContext> factory)
+    {
+        _factory = factory;
+    }
+
+    public async ValueTask<Result<TRecord>> ExecuteAsync<TRecord>(RecordQueryRequest<TRecord> request)
+        where TRecord : class
+    {
+        return await this.GetItemAsync<TRecord>(request);
+    }
+
+    private async ValueTask<Result<TRecord>> GetItemAsync<TRecord>(RecordQueryRequest<TRecord> request)
+        where TRecord : class
+    {
+        using var dbContext = _factory.CreateDbContext();
+        dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
+        var record = await dbContext.Set<TRecord>()
+            .FirstOrDefaultAsync(request.FindExpression)
+            .ConfigureAwait(false);
+
+        if (record is null)
+            return Result<TRecord>.Fail(new ItemQueryException($"No record retrieved with the Key provided"));
+
+        return Result<TRecord>.Success(record);
+    }
+}
 ```
-public readonly record struct ItemQueryRequest(Guid Uid, CancellationToken Cancellation = new ());
-```
-
-It's an immutable struct because it doesn't need to be anything more.  Almost all data pipelines are now async and implement cancellation, so our request defines a `CancellationToken` to allow cancellation of aborted queries.
 
 ## The Result
 
@@ -63,94 +138,3 @@ public sealed record ItemQueryResult<TRecord> : IDataResult
 ```
 
 There are two static constructors to control how a result is constructed: it either succeeded or failed.
-
-## The Handler
-
-The Core domain defines a *contract* interface that it uses to get items.  It doesn't care where they come from.  You may be implementing Blazor Server and calling directly into the database, or Blazor WASM and making API calls.
-
-This is `IItemRequestHandler`.  There are two implementations: one for generic handlers and one for individual object based handlers.  They both define a single `ExecuteAsync` method.
-
-```csharp
-public interface IItemRequestHandler
-{
-    public ValueTask<ItemQueryResult<TRecord>> ExecuteAsync<TRecord>(ItemQueryRequest request)
-        where TRecord : class, IGuidIdentity, new();
-}
-
-public interface IItemRequestHandler<TRecord>
-        where TRecord : class, IGuidIdentity, new()
-{
-    public ValueTask<ItemQueryResult<TRecord>> ExecuteAsync(ItemQueryRequest request);
-}
-```
-
-### Server Handler
-
-The handler basic structure looks like this.  `TDbContext` defines the `DbContext` to obtain through the DbContext Factory service.   
-
-```csharp
-public sealed class ItemRequestServerHandler<TDbContext>
-    : IItemRequestHandler
-    where TDbContext : DbContext
-{
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IDbContextFactory<TDbContext> _factory;
-
-    public ItemRequestServerHandler(IServiceProvider serviceProvider, IDbContextFactory<TDbContext> factory)
-    {
-        _serviceProvider = serviceProvider;
-        _factory = factory;
-    }
-
-    public async ValueTask<ItemQueryResult<TRecord>> ExecuteAsync<TRecord>(ItemQueryRequest request)
-        where TRecord : class, IGuidIdentity, new()
-    {
-        //...
-    }
-
-    private async ValueTask<ItemQueryResult<TRecord>> GetItemAsync<TRecord>(ItemQueryRequest request)
-    where TRecord : class, IGuidIdentity, new()
-    {
-        //...
-    }
-}
-```
-
-The default server method looks like this.  It gets a *unit of work* `DbContext` from the factory, turns off tracking [this is only a query] anf gets the record through the `DbSet` in the `DbContext` using the provided `Uid`.  It returns an `ItemQueryResult` based on the result.
-
-```
-    private async ValueTask<ItemQueryResult<TRecord>> GetItemAsync<TRecord>(ItemQueryRequest request)
-    where TRecord : class, IGuidIdentity, new()
-    {
-        using var dbContext = _factory.CreateDbContext();
-        dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
-        var record = await dbContext.Set<TRecord>().SingleOrDefaultAsync(item => item.Uid == request.Uid, request.Cancellation);
-
-        if (record is null)
-            return ItemQueryResult<TRecord>.Failure($"No record retrieved with a Uid of {request.Uid}");
-
-        return ItemQueryResult<TRecord>.Success(record);
-    }
-```
-
-The final method implements `IItemRequestHandler.ExecuteAsync`.  It checks to see if a specific `TRecord` implemented `IItemRequestHandler` is registered in the service container, and if so executes it instead of the default handler.
-
-```csharp
-    public async ValueTask<ItemQueryResult<TRecord>> ExecuteAsync<TRecord>(ItemQueryRequest request)
-        where TRecord : class, IGuidIdentity, new()
-    {
-        // Try and get a registered custom handler
-        var _customHandler = _serviceProvider.GetService<IItemRequestHandler<TRecord>>();
-
-        // If one is registered in DI execute it
-        if (_customHandler is not null)
-            return await _customHandler.ExecuteAsync(request);
-
-        // If not run the base handler
-        return await this.GetItemAsync<TRecord>(request);
-    }
-```
-
-
-

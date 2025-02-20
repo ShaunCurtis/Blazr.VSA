@@ -9,12 +9,10 @@ public sealed class RecordRequestServerBroker<TDbContext>
     : IRecordRequestBroker
     where TDbContext : DbContext
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly IDbContextFactory<TDbContext> _factory;
 
-    public RecordRequestServerBroker(IServiceProvider serviceProvider, IDbContextFactory<TDbContext> factory)
+    public RecordRequestServerBroker(IDbContextFactory<TDbContext> factory)
     {
-        _serviceProvider = serviceProvider;
         _factory = factory;
     }
 
