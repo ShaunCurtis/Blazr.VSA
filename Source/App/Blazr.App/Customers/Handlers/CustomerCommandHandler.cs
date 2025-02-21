@@ -25,9 +25,8 @@ public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandReq
     {
         var result = await _broker.ExecuteAsync<DboCustomer>(new CommandRequest<DboCustomer>(
             Item: DboCustomerMap.Map(request.Item),
-            State: request.State,
-            Cancellation: cancellationToken
-        ));
+            State: request.State
+        ), cancellationToken);
 
         if (!result.HasSucceeded(out DboCustomer? record))
             return result.ConvertFail<CustomerId>();

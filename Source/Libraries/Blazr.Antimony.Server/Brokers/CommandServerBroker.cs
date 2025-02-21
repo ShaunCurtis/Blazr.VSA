@@ -21,14 +21,8 @@ public sealed class CommandServerBroker<TDbContext>
         _factory = factory;
     }
 
-    public async ValueTask<Result<TRecord>> ExecuteAsync<TRecord>(CommandRequest<TRecord> request)
+    public async ValueTask<Result<TRecord>> ExecuteAsync<TRecord>(CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
         where TRecord : class
-    {
-        return await this.ExecuteCommandAsync<TRecord>(request);
-    }
-
-    private async ValueTask<Result<TRecord>> ExecuteCommandAsync<TRecord>(CommandRequest<TRecord> request)
-    where TRecord : class
     {
         using var dbContext = _factory.CreateDbContext();
 
@@ -41,7 +35,7 @@ public sealed class CommandServerBroker<TDbContext>
         if (request.State == CommandState.Add)
         {
             dbContext.Add<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(request.Cancellation).ConfigureAwait(ConfigureAwaitOptions.None);
+            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             return result == 1
                 ? Result<TRecord>.Success(request.Item)
@@ -52,7 +46,7 @@ public sealed class CommandServerBroker<TDbContext>
         if (request.State == CommandState.Delete)
         {
             dbContext.Remove<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(request.Cancellation).ConfigureAwait(ConfigureAwaitOptions.None);
+            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             
             return result == 1
                 ? Result<TRecord>.Success(request.Item)
@@ -63,7 +57,7 @@ public sealed class CommandServerBroker<TDbContext>
         if (request.State == CommandState.Update)
         {
             dbContext.Update<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(request.Cancellation).ConfigureAwait(ConfigureAwaitOptions.None);
+            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             return result == 1
                 ? Result<TRecord>.Success(request.Item)

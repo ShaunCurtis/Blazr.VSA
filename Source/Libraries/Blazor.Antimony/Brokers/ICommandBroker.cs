@@ -8,11 +8,11 @@ namespace Blazr.Antimony.Core;
 
 public interface ICommandBroker
 {
-    public ValueTask<Result<TRecord>> ExecuteAsync<TRecord>(CommandRequest<TRecord> request)
+    public ValueTask<Result<TRecord>> ExecuteAsync<TRecord>(CommandRequest<TRecord> request, CancellationToken cancellationToken)
         where TRecord : class;
 }
 
 public interface ICommandBroker<TRecord>
 {
-    public ValueTask<Result<TRecord>> ExecuteAsync(CommandRequest<TRecord> request);
+    public ValueTask<Result<TRecord>> ExecuteAsync(CommandRequest<TRecord> request, CancellationToken cancellationToken);
 }

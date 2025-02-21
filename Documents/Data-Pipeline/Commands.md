@@ -12,7 +12,7 @@ Commands have one of three actions:
 2. Delete - delete the record from the data store.
 3. Add - Add the record to the data store.
  
-These are defined in a `CommandState` struct.  An enum is not used because the action state crosses domain boundaries and API interfaces.
+These can be defined in a `CommandState` struct.  An enum is not used because the action state can cross domain boundaries and API interfaces.  Search "c# why you shouldn't use emums" for more information on the topic.
 
 ```csharp
 public readonly record struct CommandState
@@ -22,11 +22,19 @@ public readonly record struct CommandState
 
     public CommandState() { }
 
-    public CommandState(int index, string value)
+    private CommandState(int index, string value)
     {
         Index = index;
         Value = value;
     }
+
+    public override string ToString()
+    {
+        return this.Value;
+    }
+
+    public CommandState AsDirty
+        => this.Index == 0 ? CommandState.Update : this;
 
     public static CommandState None = new CommandState(0, "None");
     public static CommandState Add = new CommandState(1, "Add");
@@ -44,40 +52,112 @@ public readonly record struct CommandState
 }
 ```
 
-## The Request
+## The CQS Request
 
 we can define a generic command request object:
 
 ```
-public readonly record struct CommandRequest<TRecord>(TRecord Item, CommandState State, CancellationToken Cancellation = new());
+public readonly record struct CommandRequest<TRecord>(TRecord Item, CommandState State );
 ```
 
-Most data pipelines are now async and implement cancellation, so our request object defines a `CancellationToken`.
+## The Mediator Request
 
-However, this presents a problem for API requests, so we define an API version with mapping methods.
+Here's the Customer Record Request.  We pass in the new copy of the record and the CommandState.
 
 ```csharp
-public record struct CommandAPIRequest<TRecord>
+public readonly record struct CustomerCommandRequest(DmoCustomer Item, CommandState State) : IRequest<Result<CustomerId>>;
+```
+
+## The Mediator Handler
+
+```csharp
+public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandRequest, Result<CustomerId>>
 {
-    public TRecord? Item { get; init; }
-    public int CommandIndex { get; init; }
+    private ICommandBroker _broker;
+    private IMessageBus _messageBus;
 
-    public CommandAPIRequest() { }
+    public CustomerCommandHandler(ICommandBroker broker, IMessageBus messageBus)
+    {
+        _messageBus = messageBus;
+        _broker = broker;
+    }
 
-    public static CommandAPIRequest<TRecord> FromRequest(CommandRequest<TRecord> command)
-        => new()
+    public async Task<Result<CustomerId>> Handle(CustomerCommandRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _broker.ExecuteAsync<DboCustomer>(new CommandRequest<DboCustomer>(
+            Item: DboCustomerMap.Map(request.Item),
+            State: request.State
+        ), cancellationToken);
+
+        if (!result.HasSucceeded(out DboCustomer? record))
+            return result.ConvertFail<CustomerId>();
+
+        _messageBus.Publish<DmoCustomer>(DboCustomerMap.Map(record));
+
+        return Result<CustomerId>.Success(new CustomerId(record.CustomerID));
+    }
+}
+```
+
+### The CQS Broker
+
+```csharp
+public sealed class CommandServerBroker<TDbContext>
+    : ICommandBroker
+    where TDbContext : DbContext
+{
+    private readonly IDbContextFactory<TDbContext> _factory;
+
+    public CommandServerBroker(IDbContextFactory<TDbContext> factory)
+    {
+        _factory = factory;
+    }
+
+    public async ValueTask<Result<TRecord>> ExecuteAsync<TRecord>(CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+        where TRecord : class
+    {
+        using var dbContext = _factory.CreateDbContext();
+
+        if ((request.Item is not ICommandEntity))
+            return Result<TRecord>.Fail(new CommandException($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly."));
+
+        var stateRecord = request.Item;
+
+        // First check if it's new.
+        if (request.State == CommandState.Add)
         {
-            Item = command.Item,
-            CommandIndex = command.State.Index
-        };
+            dbContext.Add<TRecord>(request.Item);
+            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-    public CommandRequest<TRecord> ToRequest(CancellationToken? cancellation = null)
-        => new()
+            return result == 1
+                ? Result<TRecord>.Success(request.Item)
+                : Result<TRecord>.Fail( new CommandException("Error adding Record"));
+        }
+
+        // Check if we should delete it
+        if (request.State == CommandState.Delete)
         {
-            Item = this.Item ?? default!,
-            State = CommandState.GetState(this.CommandIndex),
-            Cancellation = cancellation ?? CancellationToken.None
-        };
+            dbContext.Remove<TRecord>(request.Item);
+            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            
+            return result == 1
+                ? Result<TRecord>.Success(request.Item)
+                : Result<TRecord>.Fail(new CommandException( "Error deleting Record"));
+        }
+
+        // Finally it changed
+        if (request.State == CommandState.Update)
+        {
+            dbContext.Update<TRecord>(request.Item);
+            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+            return result == 1
+                ? Result<TRecord>.Success(request.Item)
+                : Result<TRecord>.Fail(new CommandException("Error saving Record"));
+        }
+
+        return Result<TRecord>.Fail(new CommandException("Nothing executed.  Unrecognised State."));
+    }
 }
 ```
 
@@ -85,95 +165,31 @@ public record struct CommandAPIRequest<TRecord>
 
 All commands only return status information.  It's bad practice to  return a `null` without explaining why!
 
-First a very general interface to handle status information regardless of the type of data.
+Commands return a standard `Result`.
 
 ```csharp
-public interface IDataResult
+public readonly record struct Result
 {
-    public bool Successful { get; }
-    public string Message { get; }
-}
-```
+    private Exception? _error { get; init; }
 
-And two objects:
+    public bool IsSuccess { get; init; } = true;
+    public bool IsFailure => !IsSuccess;
+    
+    private Result(Exception error)
+    {
+        IsSuccess = false;
+        _error = error;
+    }
 
-```csharp
-public sealed record DataResult : IDataResult
-{ 
-    public bool Successful { get; init; }
-    public string? Message { get; init; }
+    public bool HasFailed([NotNullWhen(true)] out Exception? exception)
+    {
+        if (this.IsFailure)
+            exception = _error;
+        else
+            exception = default;
 
-    internal DataResult() { }
-
-    public static DataResult Success(string? message = null)
-        => new DataResult { Successful = true, Message= message };
-
-    public static DataResult Failure(string message)
-        => new DataResult { Message = message};
-
-    public static DataResult Create(bool success, string? message = null)
-        => new DataResult { Successful = success, Message = message };
-}
-```
-
-```csharp
-public sealed record DataResult<TData> : IDataResult
-{
-    public TData? Item { get; init; }
-    public bool Successful { get; init; }
-    public string? Message { get; init; }
-
-    internal DataResult() { }
-
-    public static DataResult<TData> Success(TData Item, string? message = null)
-        => new DataResult<TData> { Successful = true, Item = Item, Message = message };
-
-    public static DataResult<TData> Failure(string message)
-        => new DataResult<TData> { Message = message };
-}
-```
-
-We can now define `CommandResult`.
-
-```csharp
-public sealed record CommandResult : IDataResult
-{ 
-    public bool Successful { get; init; }
-    public string? Message { get; init; }
-    public object? KeyValue { get; init; }
-
-    public CommandResult() { }
-
-    public static CommandResult Success(string? message = null)
-        => new CommandResult { Successful = true, Message= message };
-
-    public static CommandResult SuccessWithKey(object keyValue, string? message = null)
-        => new CommandResult { Successful = true, KeyValue = keyValue, Message = message };
-
-    public static CommandResult Failure(string message)
-        => new CommandResult { Message = message};
-}
-```
-
-Again we need an API version as we can't transmit generic objects correctly.
-
-```csharp
-public sealed record CommandAPIResult<TKey>
-{
-    public bool Successful { get; init; }
-    public string? Message { get; init; }
-    public TKey KeyValue { get; init; } = default!;
-
-    public CommandAPIResult() { }
-
-    public CommandResult ToCommandResult()
-        => new()
-        {
-            Successful = Successful,
-            Message = Message,
-            KeyValue = KeyValue
-        };
-}
+        return this.IsFailure;
+    }
 ```
 
 ## The Handler

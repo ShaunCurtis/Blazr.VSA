@@ -22,11 +22,6 @@ public readonly record struct Result
         _error = error;
     }
 
-    //public Result()
-    //{
-    //    IsSuccess = true;
-    //}
-
     public bool IsSuccess { get; init; } = true;
     public bool IsFailure => !IsSuccess;
 
