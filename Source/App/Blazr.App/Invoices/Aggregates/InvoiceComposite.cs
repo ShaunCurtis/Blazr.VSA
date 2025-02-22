@@ -1,6 +1,6 @@
 ﻿namespace Blazr.App.Core;
 
-public sealed partial class InvoiceWrapper
+public sealed partial class InvoiceComposite
 {
     private readonly List<InvoiceItem> Items = new List<InvoiceItem>();
     private readonly List<InvoiceItem> ItemsBin = new List<InvoiceItem>();
@@ -21,7 +21,7 @@ public sealed partial class InvoiceWrapper
 
     public event EventHandler<InvoiceId>? StateHasChanged;
 
-    public InvoiceWrapper(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> items)
+    public InvoiceComposite(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> items)
     {
         // We create new records for the Invoice and InvoiceItems
         this.Invoice = new Invoice(invoice, this.InvoiceUpdated);
@@ -66,6 +66,6 @@ public sealed partial class InvoiceWrapper
         _processing = false;
     }
 
-    public static InvoiceWrapper Default
-        => new InvoiceWrapper(InvoiceEntityProvider.DefaultRecord, Enumerable.Empty<DmoInvoiceItem>());
+    public static InvoiceComposite Default
+        => new InvoiceComposite(InvoiceEntityProvider.DefaultRecord, Enumerable.Empty<DmoInvoiceItem>());
 }

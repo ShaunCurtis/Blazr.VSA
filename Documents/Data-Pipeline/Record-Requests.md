@@ -36,7 +36,6 @@ public readonly record struct CustomerRecordRequest(CustomerId Id) : IRequest<Re
 
 ## The Mediator Handler
 
-
 ```csharp
 public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordRequest, Result<DmoCustomer>>
 {

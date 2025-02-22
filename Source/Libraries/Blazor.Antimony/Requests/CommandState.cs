@@ -5,6 +5,14 @@
 /// ============================================================
 namespace Blazr.Antimony.Core;
 
+/// <summary>
+/// Struct to represent the state of an object
+/// and therefore the data store command type to apply.
+/// 0 = None - no Change to an existing record
+/// 1 = Add - a new record
+/// 2 = Update - an existing record that has been mutated i.e. Dirty
+/// -1 = Delete - the record should be deleted
+/// </summary>
 public readonly record struct CommandState
 {
     public int Index { get; private init; } = 0;

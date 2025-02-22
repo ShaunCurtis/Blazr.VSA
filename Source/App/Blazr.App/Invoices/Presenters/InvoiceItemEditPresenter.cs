@@ -11,7 +11,7 @@ namespace Blazr.App.Presentation;
 public sealed class InvoiceItemEditPresenter
 {
     private readonly IToastService _toastService;
-    private readonly InvoiceWrapper _invoice;
+    private readonly InvoiceComposite _invoice;
     private InvoiceItemId _invoiceItemId = InvoiceItemId.Default;
 
     public IDataResult LastResult { get; private set; } = DataResult.Success();

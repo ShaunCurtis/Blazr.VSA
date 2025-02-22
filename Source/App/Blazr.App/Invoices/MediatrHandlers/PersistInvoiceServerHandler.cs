@@ -14,9 +14,9 @@ namespace Blazr.App.Infrastructure.Server;
 public sealed class PersistInvoiceServerHandler : IRequestHandler<InvoiceRequests.InvoiceSaveRequest, Result>
 {
     private readonly IMessageBus _messageBus;
-    private readonly ICommandBroker<InvoiceWrapper> _broker;
+    private readonly ICommandBroker<InvoiceComposite> _broker;
 
-    public PersistInvoiceServerHandler(ICommandBroker<InvoiceWrapper> broker, IMessageBus messageBus)
+    public PersistInvoiceServerHandler(ICommandBroker<InvoiceComposite> broker, IMessageBus messageBus)
     {
         _broker = broker;
         _messageBus = messageBus;
@@ -26,7 +26,7 @@ public sealed class PersistInvoiceServerHandler : IRequestHandler<InvoiceRequest
     {
         var invoice = request.Invoice;
         
-        var result = await _broker.ExecuteAsync(new CommandRequest<InvoiceWrapper>(
+        var result = await _broker.ExecuteAsync(new CommandRequest<InvoiceComposite>(
             Item: invoice,
             State: CommandState.None,
             Cancellation: cancellationToken));

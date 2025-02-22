@@ -85,8 +85,8 @@ else
     private string _message
         => _isError ? this.Presenter.LastResult.Message ?? "Unspecified Error" : "Invoice changes are not currently saved to the data store!";
 
-    private InvoiceWrapper _invoice
-        => this.Presenter.Invoice ?? InvoiceWrapper.Default;
+    private InvoiceComposite _invoice
+        => this.Presenter.Invoice ?? InvoiceComposite.Default;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {

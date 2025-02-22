@@ -10,7 +10,7 @@ namespace Blazr.App.Core;
 /// <summary>
 /// Contains all the actions that can be applied to the Invoice Aggregate
 /// </summary>
-public sealed partial class InvoiceWrapper
+public sealed partial class InvoiceComposite
 {
     /// <summary>
     /// Updates the Invoice record

@@ -8,7 +8,7 @@ namespace Blazr.App.Core;
 /// <summary>
 /// Mediatr Handler to return a new Invoice 
 /// </summary>
-public record NewInvoiceHandler : IRequestHandler<InvoiceRequests.InvoiceNewRequest, Result<InvoiceWrapper>>
+public record NewInvoiceHandler : IRequestHandler<InvoiceRequests.InvoiceNewRequest, Result<InvoiceComposite>>
 {
     private IEntityProvider<DmoInvoice, InvoiceId> _entityProvider;
 
@@ -17,12 +17,12 @@ public record NewInvoiceHandler : IRequestHandler<InvoiceRequests.InvoiceNewRequ
         _entityProvider = entityProvider;
     }
 
-    public Task<Result<InvoiceWrapper>> Handle(InvoiceRequests.InvoiceNewRequest request, CancellationToken cancellationToken)
+    public Task<Result<InvoiceComposite>> Handle(InvoiceRequests.InvoiceNewRequest request, CancellationToken cancellationToken)
     {
         var invoiceRecord = _entityProvider.NewRecord;
 
-        var invoiceComposite = new InvoiceWrapper(invoiceRecord, Enumerable.Empty<DmoInvoiceItem>());
+        var invoiceComposite = new InvoiceComposite(invoiceRecord, Enumerable.Empty<DmoInvoiceItem>());
 
-        return Task.FromResult( Result<InvoiceWrapper>.Success(invoiceComposite));
+        return Task.FromResult( Result<InvoiceComposite>.Success(invoiceComposite));
     }
 }
