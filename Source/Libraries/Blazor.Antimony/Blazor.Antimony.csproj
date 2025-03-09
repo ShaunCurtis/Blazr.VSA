@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Requests\CommandState.cs~RFf3a87fc.TMP" />
     <None Remove="Requests\ListQueryRequest.cs~RFc51aabe.TMP" />
   </ItemGroup>
 
