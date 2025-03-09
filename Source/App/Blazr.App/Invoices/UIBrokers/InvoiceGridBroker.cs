@@ -7,9 +7,9 @@ using Blazr.Gallium;
 
 namespace Blazr.App.Presentation.Bootstrap;
 
-public class InvoiceGridPresenter : GridPresenter<DmoInvoice>
+public class InvoiceGridBroker : GridPresenter<DmoInvoice>
 {
-    public InvoiceGridPresenter(
+    public InvoiceGridBroker(
         IMediator mediator, 
         IMessageBus messageBus, 
         ScopedStateProvider keyedFluxGateStore)

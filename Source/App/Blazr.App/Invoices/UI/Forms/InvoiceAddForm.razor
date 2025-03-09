@@ -1,7 +1,7 @@
 ﻿@namespace Blazr.App.UI
 
 @inject ILookupPresenterFactory LookupPresenterFactory
-@inject InvoiceEditPresenter Presenter
+@inject InvoiceEditBroker Presenter
 @inject NavigationManager NavManager
 
 <PageTitle>@_formTitle</PageTitle>
@@ -67,7 +67,7 @@
 
     protected async override Task OnInitializedAsync()
     {
-        this.CustomerLookupPresenter = await this.LookupPresenterFactory.GetPresenterAsync<CustomerLookUpItem, CustomerLookupPresenter>();
+        this.CustomerLookupPresenter = await this.LookupPresenterFactory.GetPresenterAsync<CustomerLookUpItem, CustomerLookupBrokerr>();
         _customerList = this.CustomerLookupPresenter.Items.ToList();
     }
 

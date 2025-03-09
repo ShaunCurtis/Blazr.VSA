@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Blazr.App.Presentation;
 
-public sealed class InvoiceItemEditPresenter
+public sealed class InvoiceItemEditBroker
 {
     private readonly IToastService _toastService;
     private readonly InvoiceComposite _invoice;
@@ -19,7 +19,7 @@ public sealed class InvoiceItemEditPresenter
     public DmoInvoiceItemEditContext RecordEditContext { get; private set; }
     public bool IsNew { get; private set; }
 
-    public InvoiceItemEditPresenter(IToastService toastService, InvoiceAggregatePresenter invoiceAggregatePresenter, InvoiceItemId id)
+    public InvoiceItemEditBroker(IToastService toastService, InvoiceCompositeBroker invoiceAggregatePresenter, InvoiceItemId id)
     {
         _invoice = invoiceAggregatePresenter.Invoice;
         _invoiceItemId = id;

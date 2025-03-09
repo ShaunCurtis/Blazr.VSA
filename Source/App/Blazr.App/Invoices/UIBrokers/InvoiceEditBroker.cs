@@ -11,7 +11,7 @@ namespace Blazr.App.Presentation;
 /// <summary>
 /// Provides the Edit context for a Invoice entity in an Invoice Aggregate
 /// </summary>
-public sealed class InvoiceEditPresenter
+public sealed class InvoiceEditBroker
 {
     private readonly IToastService _toastService;
     private readonly InvoiceComposite _invoice;
@@ -21,7 +21,7 @@ public sealed class InvoiceEditPresenter
     public DmoInvoiceEditContext RecordEditContext { get; private set; }
     public bool IsNew => _invoice.InvoiceRecord.Record.Id == InvoiceId.Default;
 
-    public InvoiceEditPresenter(InvoiceAggregatePresenter invoiceAggregatePresenter, IToastService toastService)
+    public InvoiceEditBroker(InvoiceCompositeBroker invoiceAggregatePresenter, IToastService toastService)
     {
         _invoice = invoiceAggregatePresenter.Invoice;
         _toastService = toastService;

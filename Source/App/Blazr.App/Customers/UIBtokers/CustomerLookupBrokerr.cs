@@ -9,9 +9,9 @@ namespace Blazr.App.Presentation;
 /// This object should not be used in DI.
 /// Create an instance through the Factory
 /// </summary>
-public sealed class CustomerLookupPresenter : LookUpPresenter<CustomerLookUpItem>
+public sealed class CustomerLookupBrokerr : LookUpPresenter<CustomerLookUpItem>
 {
-    public CustomerLookupPresenter(IMediator dataBroker)
+    public CustomerLookupBrokerr(IMediator dataBroker)
         : base(dataBroker) { }
 
     public async override ValueTask<Result> LoadAsync()

@@ -7,17 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.App.Presentation;
 
-public sealed class InvoiceItemEditPresenterFactory
+public sealed class InvoiceItemEditBrokerFactory
 {
     private IServiceProvider _serviceProvider;
-    public InvoiceItemEditPresenterFactory(IServiceProvider serviceProvider)
+    public InvoiceItemEditBrokerFactory(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
-    public InvoiceItemEditPresenter GetPresenter(InvoiceItemId invoiceItemId)
+    public InvoiceItemEditBroker GetPresenter(InvoiceItemId invoiceItemId)
     {
-        var presenter = ActivatorUtilities.CreateInstance<InvoiceItemEditPresenter>(_serviceProvider, new object[] {invoiceItemId });
+        var presenter = ActivatorUtilities.CreateInstance<InvoiceItemEditBroker>(_serviceProvider, new object[] {invoiceItemId });
         ArgumentNullException.ThrowIfNull(presenter, nameof(presenter));
         return presenter;
     }

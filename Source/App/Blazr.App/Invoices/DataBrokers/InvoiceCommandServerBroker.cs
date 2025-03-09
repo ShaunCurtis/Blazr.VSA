@@ -22,12 +22,7 @@ public sealed class InvoiceCommandServerBroker<TDbContext>
         _factory = factory;
     }
 
-    public async ValueTask<Result<InvoiceComposite>> ExecuteAsync(CommandRequest<InvoiceComposite> request)
-    {
-        return await this.ExecuteCommandAsync(request);
-    }
-
-    private async ValueTask<Result<InvoiceComposite>> ExecuteCommandAsync(CommandRequest<InvoiceComposite> request)
+    public async ValueTask<Result<InvoiceComposite>> ExecuteAsync(CommandRequest<InvoiceComposite> request, CancellationToken cancellationToken)
     {
         var invoice = request.Item;
 
@@ -65,7 +60,7 @@ public sealed class InvoiceCommandServerBroker<TDbContext>
             }
         }
 
-        var result = await dbContext.SaveChangesAsync(request.Cancellation).ConfigureAwait(ConfigureAwaitOptions.None);
+        var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return result > 0
             ? Result<InvoiceComposite>.Success(invoice)

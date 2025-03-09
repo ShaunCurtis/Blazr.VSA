@@ -7,9 +7,9 @@ using Blazr.Gallium;
 
 namespace Blazr.App.Presentation.Bootstrap;
 
-public class CustomerGridPresenter : GridPresenter<DmoCustomer>
+public class CustomerGridBroker : GridPresenter<DmoCustomer>
 {
-    public CustomerGridPresenter(
+    public CustomerGridBroker(
         IMediator mediator,
         IMessageBus messageBus, 
         ScopedStateProvider keyedFluxGateStore)

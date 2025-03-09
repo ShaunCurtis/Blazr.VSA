@@ -16,13 +16,13 @@ public static class InvoiceServices
     {
         services.AddScoped<IEntityProvider<DmoInvoice, InvoiceId>, InvoiceEntityProvider>();
         services.AddSingleton<IUIEntityProvider<DmoInvoice>, InvoiceUIEntityProvider>();
-        services.AddScoped<InvoiceAggregatePresenter>();
+        services.AddScoped<InvoiceCompositeBroker>();
 
-        services.AddTransient<IGridPresenter<DmoInvoice>, InvoiceGridPresenter>();
+        services.AddTransient<IGridPresenter<DmoInvoice>, InvoiceGridBroker>();
         services.AddTransient<IReadPresenter<DmoInvoice, InvoiceId>, ReadPresenter<DmoInvoice, InvoiceId>>();
 
-        services.AddTransient<InvoiceEditPresenter>();
-        services.AddTransient<InvoiceItemEditPresenterFactory>();
+        services.AddTransient<InvoiceEditBroker>();
+        services.AddTransient<InvoiceItemEditBrokerFactory>();
 
     }
 }

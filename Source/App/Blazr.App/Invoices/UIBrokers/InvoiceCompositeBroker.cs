@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Presentation;
 
-public sealed class InvoiceAggregatePresenter
+public sealed class InvoiceCompositeBroker
 {
     private readonly IMediator _dispatcher;
 
@@ -15,7 +15,7 @@ public sealed class InvoiceAggregatePresenter
 
     public IQueryable<DmoInvoiceItem> InvoiceItems => this.Invoice.InvoiceItems.Select(item => item.Record).AsQueryable();
 
-    public InvoiceAggregatePresenter(IMediator mediator)
+    public InvoiceCompositeBroker(IMediator mediator)
     {
         _dispatcher = mediator;
 

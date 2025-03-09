@@ -1,7 +1,7 @@
 ﻿@namespace Blazr.App.UI
 
 @inject IToastService ToastService
-@inject InvoiceItemEditPresenterFactory InvoiceItemPresenterFactory
+@inject InvoiceItemEditBrokerFactory InvoiceItemPresenterFactory
 @inject NavigationManager NavManager
 
 <PageTitle>@_formTitle</PageTitle>
@@ -59,7 +59,7 @@
 
     private bool _isNewRecord => this.Presenter.IsNew;
 
-    private InvoiceItemEditPresenter Presenter = default!;
+    private InvoiceItemEditBroker Presenter = default!;
     private string _exitUrl = "/";
     private string _formTitle = "Invoice Item Editor";
     private bool _isDirty;

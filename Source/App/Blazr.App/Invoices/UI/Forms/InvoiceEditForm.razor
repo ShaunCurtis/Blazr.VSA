@@ -2,7 +2,7 @@
 
 @inject IToastService ToastService
 @inject ILookupPresenterFactory LookupPresenterFactory
-@inject InvoiceEditPresenter Presenter
+@inject InvoiceEditBroker Presenter
 @inject NavigationManager NavManager
 @inject IUIEntityProvider<DmoInvoice> UIEntityService
 
@@ -73,7 +73,7 @@
     protected async override Task OnInitializedAsync()
     {
         // Get the customer lookup list
-        this.CustomerLookupPresenter = await this.LookupPresenterFactory.GetPresenterAsync<CustomerLookUpItem, CustomerLookupPresenter>();
+        this.CustomerLookupPresenter = await this.LookupPresenterFactory.GetPresenterAsync<CustomerLookUpItem, CustomerLookupBrokerr>();
         _customerList = this.CustomerLookupPresenter.Items.ToList();
         
         // validate the incoming data
