@@ -12,7 +12,7 @@ namespace Blazr.App.Infrastructure.Server;
 /// </summary>
 /// <typeparam name="TDbContext"></typeparam>
 public sealed class InvoiceCommandServerBroker<TDbContext>
-    : ICommandBroker<InvoiceWrapper>
+    : ICommandBroker<InvoiceComposite>
     where TDbContext : DbContext
 {
     private readonly IDbContextFactory<TDbContext> _factory;
@@ -22,12 +22,12 @@ public sealed class InvoiceCommandServerBroker<TDbContext>
         _factory = factory;
     }
 
-    public async ValueTask<Result<InvoiceWrapper>> ExecuteAsync(CommandRequest<InvoiceWrapper> request)
+    public async ValueTask<Result<InvoiceComposite>> ExecuteAsync(CommandRequest<InvoiceComposite> request)
     {
         return await this.ExecuteCommandAsync(request);
     }
 
-    private async ValueTask<Result<InvoiceWrapper>> ExecuteCommandAsync(CommandRequest<InvoiceWrapper> request)
+    private async ValueTask<Result<InvoiceComposite>> ExecuteCommandAsync(CommandRequest<InvoiceComposite> request)
     {
         var invoice = request.Item;
 
@@ -68,7 +68,7 @@ public sealed class InvoiceCommandServerBroker<TDbContext>
         var result = await dbContext.SaveChangesAsync(request.Cancellation).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return result > 0
-            ? Result<InvoiceWrapper>.Success(invoice)
-            : Result<InvoiceWrapper>.Fail(new CommandException("Error adding Invoice Composite to the data store."));
+            ? Result<InvoiceComposite>.Success(invoice)
+            : Result<InvoiceComposite>.Fail(new CommandException("Error adding Invoice Composite to the data store."));
     }
 }

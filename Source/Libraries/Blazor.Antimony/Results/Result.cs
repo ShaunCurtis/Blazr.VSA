@@ -15,15 +15,15 @@ namespace Blazr.Antimony.Core;
 public readonly record struct Result
 {
     private Exception? _error { get; init; }
-    
+
+    public bool IsSuccess { get; private init; } = true;
+    public bool IsFailure => !IsSuccess;
+
     private Result(Exception error)
     {
         IsSuccess = false;
         _error = error;
     }
-
-    public bool IsSuccess { get; init; } = true;
-    public bool IsFailure => !IsSuccess;
 
     /// <summary>
     /// Returns true is failure and sets the out item to the exception
@@ -32,10 +32,10 @@ public readonly record struct Result
     /// <returns></returns>
     public bool HasFailed([NotNullWhen(true)] out Exception? exception)
     {
+        exception = default;
+
         if (this.IsFailure)
             exception = _error;
-        else
-            exception = default;
 
         return this.IsFailure;
     }
@@ -45,7 +45,17 @@ public readonly record struct Result
     /// </summary>
     public IDataResult ToDataResult => new DataResult() { Message = _error?.Message, Successful = this.IsSuccess };
 
+    /// <summary>
+    /// Static Success constructor
+    /// </summary>
+    /// <returns></returns>
     public static Result Success() => new() { IsSuccess = true };
+
+    /// <summary>
+    /// Static Fail constructor
+    /// </summary>
+    /// <param name="error"></param>
+    /// <returns></returns>
     public static Result Fail(Exception error) => new(error);
 }
 
@@ -53,8 +63,18 @@ public readonly record struct Result<T>
 {
     // Hidden
     private T? _value { get; init; }
+
+    [MemberNotNullWhen(true, nameof(_value))]
+    [MemberNotNullWhen(false, nameof(_error))]
+    private bool IsSuccess { get; }
+    private bool IsFailure => !IsSuccess;
+
     private Exception? _error { get; init; }
 
+    /// <summary>
+    /// Private constructor for success
+    /// </summary>
+    /// <param name="value"></param>
     private Result(T value)
     {
         IsSuccess = true;
@@ -62,17 +82,16 @@ public readonly record struct Result<T>
         _error = null;
     }
 
+    /// <summary>
+    /// Private constructor for failure
+    /// </summary>
+    /// <param name="error"></param>
     private Result(Exception error)
     {
         IsSuccess = false;
         _value = default;
         _error = error;
     }
-
-    [MemberNotNullWhen(true, nameof(_value))]
-    [MemberNotNullWhen(false, nameof(_error))]
-    private bool IsSuccess { get; }
-    private bool IsFailure => !IsSuccess;
 
     /// <summary>
     /// Converts Result<T> to Result
@@ -143,7 +162,18 @@ public readonly record struct Result<T>
         return Result<TOut>.Fail(this._error);
     }
 
+    /// <summary>
+    /// Static Success constructor
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public static Result<T> Success(T value) => new(value);
+
+    /// <summary>
+    /// static Fail constructor
+    /// </summary>
+    /// <param name="error"></param>
+    /// <returns></returns>
     public static Result<T> Fail(Exception error) => new(error);
 
     public static implicit operator Result<T>(T value) => Success(value);

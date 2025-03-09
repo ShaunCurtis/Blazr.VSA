@@ -15,17 +15,48 @@ It smells.  What does `null` mean?
 3. Your request was bad.
 4. Bog off, I'm busy.
 
-Unless you're putting the information somewhere else for the called to retrieve, you don't know.  You can raise various exceptions to trap, but that's expensive and excessive.
+Unless you're putting the information somewhere else for the caller to retrieve, you don't know.  You can raise various exceptions to trap, but that's expensive and excessive.
 
-The answer is to return a result object.  That contains a status flag, the data and a message.
+The answer is to return a result object.  
 
-First a very general base result interface to handle status information regardless of the type of data.
+First a very general base result to handle status information only.
 
 ```csharp
-public interface IDataResult
+public readonly record struct Result
 {
-    public bool Successful { get; }
-    public string Message { get; }
+    private Exception? _error { get; init; }
+    
+    private Result(Exception error)
+    {
+        IsSuccess = false;
+        _error = error;
+    }
+
+    public bool IsSuccess { get; init; } = true;
+    public bool IsFailure => !IsSuccess;
+
+    /// <summary>
+    /// Returns true is failure and sets the out item to the exception
+    /// </summary>
+    /// <param name="exception"></param>
+    /// <returns></returns>
+    public bool HasFailed([NotNullWhen(true)] out Exception? exception)
+    {
+        if (this.IsFailure)
+            exception = _error;
+        else
+            exception = default;
+
+        return this.IsFailure;
+    }
+
+    /// <summary>
+    /// Converts the Result to a UI DataResult
+    /// </summary>
+    public IDataResult ToDataResult => new DataResult() { Message = _error?.Message, Successful = this.IsSuccess };
+
+    public static Result Success() => new() { IsSuccess = true };
+    public static Result Fail(Exception error) => new(error);
 }
 ```
 
