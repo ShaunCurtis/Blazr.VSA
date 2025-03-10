@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public sealed record DmoCustomer : ICommandEntity
+public sealed record DmoCustomer
 {
     public CustomerId Id { get; init; } = CustomerId.Default;
     public string CustomerName { get; init; } = string.Empty;

@@ -23,15 +23,15 @@ public sealed partial class InvoiceComposite
     /// <returns></returns>
     public Result Dispatch(DeleteInvoiceItemAction action)
     {
-        var invoiceItem = this.Items.FirstOrDefault(item => item.Record.Id == action.Id);
+        var invoiceItem = this._items.FirstOrDefault(item => item.Record.Id == action.Id);
         if (invoiceItem is null)
             return Result.Fail(new ActionException($"No Invoice Item with Id: {action.Id} exists in the Invoice"));
 
         // we don't set the Command State to delete because the handler needs to know
         // if the deleted item is New and therefore not in the data store
         // The fact that the item is in the Bin is enough to delete it.
-        this.ItemsBin.Add(invoiceItem);
-        this.Items.Remove(invoiceItem);
+        _itemsBin.Add(invoiceItem);
+        _items.Remove(invoiceItem);
         this.Process();
 
         return Result.Success();

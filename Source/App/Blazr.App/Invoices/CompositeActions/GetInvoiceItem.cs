@@ -20,7 +20,7 @@ public sealed partial class InvoiceComposite
     /// <returns></returns>
     public DmoInvoiceItem Dispatch(GetInvoiceItemAction action)
     {
-        var record = this.Items.SingleOrDefault(item => item.Record.Id == action.id)?.Record
+        var record = this._items.SingleOrDefault(item => item.Record.Id == action.id)?.Record
             ?? new DmoInvoiceItem { InvoiceId = this.InvoiceRecord.Record.Id, Id = InvoiceItemId.Create };
 
         return record;

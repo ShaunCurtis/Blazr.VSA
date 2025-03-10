@@ -27,7 +27,7 @@ public sealed partial class InvoiceComposite
     {
         this.Invoice.State = CommandState.None;
 
-        foreach (var item in this.Items)
+        foreach (var item in _items)
             item.State = CommandState.None;
 
         return Result.Success();

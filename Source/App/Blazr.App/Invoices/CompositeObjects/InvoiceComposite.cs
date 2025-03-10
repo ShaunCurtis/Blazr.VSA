@@ -2,23 +2,23 @@
 
 public sealed partial class InvoiceComposite
 {
-    private readonly List<InvoiceItem> Items = new List<InvoiceItem>();
-    private readonly List<InvoiceItem> ItemsBin = new List<InvoiceItem>();
+    private readonly List<InvoiceItem> _items = new List<InvoiceItem>();
+    private readonly List<InvoiceItem> _itemsBin = new List<InvoiceItem>();
     private readonly Invoice Invoice;
     private bool _processing;
-    private IEnumerable<InvoiceItemRecord> _itemRecords => this.Items.Select(item => item.AsRecord);
+    private IEnumerable<InvoiceItemRecord> _itemRecords => _items.Select(item => item.AsRecord);
 
     public InvoiceRecord InvoiceRecord 
         => this.Invoice.AsRecord(_itemRecords.ToList());
 
     public IEnumerable<InvoiceItemRecord> InvoiceItems
-        => this.Items.Select(item => item.AsRecord).AsEnumerable();
+        => _items.Select(item => item.AsRecord).AsEnumerable();
 
     public IEnumerable<InvoiceItemRecord> InvoiceItemsBin
-        => this.ItemsBin.Select(item => item.AsRecord).AsEnumerable();
+        => _itemsBin.Select(item => item.AsRecord).AsEnumerable();
 
     public bool IsDirty
-        => this.Invoice.IsDirty ? true : this.Items.Any(item => item.IsDirty);
+        => this.Invoice.IsDirty ? true : _items.Any(item => item.IsDirty);
 
     public event EventHandler<InvoiceId>? StateHasChanged;
 
@@ -33,7 +33,7 @@ public sealed partial class InvoiceComposite
 
         foreach (var item in items)
         {
-            Items.Add(new InvoiceItem(item with { }));
+            _items.Add(new InvoiceItem(item with { }));
         }
     }
 
@@ -55,7 +55,7 @@ public sealed partial class InvoiceComposite
 
         _processing = true;
         decimal total = 0m;
-        foreach (var item in Items)
+        foreach (var item in _items)
             total += item.Amount;
 
         if (total != this.InvoiceRecord.Record.TotalAmount)

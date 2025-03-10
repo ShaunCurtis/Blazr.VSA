@@ -2,18 +2,15 @@
 
 Updating an object where the consequences of the change are limited to the object is simple.  
 
-> An aggregate is a set of objects bound by a set of application rules.  The purpose of the aggregate is to apply those rules to maintain application consisistency.  
- 
+> An aggregate is a group of objects bound by one or more application rules.  The purpose of the aggregate is to ensure those rules are applied, and cannot be broken.  
 
 Aggregates are a fundimental building block of applications that address this problem. 
-
-> An aggregate is a group of objects bound by one or more application rules.  The aggregate ensures application consisistency.  
  
 Consider an aggregate a black box.  All changes are applied to the black box, not the individual objects within it.  The black box contains the logic to ensure application consistency.
 
-An aggregate is a black box.  All changes are applied to the black box, not the individual objects within it.  The black box contains the logic to ensure application consistency.  An aggregate only has purpose when you change an object to which those rules apply.  
+A key point to note us that an aggregate only has purpose when you change an object to which those rules apply.  If you are just displaying or listing, you dont need the expense  
 
-Delete a line item through the aggregate, and it tracks the deletion of the item, calculates the new total amount and updates the invoice.  Persist the aggregate and it provides the persistance layer update/add/delete information to apply the changes as a *Unit of Work* to the data store.
+Delete a line item in an invoice through the aggregate, and it tracks the deletion of the item, calculates the new total amount and updates the invoice.  Persist the aggregate to the data store, and the aggregate holds the state information to apply the necessary update/add/delete actions as a *Unit of Work* to the data store.
 
 The aggregate provides the invoice and line items as read only objects.  No modifications allowed.
 
@@ -21,27 +18,12 @@ The aggregate provides the invoice and line items as read only objects.  No modi
 
 The rest of this article uses a simple Invoice as a working example. 
 
-The invoice objects are minimal: keep things simple.  The entity objects we use are: [*Dmo* equals *Domain Object*]
+### Domain Entities
+
+The domain entities [Dmo equals *Domain Object*] are:
 
 ```csharp
-public class InvoiceAggregate
-{
-    public int InvoiceID {get; set;}
-    //...
-    public ReadOnlyList<InvoiceItems> Items {get; private set;}
-
-    //...  methods to change items
-}
-```
-
-The Invoice is the aggregate root.  I'll discuss why I don't like this design later.
-
-## The Classic Invoice Example
-
-The rest of this article uses the Invoice example. The objects are minimal to keep things simple.
-
-```csharp
-public sealed record DmoCustomer : ICommandEntity
+public sealed record DmoCustomer
 {
     public CustomerId Id { get; init; } = CustomerId.Default;
     public string CustomerName { get; init; } = string.Empty;
@@ -58,7 +40,7 @@ public sealed record DmoInvoice
     public DateOnly Date { get; init; }
 }
 ```
- 
+
 ```csharp
 public sealed record DmoInvoiceItem
 {
@@ -69,9 +51,72 @@ public sealed record DmoInvoiceItem
 }
 ```
 
+### Data Store Objects
+
+The corresponding data objects are: [*Dbo* equals *Database Table Object*]
+
+```csharp
+public sealed record DboCustomer : ICommandEntity
+{
+    [Key] public Guid CustomerID { get; init; }
+    public string CustomerName { get; init; } = string.Empty;
+}
+```
+
+```csharp
+public sealed record DboInvoice 
+{
+    [Key] public Guid InvoiceID { get; init; }
+    public Guid CustomerID { get; init; }
+    public decimal TotalAmount { get; init; }
+    public DateTime Date { get; init; }
+}
+```
+
+```csharp
+public sealed record DboInvoiceItem
+{
+    [Key] public Guid InvoiceItemID { get; init; }
+    public Guid InvoiceID { get; init; }
+    public string Description { get; init; } = string.Empty;
+    public decimal Amount { get; init; }
+}
+```
+
+### Mapping
+
+Mappers are used to map data between data and domain objects.  Here's the Customer Mapper as an example:
+
+```csharp
+public sealed class DboCustomerMap : IDboEntityMap<DboCustomer, DmoCustomer>
+{
+    public DmoCustomer MapTo(DboCustomer item)
+        => Map(item);
+
+    public DboCustomer MapTo(DmoCustomer item)
+        => Map(item);
+
+    public static DmoCustomer Map(DboCustomer item)
+        => new()
+        {
+            Id = new(item.CustomerID),
+            CustomerName = new(item.CustomerName),
+        };
+
+    public static DboCustomer Map(DmoCustomer item)
+        => new()
+        {
+            CustomerID = item.Id.Value,
+            CustomerName = item.CustomerName
+        };
+}
+```
+
 ## The Composite
 
-A composite is a wrapper.  The invoice [the aggreagate root] is an object within the composite. 
+I'm not a fan of the standard aggregate pattern, where the aggregate route entity is the aggregate.  It breaks the *Single Responsibility Principle*.
+
+Instead, I use a wrapper object, called a *Composite*.  The invoice [the aggreagate root] is an object within the composite. 
 
 ```csharp
 public sealed class Item : IDisposable

@@ -24,7 +24,7 @@ public sealed partial class InvoiceComposite
     /// <returns></returns>
     public Result Dispatch(UpdateInvoiceItemAction action)
     {
-        var invoiceItem = this.Items.FirstOrDefault(item => item.Record.Id.Equals(action.Item.Id));
+        var invoiceItem = _items.FirstOrDefault(item => item.Record.Id.Equals(action.Item.Id));
 
         if (invoiceItem is null)
             return Result.Fail(new ActionException($"No Invoice Item with Id: {action.Item.Id} exists in the Invoice."));

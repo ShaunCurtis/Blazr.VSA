@@ -21,12 +21,12 @@ public sealed partial class InvoiceComposite
     /// <returns></returns>
     public Result Dispatch(AddInvoiceItemAction action)
     {
-        if (this.Items.Any(item => item.Record == action.Item))
+        if (_items.Any(item => item.Record == action.Item))
             return Result.Fail(new ActionException($"The Invoice Item with Id: {action.Item.Id} already exists in the Invoice."));
 
         var invoiceItemRecord = action.Item with { InvoiceId = this.InvoiceRecord.Record.Id };
         var invoiceItem = new InvoiceItem(invoiceItemRecord, action.IsNew);
-        this.Items.Add(invoiceItem);
+        _items.Add(invoiceItem);
         this.Process();
 
         return Result.Success();
