@@ -4,39 +4,44 @@
 
 <PageTitle>@this.FormTitle</PageTitle>
 
-<div class="d-flex flex-row mb-4 pt-1 pb-2 border-bottom">
-    <div class="flex-fill justify-content-start h4">
+<div class="modal-header">
+    <div class="h4">
         @this.FormTitle
-    </div>
-    <div class="justify-content-end">
-       @* Header Buttons *@
     </div>
 </div>
 
 <EditForm EditContext=this.Presenter.EditContext OnValidSubmit=this.OnSave>
 
-    <Blazr.FluentValidation.BlazrFluentValidator TRecord="CustomerEditContext" TValidator="CustomerEditContextValidator" />
-    <BlazrEditStateTracker LockNavigation=this.LockNavigation />
+    <div class="modal-body px-3">
 
+        <Blazr.FluentValidation.BlazrFluentValidator TRecord="CustomerEditContext" TValidator="CustomerEditContextValidator" />
+        <BlazrEditStateTracker LockNavigation=this.LockNavigation />
 
-    <div class="row">
+        <div class="row">
 
-        <BlazrTextControl UpdateOnInput
-                          class="form-control mb-2"
-                          ColumnCss="col-12 col-md-8 mb-2"
-                          Label="Customer Name"
-                          @bind-Value="this.Presenter.EditMutator.CustomerName" />
+            <BlazrTextControl UpdateOnInput
+                              class="form-control mb-2"
+                              ColumnCss="col-12 col-md-8 mb-2"
+                              Label="Customer Name"
+                              @bind-Value="this.Presenter.EditMutator.CustomerName" />
+        </div>
+
     </div>
 
-    <EditFormButtons SaveOnSubmit
-                     ColumnCss="col-12 mb-3 text-end"
-                     Options=this.editFormButtonsOptions
-                     DirtyExit=this.OnExit
-                     Exit=this.OnExit
-                     IsNewRecord=this.IsNewRecord
-                     Reset=this.OnReset />
+    <div class="modal-footer bg-light">
+
+        <EditFormButtons SaveOnSubmit
+                         ColumnCss="col-12 text-end"
+                         Options=this.editFormButtonsOptions
+                         DirtyExit=this.OnExit
+                         Exit=this.OnExit
+                         IsNewRecord=this.IsNewRecord
+                         Reset=this.OnReset />
+
+    </div>
 
 </EditForm>
+
 
 @code {
     protected string FormTitle => $"{this.UIEntityService.SingleDisplayName} Editor";

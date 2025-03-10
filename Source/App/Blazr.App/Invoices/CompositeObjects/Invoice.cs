@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public sealed class Invoice
+internal sealed class Invoice
 {
     public CommandState State { get; set; }
         = CommandState.None;

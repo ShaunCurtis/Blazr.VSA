@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public sealed class InvoiceItem
+internal sealed class InvoiceItem
 {
     public CommandState State { get; set; }
         = CommandState.None;
@@ -25,13 +25,13 @@ public sealed class InvoiceItem
             this.State = CommandState.Add;
     }
 
-    public InvoiceItemId Id => this.Record.Id;
-    public string Description => this.Record.Description;
-    public decimal Amount => this.Record.Amount;
-
     public void Update(DmoInvoiceItem invoiceItem)
     {
         this.Record = invoiceItem;
         this.State = this.State.AsDirty;
     }
+
+    public InvoiceItemId Id => this.Record.Id;
+    public string Description => this.Record.Description;
+    public decimal Amount => this.Record.Amount;
 }

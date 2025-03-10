@@ -8,48 +8,52 @@
 
 <PageTitle>@_formTitle</PageTitle>
 
-<div class="d-flex flex-row mb-4 pt-1 pb-2 border-bottom">
-    <div class="flex-fill justify-content-start h4">
+<div class="modal-header">
+    <div class="h4">
         @_formTitle
-    </div>
-    <div class="justify-content-end">
-        @* Header Buttons *@
     </div>
 </div>
 
 <EditForm EditContext=this.Presenter.EditContext OnValidSubmit="this.OnSaveAsync">
 
-    <Blazr.FluentValidation.BlazrFluentValidator TRecord="DmoInvoiceEditContext" TValidator="DmoInvoiceEditContextValidator" />
-    <BlazrEditStateTracker LockNavigation=true />
+    <div class="modal-body px-3">
 
-    <div class="row">
+        <Blazr.FluentValidation.BlazrFluentValidator TRecord="DmoInvoiceEditContext" TValidator="DmoInvoiceEditContextValidator" />
+        <BlazrEditStateTracker LockNavigation=true />
 
-        <BlazrDateControl class="form-control mb-2"
-                          ColumnCss="col-12 col-md-4 mb-2"
-                          Label="Date"
-                          @bind-Value="this.Presenter.RecordEditContext.Date" />
+        <div class="row">
 
-         <BlazrSelectControl class="form-control mb-2"
-                            ColumnCss="col-12 col-md-6 mb-2"
-                            Label="Group"
-                            TValue="Guid"
-                            TListItem="CustomerLookUpItem"
-                            @bind-Value=this.Presenter.RecordEditContext.CustomerId
-                            @bind-Value:after="this.OnCustomerUpdate"
-                            DisplayOptionsItems=_customerList
-                            OptionValueDelegate="(item) => item.Id.ToString()"
-                            OptionTextDelegate="(item) => item.Name"
-                            PlaceholderText="Choose a Customer" />
+            <BlazrDateControl class="form-control mb-2"
+                              ColumnCss="col-12 col-md-4 mb-2"
+                              Label="Date"
+                              @bind-Value="this.Presenter.RecordEditContext.Date" />
 
+            <BlazrSelectControl class="form-control mb-2"
+                                ColumnCss="col-12 col-md-6 mb-2"
+                                Label="Group"
+                                TValue="Guid"
+                                TListItem="CustomerLookUpItem"
+                                @bind-Value=this.Presenter.RecordEditContext.CustomerId
+                                @bind-Value:after="this.OnCustomerUpdate"
+                                DisplayOptionsItems=_customerList
+                                OptionValueDelegate="(item) => item.Id.ToString()"
+                                OptionTextDelegate="(item) => item.Name"
+                                PlaceholderText="Choose a Customer" />
+
+        </div>
     </div>
 
-    <EditFormButtons SaveOnSubmit
-                     ColumnCss="col-12 mb-3 text-end"
-                     Options=_editFormButtonsOptions
-                     DirtyExit=this.OnExit
-                     Exit=this.OnExit
-                     Save=this.OnSaveAsync
-                     IsNewRecord=_isNewRecord />
+    <div class="modal-footer bg-light">
+
+        <EditFormButtons SaveOnSubmit
+                         ColumnCss="col-12 mb-3 text-end"
+                         Options=_editFormButtonsOptions
+                         DirtyExit=this.OnExit
+                         Exit=this.OnExit
+                         Save=this.OnSaveAsync
+                         IsNewRecord=_isNewRecord />
+
+    </div>
 
 </EditForm>
 
@@ -75,7 +79,7 @@
         // Get the customer lookup list
         this.CustomerLookupPresenter = await this.LookupPresenterFactory.GetPresenterAsync<CustomerLookUpItem, CustomerLookupBrokerr>();
         _customerList = this.CustomerLookupPresenter.Items.ToList();
-        
+
         // validate the incoming data
         if (!this.Presenter.IsNew)
             this.Presenter.EditContext.Validate();
@@ -133,12 +137,6 @@
         ModalDialog?.Close(ModalResult.Exit());
         return Task.CompletedTask;
     }
-
-    // protected async Task OnReset()
-    // {
-    //     await this.Presenter.ResetItemAsync();
-    //     this.Presenter.EditContext.Validate();
-    // }
 
     public void Dispose()
     {

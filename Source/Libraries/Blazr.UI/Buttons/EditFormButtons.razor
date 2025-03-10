@@ -34,7 +34,7 @@
 
     private bool _isDirty;
     private bool _isClean => !_isDirty;
-    private bool _hideReset => _isClean || !this.Reset.HasDelegate;
+    private bool _hideReset => _isClean || !this.Reset.HasDelegate || this.IsNewRecord;
     private string _saveButtonType => this.SaveOnSubmit ? "submit" : "button";
     private string _saveButtonText => this.IsNewRecord ? Options.SaveText : Options.UpdateText;
 

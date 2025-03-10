@@ -11,13 +11,13 @@ namespace Blazr.App.Infrastructure.Server;
 /// Broker implements the standard Server Command Handler against the EF `TDbContext`
 /// </summary>
 /// <typeparam name="TDbContext"></typeparam>
-public sealed class InvoiceCommandServerBroker<TDbContext>
+public sealed class InvoiceCommandServerHandler<TDbContext>
     : ICommandBroker<InvoiceComposite>
     where TDbContext : DbContext
 {
     private readonly IDbContextFactory<TDbContext> _factory;
 
-    public InvoiceCommandServerBroker(IDbContextFactory<TDbContext> factory)
+    public InvoiceCommandServerHandler(IDbContextFactory<TDbContext> factory)
     {
         _factory = factory;
     }
