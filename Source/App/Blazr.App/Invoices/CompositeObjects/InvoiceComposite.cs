@@ -6,9 +6,10 @@ public sealed partial class InvoiceComposite
     private readonly List<InvoiceItem> ItemsBin = new List<InvoiceItem>();
     private readonly Invoice Invoice;
     private bool _processing;
+    private IEnumerable<InvoiceItemRecord> _itemRecords => this.Items.Select(item => item.AsRecord);
 
     public InvoiceRecord InvoiceRecord 
-        => this.Invoice.AsRecord;
+        => this.Invoice.AsRecord(_itemRecords.ToList());
 
     public IEnumerable<InvoiceItemRecord> InvoiceItems
         => this.Items.Select(item => item.AsRecord).AsEnumerable();
@@ -24,7 +25,7 @@ public sealed partial class InvoiceComposite
     public InvoiceComposite(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> items)
     {
         // We create new records for the Invoice and InvoiceItems
-        this.Invoice = new Invoice(invoice, this.InvoiceUpdated);
+        this.Invoice = new Invoice(invoice);
 
         // Detect if the Invoice is a new record
         if (invoice.Id.IsDefault)
@@ -32,7 +33,7 @@ public sealed partial class InvoiceComposite
 
         foreach (var item in items)
         {
-            Items.Add(new InvoiceItem(item with { }, this.ItemUpdated));
+            Items.Add(new InvoiceItem(item with { }));
         }
     }
 
@@ -41,7 +42,7 @@ public sealed partial class InvoiceComposite
         this.Process();
     }
 
-    private void InvoiceUpdated(Invoice item)
+    private void InvoiceUpdated()
     {
         this.Process();
     }

@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public record InvoiceRecord(DmoInvoice Record, CommandState State)
+public record InvoiceItemRecord(DmoInvoiceItem Record, CommandState State)
 {
     public bool IsDirty
         => this.State != CommandState.None;

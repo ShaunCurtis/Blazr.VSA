@@ -25,11 +25,11 @@ public sealed class PersistInvoiceServerHandler : IRequestHandler<InvoiceRequest
     public async Task<Result> Handle(InvoiceRequests.InvoiceSaveRequest request, CancellationToken cancellationToken)
     {
         var invoice = request.Invoice;
-        
+
         var result = await _broker.ExecuteAsync(new CommandRequest<InvoiceComposite>(
             Item: invoice,
-            State: CommandState.None,
-            Cancellation: cancellationToken));
+            State: CommandState.None),
+            cancellationToken);
 
         if (result.HasFailed(out Exception? exception))
             return Result.Fail(exception!);
