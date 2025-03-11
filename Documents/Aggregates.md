@@ -6,13 +6,11 @@ Updating an object where the consequences of the change are limited to the objec
 
 Aggregates are a fundimental building block of applications that address this problem. 
  
-Consider an aggregate a black box.  All changes are applied to the black box, not the individual objects within it.  The black box contains the logic to ensure application consistency.
+An aggregate is a black box.  All changes are applied to the black box, not the individual objects within it.  The black box applies the changes and applies the logic to ensure consistency of the entities within the box.
 
-A key point to note us that an aggregate only has purpose when you change an object to which those rules apply.  If you are just displaying or listing, you dont need the expense  
+A key point is an aggregate only has purpose in a mutation context.  You don't need an aggregate to list or display data.  
 
-Delete a line item in an invoice through the aggregate, and it tracks the deletion of the item, calculates the new total amount and updates the invoice.  Persist the aggregate to the data store, and the aggregate holds the state information to apply the necessary update/add/delete actions as a *Unit of Work* to the data store.
-
-The aggregate provides the invoice and line items as read only objects.  No modifications allowed.
+Delete a line item in an invoice and the aggregate needs to track the deletion of the item, calculate the new total amount and updates the invoice.  Persist the aggregate to the data store, and the aggregate needs to hold the necessary state information to apply the appropriate update/add/delete actions as a *Unit of Work* to the data store.
 
 ## The Classic Invoice Example
 
@@ -114,116 +112,147 @@ public sealed class DboCustomerMap : IDboEntityMap<DboCustomer, DmoCustomer>
 
 ## The Composite
 
-I'm not a fan of the standard aggregate pattern, where the aggregate route entity is the aggregate.  It breaks the *Single Responsibility Principle*.
+I'm no fan of the standard aggregate pattern, where the aggregate route entity is the aggregate.  It breaks the *Single Responsibility Principle*. The aggregate root two responsibilities: maintaining the root data and applying the aggregate business rules.
 
-Instead, I use a wrapper object, called a *Composite*.  The invoice [the aggreagate root] is an object within the composite. 
+Instead, I use a *Composite* fascade.  The *aggreagate root* is an object within the composite.
+
+The public interface of the invoice composite looks like this:
 
 ```csharp
-public sealed class Item : IDisposable
+public sealed partial class InvoiceComposite
 {
-    public Invoice Invoice {get;}
-    public IEnumerable<InvoiceItems> Items {get;}
+    public InvoiceRecord InvoiceRecord { get;}
+    public IEnumerable<InvoiceItemRecord> InvoiceItems { get;}
+    public IEnumerable<InvoiceItemRecord> InvoiceItemsBin { get;}
+    public bool IsDirty { get;}
+
+    public event EventHandler<InvoiceId>? StateHasChanged;
+
+    public InvoiceComposite(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> items);
+
+    public static InvoiceComposite Default { get;}
 }
 ```
 
-`UpdateCallback` provides a callback into the parent object to notify it of a change, and thus the need to apply the aggregate rules.
+Points:
 
-### Managing Mutation
+1. The class is partial.  We add mutation functionality through partial class files.
+2. The invoice and invoice items are exposed as an `InvoiceRecord` and `InvoiceItemRecords`.  Immutable objects that contain the entity object and state.
 
-Change is managed within the composite using `Blazor.Flux` which is a simple indexed *Flux* pattern library.
+### Mutable Data and State
 
-The `InvoiceWrapper` is the aggregate class.  
-
-```csharp
-public class InvoiceWrapper
-{
-}
-```
-
-The `DmoInvoice` is held within the `Invoice` state context and exposed as an InvoiceRecord. 
+The `Invoice` is declared as a private object within the composite:
 
 ```csharp
-public class Invoice
-{
     private readonly Invoice Invoice;
-
-    public InvoiceRecord InvoiceRecord => this.Invoice.AsRecord;
 ```
 
-The `DmoInvoiceItem` collection is held within and internal list and exposed as an `IEnumerable`.  The bin contains invoice items that have been marked for deletion [and can be recycled].
-
+And looks like this:
 
 ```csharp
-public class Invoice
+internal sealed class Invoice
 {
-    private readonly List<InvoiceItem> Items = new List<InvoiceItem>();
-    private readonly List<InvoiceItem> ItemsBin = new List<InvoiceItem>();
+    public CommandState State { get; set; }
+        = CommandState.None;
 
-    public IEnumerable<InvoiceItemRecord> InvoiceItems => this.Items.Select(item => item.AsRecord).AsEnumerable();
-    public IEnumerable<InvoiceItemRecord> InvoiceItemsBin => this.ItemsBin.Select(item => item.AsRecord).AsEnumerable();
+    public DmoInvoice Record { get; private set; }
+
+    public bool IsDirty
+        => this.State != CommandState.None;
+
+    public InvoiceRecord AsRecord(List<InvoiceItemRecord> items)
+        => new(this.Record, items, this.State);
+
+    public Invoice(DmoInvoice item, bool isNew = false)
+    {
+        this.Record = item;
+
+        if (isNew || item.Id.IsDefault)
+            this.State = CommandState.Add;
+    }
+
+    public InvoiceId Id => this.Record.Id;
+
+    public void Update(DmoInvoice invoice)
+    {
+        this.Record = invoice;
+        this.State = this.State.AsDirty;
+    }
+}
 ```
+
+And the `InvoiceRecord` looks like this:
+
+```csharp
+public record InvoiceRecord(DmoInvoice Record, IEnumerable<InvoiceItemRecord> Items, CommandState State)
+{
+    public bool IsDirty
+        => this.State != CommandState.None;
+}
+```
+
+The point here is the mutable `Invoice` is a `private`:  internal to the composite object.  It is based on the following pattern:
+
+```
+internal sealed class Entity
+{
+    public CommandState State { get; set; }
+    public DmoEntity Record { get; private set; }
+    public bool IsDirty { get;}
+    public EntityRecord AsRecord(List<EntityItemRecord> items) { get;}
+
+    public Entity(DmoEntity item, bool isNew = false);
+
+    public void Update(DmoEntity entity);
+}
+```
+
+The `InvoiceItem` and `InvoiceItemRecord` follow the same pattern.
 
 ## Managing Mutation
 
-The aggregate provides a *Flux* based implementation to manage mutation.
+Mutation is managed in a pattern based on the Flux pattern.
 
-Each mutation is defined by an action, and applied by calling a dispatcher on the aggregate.
-
-To update the `DmoInvoice` create a `UpdateInvoiceAction`. 
+Adding an invoice item demonstrates the pattern:
 
 ```csharp
-    public readonly record struct UpdateInvoiceAction(DmoInvoice Item);
-```
 
-And call `Dispatch`
+public static partial class InvoiceActions
+{
+    public readonly record struct AddInvoiceItemAction(DmoInvoiceItem Item, bool IsNew = true);
+}
 
-```csharp
-    public Result Dispatch(UpdateInvoiceAction action)
+public sealed partial class InvoiceComposite
+{
+    public Result Dispatch(AddInvoiceItemAction action)
     {
-        this.Invoice.Update(action.Item);
+        if (_items.Any(item => item.Record == action.Item))
+            return Result.Fail(new ActionException($"The Invoice Item with Id: {action.Item.Id} already exists in the Invoice."));
+
+        var invoiceItemRecord = action.Item with { InvoiceId = this.InvoiceRecord.Record.Id };
+        var invoiceItem = new InvoiceItem(invoiceItemRecord, action.IsNew);
+        _items.Add(invoiceItem);
+        this.Process();
+
         return Result.Success();
     }
+}
 ```
 
-This replaces `InvoiceRecord` and then invokes `UpdateCallback` which triggers the aggregate business logic:
+We define a simple `AddInvoiceItemAction` value object which is passed to the Composite *Dispatcher*.  The dispatcher method is declared in a partial Composite class.
 
-```csharp
-    private void Process()
-    {
-        // prevent calling oneself
-        if (_processing)
-            return;
+All the actions and dispatchers follow the same pattern.
 
-        _processing = true;
-        decimal total = 0m;
-        foreach (var item in Items)
-            total += item.Amount;
+The *Actions* are declared within an `InvoiceActions` static class to keep them together and simplify naming. 
 
-        if (total != this.InvoiceRecord.Record.TotalAmount)
-        {
-            this.Invoice.Update(this.InvoiceRecord.Record with { TotalAmount = total });
-        }
-        this.StateHasChanged?.Invoke(this, this.InvoiceRecord.Record.Id);
-
-        _processing = false;
-    }
-```
-
+Each `Action` and it's *Dispatcher* are in the same code file.
 
 ## The Boundary Decision
 
-The most difficult decision to make in designing aggregates is the boundary.  What objects are within and outside the wrapper.  It's very easy to add too much.
+What entities belong within the aggregate is a difficult decision.  It's very easy to add too much.
 
 In our classic example we have `Invoice`, `InvoiceItem` and `Customer` objects.  They are all related, so do all three belong with the composite?
 
 An `InvoiceItem` is intrinsically linked to an invoice.  It has no context outside the `Invoice`.  Changing the `Amount` on an `InvoiceItem` changes the `TotalAmount` in the `Invoice`.
 
 On the other hand a `Customer` is a stand alone item.  Changing data on the invoice doesn't affect the integrity of the `Customer` object.  It doesn't belong inside the aggregate/composite.
-
-## The Aggregate Root
-
-It's very easy to fall into the trap of making the Invoice the aggregate root.  In the classic implementation that's exactly what's done.  `InvoiceID`, `InvoiceDate`, `InvoiceAmount` all become properties of the aggregate.
-
-I consider this a breach of the *Single Responsibility Principle*.  The aggregate root two responsibilities: maintaining the root data and applying the business rules to the whole aggregate.
-
-The aggregate is the fascade for applying consistency/business rules to the objects within the aggregate boundary.  In my aggregates, the invoice is just another object within the aggregate.
