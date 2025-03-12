@@ -1,16 +1,14 @@
 # Aggregates
 
-Updating an object where the consequences of the change are limited to the object is simple.  
+Updating an object where the consequences of the change are limited to the object is simple.  Making changes to an object that affect business rules that apply to another object is complex.  The aggregate pattern addresses that problem.  
 
 > An aggregate is a group of objects bound by one or more application rules.  The purpose of the aggregate is to ensure those rules are applied, and cannot be broken.  
-
-Aggregates are a fundimental building block of applications that address this problem. 
  
-An aggregate is a black box.  All changes are applied to the black box, not the individual objects within it.  The black box applies the changes and applies the logic to ensure consistency of the entities within the box.
+An aggregate is a black box.  All changes are submitted to the black box, not the individual objects within it.  The black box applies the changes and runs the logic to ensure consistency of the entities within the box.
 
-A key point is an aggregate only has purpose in a mutation context.  You don't need an aggregate to list or display data.  
+Be aware, an aggregate only has purpose in a mutation context: you don't aggregates to list or display data.  
 
-Delete a line item in an invoice and the aggregate needs to track the deletion of the item, calculate the new total amount and updates the invoice.  Persist the aggregate to the data store, and the aggregate needs to hold the necessary state information to apply the appropriate update/add/delete actions as a *Unit of Work* to the data store.
+In an invoice, delete a line item, and the aggregate needs to track the deletion of the item, calculate the new total amount and updates the invoice.  Persist the aggregate to the data store, and the aggregate needs to hold the necessary state information to apply the appropriate update/add/delete actions as a *Unit of Work* to the data store.
 
 ## The Classic Invoice Example
 
