@@ -7,20 +7,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.App.Presentation;
 
-public class ReadPresenterFactory : IReadPresenterFactory
+public class ReadUIBrokerFactory : IReadUIBrokerFactory
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public ReadPresenterFactory(IServiceProvider serviceProvider)
+    public ReadUIBrokerFactory(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
-    public async ValueTask<IReadPresenter<TRecord, TKey>> GetPresenterAsync<TRecord, TKey>(TKey id)
+    public async ValueTask<IReadUIBroker<TRecord, TKey>> GetPresenterAsync<TRecord, TKey>(TKey id)
         where TKey : notnull, IEntityId
         where TRecord : class, new()
     {
-        var presenter = _serviceProvider.GetRequiredService<IReadPresenter<TRecord, TKey>>();
+        var presenter = _serviceProvider.GetRequiredService<IReadUIBroker<TRecord, TKey>>();
         await presenter.LoadAsync(id);
 
         return presenter;

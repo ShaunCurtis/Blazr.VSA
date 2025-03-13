@@ -19,6 +19,6 @@ public static class CustomerServices
 
         services.AddTransient<IGridUIBroker<DmoCustomer>, CustomerGridBroker>();
         services.AddTransient<IEditUIBroker<CustomerEditContext, CustomerId>, EditUIBroker<DmoCustomer, CustomerEditContext, CustomerId>>();
-        services.AddTransient<IReadPresenter<DmoCustomer, CustomerId>, ReadPresenter<DmoCustomer,CustomerId>>();
+        services.AddTransient<IReadUIBroker<DmoCustomer, CustomerId>, ReadUIBroker<DmoCustomer,CustomerId>>();
     }
 }

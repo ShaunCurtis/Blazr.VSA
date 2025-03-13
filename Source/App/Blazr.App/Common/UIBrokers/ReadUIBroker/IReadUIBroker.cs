@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Presentation;
 
-public interface IReadPresenter<TRecord, TKey>
+public interface IReadUIBroker<TRecord, TKey>
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {

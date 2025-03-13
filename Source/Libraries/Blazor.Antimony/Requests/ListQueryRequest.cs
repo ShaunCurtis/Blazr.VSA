@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.Antimony.Core;
 
-public readonly record struct ListQueryRequest<TRecord>
+public record ListQueryRequest<TRecord>
 {
     public int StartIndex { get; init; }
     public int PageSize { get; init; }

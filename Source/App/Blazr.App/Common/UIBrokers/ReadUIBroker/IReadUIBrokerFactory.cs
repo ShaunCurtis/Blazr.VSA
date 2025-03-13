@@ -5,9 +5,9 @@
 /// ============================================================
 namespace Blazr.App.Presentation;
 
-public interface IReadPresenterFactory
+public interface IReadUIBrokerFactory
 {
-    public ValueTask<IReadPresenter<TRecord, TKey>> GetPresenterAsync<TRecord, TKey>(TKey id)
+    public ValueTask<IReadUIBroker<TRecord, TKey>> GetPresenterAsync<TRecord, TKey>(TKey id)
         where TRecord : class, new()
         where TKey : notnull, IEntityId;
 }

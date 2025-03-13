@@ -19,7 +19,7 @@ public static class InvoiceServices
         services.AddScoped<InvoiceCompositeBroker>();
 
         services.AddTransient<IGridUIBroker<DmoInvoice>, InvoiceGridBroker>();
-        services.AddTransient<IReadPresenter<DmoInvoice, InvoiceId>, ReadPresenter<DmoInvoice, InvoiceId>>();
+        services.AddTransient<IReadUIBroker<DmoInvoice, InvoiceId>, ReadUIBroker<DmoInvoice, InvoiceId>>();
 
         services.AddTransient<InvoiceEditBroker>();
         services.AddTransient<InvoiceItemEditBrokerFactory>();

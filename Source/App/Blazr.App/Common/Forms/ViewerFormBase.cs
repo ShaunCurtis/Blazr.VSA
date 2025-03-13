@@ -19,7 +19,7 @@ public abstract partial class ViewerFormBase<TRecord, TKey> : ComponentBase, IDi
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {
-    [Inject] protected IReadPresenterFactory PresenterFactory { get; set; } = default!;
+    [Inject] protected IReadUIBrokerFactory PresenterFactory { get; set; } = default!;
     [Inject] protected NavigationManager NavManager { get; set; } = default!;
     [Inject] protected IUIEntityProvider<TRecord> UIEntityService { get; set; } = default!;
     [Inject] protected IMessageBus MessageBus { get; set; } = default!;
@@ -29,7 +29,7 @@ public abstract partial class ViewerFormBase<TRecord, TKey> : ComponentBase, IDi
     [Parameter] public bool HideFooter { get; set; }
     [CascadingParameter] private IModalDialog? ModalDialog { get; set; }
 
-    protected IReadPresenter<TRecord, TKey> Presenter { get; set; } = default!;
+    protected IReadUIBroker<TRecord, TKey> Presenter { get; set; } = default!;
     protected string ExitUrl { get; set; } = "/";
 
     protected async override Task OnInitializedAsync()

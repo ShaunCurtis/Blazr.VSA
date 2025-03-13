@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Presentation;
 
-public class ReadPresenter<TRecord, TKey> : IReadPresenter<TRecord, TKey>
+public class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {
@@ -16,7 +16,7 @@ public class ReadPresenter<TRecord, TKey> : IReadPresenter<TRecord, TKey>
 
     public IDataResult LastResult { get; protected set; } = DataResult.Success();
 
-    public ReadPresenter(IMediator dataBroker, IEntityProvider<TRecord, TKey> entityProvider)
+    public ReadUIBroker(IMediator dataBroker, IEntityProvider<TRecord, TKey> entityProvider)
     {
         _dataBroker = dataBroker;
         _entityProvider = entityProvider;
