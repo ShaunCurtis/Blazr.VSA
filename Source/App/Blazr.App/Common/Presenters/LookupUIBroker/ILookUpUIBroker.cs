@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Presentation;
 
-public interface ILookUpPresenter<TItem>
+public interface ILookUpUIBroker<TItem>
     where TItem : class, ILookupItem, new()
 {
     public IEnumerable<TItem> Items { get; }

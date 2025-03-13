@@ -114,6 +114,17 @@ public readonly record struct Result<T>
         return this.IsSuccess;
     }
 
+    public bool HasNotSucceeded([NotNullWhen(false)] out T? item)
+    {
+        if (this.IsSuccess)
+            item = _value;
+        else
+            item = default;
+
+        return this.IsFailure;
+    }
+
+
     /// <summary>
     /// Returns true is failure and sets the out item to the exception
     /// </summary>

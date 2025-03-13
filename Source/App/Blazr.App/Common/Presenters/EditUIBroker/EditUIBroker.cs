@@ -8,12 +8,12 @@ using System.Diagnostics;
 
 namespace Blazr.App.Presentation;
 
-public class EditPresenter<TRecord, TRecordEditContext, TKey> : IEditPresenter<TRecordEditContext, TKey>
+public class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBroker<TRecordEditContext, TKey>
     where TRecord : class, new()
     where TRecordEditContext : IRecordEditContext<TRecord>, new()
     where TKey : notnull, IEntityId
 {
-    protected readonly IMediator Databroker;
+    protected readonly IMediator Mediator;
     private readonly IEntityProvider<TRecord, TKey> _entityProvider;
 
     protected TKey EntityId = default!;
@@ -26,9 +26,9 @@ public class EditPresenter<TRecord, TRecordEditContext, TKey> : IEditPresenter<T
 
     public EditContext EditContext { get; protected set; }
 
-    public EditPresenter(IMediator mediator, IEntityProvider<TRecord, TKey> entityProvider)
+    public EditUIBroker(IMediator mediator, IEntityProvider<TRecord, TKey> entityProvider)
     {
-        this.Databroker = mediator;
+        this.Mediator = mediator;
         _entityProvider = entityProvider;
 
         this.EditContext = new EditContext(EditMutator);
@@ -103,7 +103,7 @@ public class EditPresenter<TRecord, TRecordEditContext, TKey> : IEditPresenter<T
     {
         this.LastResult = DataResult.Success();
 
-        var result = await _entityProvider.RecordRequest.Invoke(Databroker, this.EntityId);
+        var result = await _entityProvider.RecordRequest.Invoke(Mediator, this.EntityId);
 
         if (!result.HasSucceeded(out TRecord? record))
         {
@@ -131,7 +131,7 @@ public class EditPresenter<TRecord, TRecordEditContext, TKey> : IEditPresenter<T
         var mutatedResult = EditMutator.AsRecord;
 
 
-        var commandResult = await _entityProvider.RecordCommand.Invoke(this.Databroker, mutatedResult, this.CommandState);
+        var commandResult = await _entityProvider.RecordCommand.Invoke(this.Mediator, mutatedResult, this.CommandState);
 
         this.LastResult = commandResult.ToDataResult;
 

@@ -7,17 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.App.Presentation;
 
-public class LookupPresenterFactory : ILookupPresenterFactory
+public class LookupUIBrokerFactory : ILookupUIBrokerFactory
 {
     private IServiceProvider _serviceProvider;
-    public LookupPresenterFactory(IServiceProvider serviceProvider)
+    public LookupUIBrokerFactory(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
-    public async ValueTask<ILookUpPresenter<TLookupRecord>> GetPresenterAsync<TLookupRecord, TPresenter>()
+    public async ValueTask<ILookUpUIBroker<TLookupRecord>> GetPresenterAsync<TLookupRecord, TPresenter>()
     where TLookupRecord : class, ILookupItem, new()
-    where TPresenter : class, ILookUpPresenter<TLookupRecord>
+    where TPresenter : class, ILookUpUIBroker<TLookupRecord>
     {
         var presenter = ActivatorUtilities.CreateInstance<TPresenter>(_serviceProvider);
         ArgumentNullException.ThrowIfNull(presenter, nameof(presenter));

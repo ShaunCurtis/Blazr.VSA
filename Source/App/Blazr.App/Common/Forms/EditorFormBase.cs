@@ -26,7 +26,7 @@ public abstract class EditorFormBase<TRecord, TKey, TEditContext, TEntityService
     [Parameter, EditorRequired] public TKey Uid { get; set; } = default!;
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    protected IEditPresenter<TEditContext, TKey> Presenter = default!;
+    protected IEditUIBroker<TEditContext, TKey> Presenter = default!;
     protected string exitUrl = "/";
 
     protected EditFormButtonsOptions editFormButtonsOptions = new();

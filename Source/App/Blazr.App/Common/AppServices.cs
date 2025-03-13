@@ -37,14 +37,14 @@ public static class ApplicationServerServices
         services.AddScoped<ICommandBroker, CommandServerBroker<InMemoryInvoiceTestDbContext>>();
 
         // Add Custom Handlers
-        services.AddScoped<ICommandBroker<InvoiceComposite>, InvoiceCommandServerHandler<InMemoryInvoiceTestDbContext>>();
+        services.AddScoped<ICommandBroker<InvoiceComposite>, InvoiceCommandServerBroker<InMemoryInvoiceTestDbContext>>();
 
         // InMemory Scoped State Store 
         services.AddScoped<ScopedStateProvider>();
 
         // Presenter Factories
-        services.AddScoped<ILookupPresenterFactory, LookupPresenterFactory>();
-        services.AddScoped<IEditPresenterFactory, EditPresenterFactory>();
+        services.AddScoped<ILookupUIBrokerFactory, LookupUIBrokerFactory>();
+        services.AddScoped<IEditPresenterFactory, EditUIBrokerFactory>();
         services.AddTransient<IReadPresenterFactory, ReadPresenterFactory>();
 
         // Add the QuickGrid Entity Framework Adapter

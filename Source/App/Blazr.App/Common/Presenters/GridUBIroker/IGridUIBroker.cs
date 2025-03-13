@@ -8,12 +8,14 @@ using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.App.Presentation;
 
-public interface IGridPresenter<TRecord>
+public interface IGridUIBroker<TRecord>
     where TRecord : class, new()
 {
     public Guid StateContextUid { get; }
     public GridState<TRecord> GridState { get; }
     public IDataResult LastResult { get; }
+
+    public event EventHandler<EventArgs>? StateChanged;
 
     public void SetContext(Guid context);
     public ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync();

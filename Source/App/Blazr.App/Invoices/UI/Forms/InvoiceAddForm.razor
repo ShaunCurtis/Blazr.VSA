@@ -1,6 +1,6 @@
 ﻿@namespace Blazr.App.UI
 
-@inject ILookupPresenterFactory LookupPresenterFactory
+@inject ILookupUIBrokerFactory LookupPresenterFactory
 @inject InvoiceEditBroker Presenter
 @inject NavigationManager NavManager
 
@@ -57,7 +57,7 @@
     private EditFormButtonsOptions _editFormButtonsOptions = new();
     private List<CustomerLookUpItem> _customerList = new();
 
-    private ILookUpPresenter<CustomerLookUpItem> CustomerLookupPresenter = default!;
+    private ILookUpUIBroker<CustomerLookUpItem> CustomerLookupPresenter = default!;
     private string _exitUrl = "/invoices";
 
     private bool _isDirty;

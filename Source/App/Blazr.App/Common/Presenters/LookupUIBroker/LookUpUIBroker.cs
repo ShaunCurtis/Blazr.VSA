@@ -5,17 +5,17 @@
 /// ============================================================
 namespace Blazr.App.Presentation;
 
-public abstract class LookUpPresenter<TItem>
-    : ILookUpPresenter<TItem>
+public abstract class LookUpUIBroker<TItem>
+    : ILookUpUIBroker<TItem>
         where TItem : class, ILookupItem, new()
 {
-    protected IMediator DataBroker;
+    protected IMediator Mediator;
 
     public IEnumerable<TItem> Items { get; protected set; } = Enumerable.Empty<TItem>();
 
-    public LookUpPresenter(IMediator dataBroker)
+    public LookUpUIBroker(IMediator dataBroker)
     {
-        DataBroker = dataBroker;
+        Mediator = dataBroker;
     }
 
     public abstract ValueTask<Result> LoadAsync();

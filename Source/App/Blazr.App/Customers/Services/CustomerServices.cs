@@ -17,8 +17,8 @@ public static class CustomerServices
         services.AddScoped<IEntityProvider<DmoCustomer, CustomerId>, CustomerEntityProvider>();
         services.AddSingleton<IUIEntityProvider<DmoCustomer>, CustomerUIEntityProvider>();
 
-        services.AddTransient<IGridPresenter<DmoCustomer>, CustomerGridBroker>();
-        services.AddTransient<IEditPresenter<CustomerEditContext, CustomerId>, EditPresenter<DmoCustomer, CustomerEditContext, CustomerId>>();
+        services.AddTransient<IGridUIBroker<DmoCustomer>, CustomerGridBroker>();
+        services.AddTransient<IEditUIBroker<CustomerEditContext, CustomerId>, EditUIBroker<DmoCustomer, CustomerEditContext, CustomerId>>();
         services.AddTransient<IReadPresenter<DmoCustomer, CustomerId>, ReadPresenter<DmoCustomer,CustomerId>>();
     }
 }

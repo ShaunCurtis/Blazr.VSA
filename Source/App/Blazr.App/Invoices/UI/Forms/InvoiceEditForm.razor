@@ -1,7 +1,7 @@
 ﻿@namespace Blazr.App.UI
 
 @inject IToastService ToastService
-@inject ILookupPresenterFactory LookupPresenterFactory
+@inject ILookupUIBrokerFactory LookupPresenterFactory
 @inject InvoiceEditBroker Presenter
 @inject NavigationManager NavManager
 @inject IUIEntityProvider<DmoInvoice> UIEntityService
@@ -64,7 +64,7 @@
     private EditFormButtonsOptions _editFormButtonsOptions = new();
     private List<CustomerLookUpItem> _customerList = new();
 
-    private bool _isNewRecord => this.Presenter.IsNew;
+    private bUIBrokNewRecord => this.Presenter.IsNew;
 
     private ILookUpPresenter<CustomerLookUpItem> CustomerLookupPresenter = default!;
     private string _exitUrl = "/";

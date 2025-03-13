@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Blazr.App.Presentation;
 
-public interface IEditPresenter<TRecordEditContext, TKey>
+public interface IEditUIBroker<TRecordEditContext, TKey>
         where TKey : notnull, IEntityId
 {
     public IDataResult LastResult { get; }

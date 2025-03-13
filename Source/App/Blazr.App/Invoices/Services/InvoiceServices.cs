@@ -18,7 +18,7 @@ public static class InvoiceServices
         services.AddSingleton<IUIEntityProvider<DmoInvoice>, InvoiceUIEntityProvider>();
         services.AddScoped<InvoiceCompositeBroker>();
 
-        services.AddTransient<IGridPresenter<DmoInvoice>, InvoiceGridBroker>();
+        services.AddTransient<IGridUIBroker<DmoInvoice>, InvoiceGridBroker>();
         services.AddTransient<IReadPresenter<DmoInvoice, InvoiceId>, ReadPresenter<DmoInvoice, InvoiceId>>();
 
         services.AddTransient<InvoiceEditBroker>();

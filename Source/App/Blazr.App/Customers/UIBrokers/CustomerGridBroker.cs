@@ -7,18 +7,15 @@ using Blazr.Gallium;
 
 namespace Blazr.App.Presentation.Bootstrap;
 
-public class CustomerGridBroker : GridPresenter<DmoCustomer>
+public class CustomerGridBroker : GridUIBroker<DmoCustomer>
 {
-    public CustomerGridBroker(
-        IMediator mediator,
-        IMessageBus messageBus, 
-        ScopedStateProvider keyedFluxGateStore)
+    public CustomerGridBroker( IMediator mediator, IMessageBus messageBus, ScopedStateProvider keyedFluxGateStore)
         : base(mediator, messageBus, keyedFluxGateStore)
     { }
 
     protected override async Task<Result<ListResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
     {
-        // Get the list request from the Flux Context and get the result
+        // Creates a Mediator CustomerListRequest Request
         var listRequest = new CustomerListRequest()
         {
             PageSize = state.PageSize,
@@ -27,8 +24,8 @@ public class CustomerGridBroker : GridPresenter<DmoCustomer>
             SortDescending = state.SortDescending
         };
 
+        // Sends the request to the Mediator and returns the result
         var result = await _dataBroker.Send(listRequest);
-
         return result;
     }
 }
