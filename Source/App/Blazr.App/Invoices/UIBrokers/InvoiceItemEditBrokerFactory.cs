@@ -15,7 +15,7 @@ public sealed class InvoiceItemEditBrokerFactory
         _serviceProvider = serviceProvider;
     }
 
-    public InvoiceItemEditBroker GetPresenter(InvoiceItemId invoiceItemId)
+    public InvoiceItemEditBroker GetUIBroker(InvoiceItemId invoiceItemId)
     {
         var presenter = ActivatorUtilities.CreateInstance<InvoiceItemEditBroker>(_serviceProvider, new object[] {invoiceItemId });
         ArgumentNullException.ThrowIfNull(presenter, nameof(presenter));

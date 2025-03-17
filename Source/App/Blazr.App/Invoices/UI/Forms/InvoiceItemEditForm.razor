@@ -1,7 +1,7 @@
 ﻿@namespace Blazr.App.UI
 
 @inject IToastService ToastService
-@inject InvoiceItemEditBrokerFactory InvoiceItemPresenterFactory
+@inject InvoiceItemEditBrokerFactory InvoiceItemUIBrokerFactory
 @inject NavigationManager NavManager
 
 <PageTitle>@_formTitle</PageTitle>
@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<EditForm EditContext=this.Presenter.EditContext OnValidSubmit="this.OnSaveAsync">
+<EditForm EditContext=this.UIBroker.EditContext OnValidSubmit="this.OnSaveAsync">
 
     <div class="modal-body px-3">
 
@@ -25,13 +25,13 @@
                               class="form-control mb-2"
                               ColumnCss="col-12 col-md-8 mb-2"
                               Label="Description"
-                              @bind-Value="this.Presenter.RecordEditContext.Description" />
+                              @bind-Value="this.UIBroker.RecordEditContext.Description" />
 
             <BlazrNumberControl UpdateOnInput
                                 class="form-control mb-2"
                                 ColumnCss="col-12 col-md-8 mb-2"
                                 Label="Amount £"
-                                @bind-Value="this.Presenter.RecordEditContext.Amount" />
+                                @bind-Value="this.UIBroker.RecordEditContext.Amount" />
 
         </div>
 
@@ -62,9 +62,9 @@
 
         };
 
-    private bool _isNewRecord => this.Presenter.IsNew;
+    private bool _isNewRecord => this.UIBroker.IsNew;
 
-    private InvoiceItemEditBroker Presenter = default!;
+    private InvoiceItemEditBroker UIBroker = default!;
     private string _exitUrl = "/";
     private string _formTitle = "Invoice Item Editor";
     private bool _isDirty;
@@ -74,15 +74,15 @@
 
     protected override void OnInitialized()
     {
-        this.Presenter = this.InvoiceItemPresenterFactory.GetPresenter(this.Uid);
+        this.UIBroker = this.InvoiceItemUIBrokerFactory.GetUIBroker(this.Uid);
 
-        if (!this.Presenter.IsNew)
-            this.Presenter.EditContext.Validate();
+        if (!this.UIBroker.IsNew)
+            this.UIBroker.EditContext.Validate();
     }
 
     protected override void OnParametersSet()
     {
-        _isDirty = this.Presenter.EditContext.GetEditState();
+        _isDirty = this.UIBroker.EditContext.GetEditState();
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -91,7 +91,7 @@
         // We need to make sure the StateStore has been attached to the EditContext
         // before we try and get it.
         // The only place we can do this is in the second OnAfterRender UI event
-        _store = _store ?? this.Presenter.EditContext.GetStateStore();
+        _store = _store ?? this.UIBroker.EditContext.GetStateStore();
         if (_store is not null && !_stateStoreAttached)
         {
             _store.StoreUpdated += OnEditStateMayHaveChanged;
@@ -106,15 +106,15 @@
 
     private async Task OnSaveAsync()
     {
-        if (!this.Presenter.EditContext.Validate())
+        if (!this.UIBroker.EditContext.Validate())
         {
             this.ToastService.ShowError("The record data is not valid.  Fix the highlighted errors.");
             return;
         }
 
-        await this.Presenter.ProcessItemAsync();
+        await this.UIBroker.ProcessItemAsync();
 
-        if (this.Presenter.LastResult.Successful)
+        if (this.UIBroker.LastResult.Successful)
             ModalDialog?.Close(ModalResult.OK());
     }
 
@@ -129,6 +129,6 @@
 
     public void Dispose()
     {
-        this.Presenter.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
+        this.UIBroker.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
     }
 }

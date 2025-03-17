@@ -1,6 +1,6 @@
 ﻿@namespace Blazr.App.UI
 
-@inject InvoiceCompositeBroker Presenter
+@inject InvoiceCompositeBroker Broker
 
 <div class="d-flex flex-row mb-1 pt-1 border-bottom">
     <div class="flex-fill justify-content-start h4">
@@ -43,7 +43,7 @@
 
     public ValueTask<GridItemsProviderResult<DmoInvoiceItem>> GetItemsAsync(GridItemsProviderRequest<DmoInvoiceItem> gridRequest)
     {
-        var list = this.Presenter.Invoice.InvoiceItems.Select(item => item.Record).ToList();
+        var list = this.Broker.Invoice.InvoiceItems.Select(item => item.Record).ToList();
 
         return ValueTask.FromResult(GridItemsProviderResult.From<DmoInvoiceItem>(list, list.Count));
     }

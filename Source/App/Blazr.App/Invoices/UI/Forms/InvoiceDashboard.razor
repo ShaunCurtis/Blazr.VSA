@@ -1,6 +1,6 @@
 ﻿@namespace Blazr.App.UI
 
-@inject InvoiceCompositeBroker Presenter
+@inject InvoiceCompositeBroker Broker
 @inject NavigationManager NavManager
 @inject IToastService ToastService
 
@@ -74,19 +74,19 @@ else
     private IModalDialog _modalDialog = default!;
 
     private bool _isDirty
-        => this.Presenter.Invoice.IsDirty;
+        => this.Broker.Invoice.IsDirty;
 
     private bool _isClean
-        => !this.Presenter.Invoice.IsDirty;
+        => !this.Broker.Invoice.IsDirty;
 
     private bool _isNew
-        => this.Presenter.Invoice.InvoiceRecord.Record.Id.IsDefault;
+        => this.Broker.Invoice.InvoiceRecord.Record.Id.IsDefault;
 
     private string _message
-        => _isError ? this.Presenter.LastResult.Message ?? "Unspecified Error" : "Invoice changes are not currently saved to the data store!";
+        => _isError ? this.Broker.LastResult.Message ?? "Unspecified Error" : "Invoice changes are not currently saved to the data store!";
 
     private InvoiceComposite _invoice
-        => this.Presenter.Invoice ?? InvoiceComposite.Default;
+        => this.Broker.Invoice ?? InvoiceComposite.Default;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -100,11 +100,11 @@ else
         // If we have a default Invoive Id then it's the new pathway
         // We need to reset the presenter.
         if (this.InvoiceId.IsDefault)
-            this.Presenter.Reset();
+            this.Broker.Reset();
         else
-            await this.Presenter.LoadAsync(this.InvoiceId);
+            await this.Broker.LoadAsync(this.InvoiceId);
 
-        this.Presenter.Invoice.StateHasChanged += this.OnAggregateStateChanged;
+        this.Broker.Invoice.StateHasChanged += this.OnAggregateStateChanged;
         _loading = false;
     }
     
@@ -141,19 +141,19 @@ else
         if (result.ResultType != ModalResultType.OK && _invoice.InvoiceRecord.State == CommandState.Add)
         {
             this.ToastService.ShowInfo("You exited creating the new invoice.");
-            this.Presenter.FakePersistenceToAllowExit();
+            this.Broker.FakePersistenceToAllowExit();
             this.NavManager.NavigateTo($"/invoices");
         }
     }
 
     private async Task SaveAsync()
     {
-        var result = await this.Presenter.SaveAsync();
+        var result = await this.Broker.SaveAsync();
     }
 
     private async Task SaveAndExitAsync()
     {
-        var result = await this.Presenter.SaveAsync();
+        var result = await this.Broker.SaveAsync();
         if (result.IsSuccess)
         {
             this.NavManager.NavigateTo($"/invoices");
@@ -171,7 +171,7 @@ else
     private Task ExitWithoutSavingAsync()
     {
         // We aren't saving the composite so we can update the state so we can exit
-        this.Presenter.FakePersistenceToAllowExit();
+        this.Broker.FakePersistenceToAllowExit();
 
         this.NavManager.NavigateTo($"/invoices");
         return Task.CompletedTask;
@@ -179,6 +179,6 @@ else
 
     public void Dispose()
     {
-        this.Presenter.Invoice.StateHasChanged -= this.OnAggregateStateChanged;
+        this.Broker.Invoice.StateHasChanged -= this.OnAggregateStateChanged;
     }
 }

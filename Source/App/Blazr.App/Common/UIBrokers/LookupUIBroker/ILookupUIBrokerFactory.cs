@@ -7,7 +7,7 @@ namespace Blazr.App.Presentation;
 
 public interface ILookupUIBrokerFactory
 {
-    public ValueTask<ILookUpUIBroker<TLookupRecord>> GetPresenterAsync<TLookupRecord, TPresenter>()
+    public ValueTask<ILookUpUIBroker<TLookupRecord>> GetAsync<TLookupRecord, TPresenter>()
             where TLookupRecord : class, ILookupItem, new()
             where TPresenter : class, ILookUpUIBroker<TLookupRecord>
 ;

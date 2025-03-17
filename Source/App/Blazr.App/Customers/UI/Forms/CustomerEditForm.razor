@@ -10,7 +10,7 @@
     </div>
 </div>
 
-<EditForm EditContext=this.Presenter.EditContext OnValidSubmit=this.OnSave>
+<EditForm EditContext=this.UIBroker.EditContext OnValidSubmit=this.OnSave>
 
     <div class="modal-body px-3">
 
@@ -23,7 +23,7 @@
                               class="form-control mb-2"
                               ColumnCss="col-12 col-md-8 mb-2"
                               Label="Customer Name"
-                              @bind-Value="this.Presenter.EditMutator.CustomerName" />
+                              @bind-Value="this.UIBroker.EditMutator.CustomerName" />
         </div>
 
     </div>

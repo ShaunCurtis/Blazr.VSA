@@ -17,7 +17,7 @@ public abstract class EditorFormBase<TRecord, TKey, TEditContext, TEntityService
     where TEditContext : class, IRecordEditContext<TRecord>, new()
     where TEntityService : class, IUIEntityProvider<TRecord>
 {
-    [Inject] protected IEditUIBrokerFactory PresenterFactory { get; set; } = default!;
+    [Inject] protected IEditUIBrokerFactory UIBrokerFactory { get; set; } = default!;
     [Inject] protected NavigationManager NavManager { get; set; } = default!;
     [Inject] protected IJSRuntime Js { get; set; } = default!;
     [Inject] protected IUIEntityProvider<TRecord> UIEntityService { get; set; } = default!;
@@ -26,25 +26,25 @@ public abstract class EditorFormBase<TRecord, TKey, TEditContext, TEntityService
     [Parameter, EditorRequired] public TKey Uid { get; set; } = default!;
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    protected IEditUIBroker<TEditContext, TKey> Presenter = default!;
+    protected IEditUIBroker<TEditContext, TKey> UIBroker = default!;
     protected string exitUrl = "/";
 
     protected EditFormButtonsOptions editFormButtonsOptions = new();
     protected bool ExitOnSave = true;
 
-    protected bool IsNewRecord => this.Presenter.CommandState == CommandState.Add;
+    protected bool IsNewRecord => this.UIBroker.CommandState == CommandState.Add;
 
     protected async override Task OnInitializedAsync()
     {
         ArgumentNullException.ThrowIfNull(Uid);
 
-        this.Presenter = await this.PresenterFactory.GetAsync<TEditContext, TKey>(Uid);
-        this.Presenter.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
+        this.UIBroker = await this.UIBrokerFactory.GetAsync<TEditContext, TKey>(Uid);
+        this.UIBroker.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
     }
 
     protected async Task OnSave()
     {
-        await this.Presenter.SaveItemAsync(!this.ExitOnSave);
+        await this.UIBroker.SaveItemAsync(!this.ExitOnSave);
         if (this.ExitOnSave)
             await OnExit();
     }
@@ -55,7 +55,7 @@ public abstract class EditorFormBase<TRecord, TKey, TEditContext, TEntityService
         if (!confirmed)
             return;
 
-        await this.Presenter.DeleteItemAsync();
+        await this.UIBroker.DeleteItemAsync();
         if (this.ExitOnSave)
             await OnExit();
     }
@@ -74,12 +74,12 @@ public abstract class EditorFormBase<TRecord, TKey, TEditContext, TEntityService
 
     protected async Task OnReset()
     {
-        await this.Presenter.ResetItemAsync();
-        this.Presenter.EditContext.Validate();
+        await this.UIBroker.ResetItemAsync();
+        this.UIBroker.EditContext.Validate();
     }
 
     public void Dispose()
     {
-        this.Presenter.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
+        this.UIBroker.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
     }
 }

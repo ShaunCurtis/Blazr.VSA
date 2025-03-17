@@ -1,8 +1,8 @@
 ﻿@namespace Blazr.App.UI
 
 @inject IToastService ToastService
-@inject ILookupUIBrokerFactory LookupPresenterFactory
-@inject InvoiceEditBroker Presenter
+@inject ILookupUIBrokerFactory LookupUIBrokerFactory
+@inject InvoiceEditBroker UIBroker
 @inject NavigationManager NavManager
 @inject IUIEntityProvider<DmoInvoice> UIEntityService
 
@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<EditForm EditContext=this.Presenter.EditContext OnValidSubmit="this.OnSaveAsync">
+<EditForm EditContext=this.UIBroker.EditContext OnValidSubmit="this.OnSaveAsync">
 
     <div class="modal-body px-3">
 
@@ -26,14 +26,14 @@
             <BlazrDateControl class="form-control mb-2"
                               ColumnCss="col-12 col-md-4 mb-2"
                               Label="Date"
-                              @bind-Value="this.Presenter.RecordEditContext.Date" />
+                              @bind-Value="this.UIBroker.RecordEditContext.Date" />
 
             <BlazrSelectControl class="form-control mb-2"
                                 ColumnCss="col-12 col-md-6 mb-2"
                                 Label="Group"
                                 TValue="Guid"
                                 TListItem="CustomerLookUpItem"
-                                @bind-Value=this.Presenter.RecordEditContext.CustomerId
+                                @bind-Value=this.UIBroker.RecordEditContext.CustomerId
                                 @bind-Value:after="this.OnCustomerUpdate"
                                 DisplayOptionsItems=_customerList
                                 OptionValueDelegate="(item) => item.Id.ToString()"
@@ -64,9 +64,9 @@
     private EditFormButtonsOptions _editFormButtonsOptions = new();
     private List<CustomerLookUpItem> _customerList = new();
 
-    private bool _isNewRecord => this.Presenter.IsNew;
+    private bool _isNewRecord => this.UIBroker.IsNew;
 
-    private ILookUpUIBroker<CustomerLookUpItem> CustomerLookupPresenter = default!;
+    private ILookUpUIBroker<CustomerLookUpItem> CustomerLookupUIBroker = default!;
     private string _exitUrl = "/";
 
     private bool _isDirty;
@@ -77,18 +77,18 @@
     protected async override Task OnInitializedAsync()
     {
         // Get the customer lookup list
-        this.CustomerLookupPresenter = await this.LookupPresenterFactory.GetPresenterAsync<CustomerLookUpItem, CustomerLookupBrokerr>();
-        _customerList = this.CustomerLookupPresenter.Items.ToList();
+        this.CustomerLookupUIBroker = await this.LookupUIBrokerFactory.GetAsync<CustomerLookUpItem, CustomerLookupBrokerr>();
+        _customerList = this.CustomerLookupUIBroker.Items.ToList();
 
         // validate the incoming data
-        if (!this.Presenter.IsNew)
-            this.Presenter.EditContext.Validate();
+        if (!this.UIBroker.IsNew)
+            this.UIBroker.EditContext.Validate();
     }
 
     protected override void OnParametersSet()
     {
         // Update the edit state on any changes
-        _isDirty = this.Presenter.EditContext.GetEditState();
+        _isDirty = this.UIBroker.EditContext.GetEditState();
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -97,7 +97,7 @@
         // We need to make sure the StateStore has been attached to the EditContext
         // before we try and get it.
         // The only place we can do this is in the second OnAfterRender UI event
-        _store = _store ?? this.Presenter.EditContext.GetStateStore();
+        _store = _store ?? this.UIBroker.EditContext.GetStateStore();
         if (_store is not null && !_stateStoreAttached)
         {
             _store.StoreUpdated += OnEditStateMayHaveChanged;
@@ -107,7 +107,7 @@
 
     private void OnCustomerUpdate()
     {
-        this.Presenter.RecordEditContext.CustomerName = _customerList.FirstOrDefault(c => c.Id == this.Presenter.RecordEditContext.CustomerId)?.Name ?? "[Not Set]";
+        this.UIBroker.RecordEditContext.CustomerName = _customerList.FirstOrDefault(c => c.Id == this.UIBroker.RecordEditContext.CustomerId)?.Name ?? "[Not Set]";
     }
 
     private void OnEditStateMayHaveChanged(object? sender, EventArgs e)
@@ -117,15 +117,15 @@
 
     private async Task OnSaveAsync()
     {
-        if (!this.Presenter.EditContext.Validate())
+        if (!this.UIBroker.EditContext.Validate())
         {
             this.ToastService.ShowError("The record data is not valid.  Fix the highlighted errors.");
             return;
         }
 
-        await this.Presenter.SaveItemToAggregateAsync();
+        await this.UIBroker.SaveItemToAggregateAsync();
 
-        if (this.Presenter.LastResult.Successful)
+        if (this.UIBroker.LastResult.Successful)
             ModalDialog?.Close(ModalResult.OK());
     }
 
@@ -140,6 +140,6 @@
 
     public void Dispose()
     {
-        this.Presenter.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
+        this.UIBroker.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
     }
 }

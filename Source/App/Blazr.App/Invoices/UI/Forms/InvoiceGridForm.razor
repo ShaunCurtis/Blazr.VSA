@@ -1,7 +1,7 @@
 ﻿@inherits GridFormBase<DmoInvoice,InvoiceId>
 @namespace Blazr.App.UI
 
-@inject InvoiceCompositeBroker InvoiceAggregatePresenter
+@inject InvoiceCompositeBroker InvoiceAggregateUIBroker
 
 <div class="d-flex flex-row mb-1 pt-1 border-bottom">
     <div class="flex-fill justify-content-start h4">
@@ -44,8 +44,8 @@
 
     protected override Task OnAddAsync()
     {
-        // reset the InvoiceAggregatePresenter to the default Invoice
-        this.InvoiceAggregatePresenter.Reset();
+        // reset the InvoiceAggregateUIBroker to the default Invoice
+        this.InvoiceAggregateUIBroker.Reset();
 
         this.NavManager.NavigateTo($"{this.UIEntityService.Url}/dash/");
 
