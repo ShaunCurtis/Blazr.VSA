@@ -6,4 +6,4 @@
 
 namespace Blazr.App.Core;
 
-public readonly record struct CustomerLookupRequest() : IRequest<Result<ListResult<CustomerLookUpItem>>>;
+public readonly record struct CustomerLookupRequest() : IRequest<Result<ListItemsProvider<CustomerLookUpItem>>>;

@@ -12,12 +12,18 @@ namespace Blazr.Antimony.Core;
 /// My Result implementation
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public readonly record struct Result
+public record Result
 {
-    private Exception? _error { get; init; }
+    private readonly Exception? _error;
 
-    public bool IsSuccess { get; private init; } = true;
+    public readonly bool IsSuccess;
     public bool IsFailure => !IsSuccess;
+    
+    private Result()
+    {
+        IsSuccess = true;
+        _error = null;
+    }
 
     private Result(Exception error)
     {
@@ -49,7 +55,7 @@ public readonly record struct Result
     /// Static Success constructor
     /// </summary>
     /// <returns></returns>
-    public static Result Success() => new() { IsSuccess = true };
+    public static Result Success() => new();
 
     /// <summary>
     /// Static Fail constructor
@@ -59,17 +65,16 @@ public readonly record struct Result
     public static Result Fail(Exception error) => new(error);
 }
 
-public readonly record struct Result<T>
+public record Result<T>
 {
     // Hidden
-    private T? _value { get; init; }
+    private readonly T? _value;
+    private readonly Exception? _error;
 
     [MemberNotNullWhen(true, nameof(_value))]
     [MemberNotNullWhen(false, nameof(_error))]
     private bool IsSuccess { get; }
     private bool IsFailure => !IsSuccess;
-
-    private Exception? _error { get; init; }
 
     /// <summary>
     /// Private constructor for success

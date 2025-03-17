@@ -13,7 +13,7 @@ public class CustomerGridBroker : GridUIBroker<DmoCustomer>
         : base(mediator, messageBus, keyedFluxGateStore)
     { }
 
-    protected override async Task<Result<ListResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
+    protected override async Task<Result<ListItemsProvider<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
     {
         // Creates a Mediator CustomerListRequest Request
         var listRequest = new CustomerListRequest()

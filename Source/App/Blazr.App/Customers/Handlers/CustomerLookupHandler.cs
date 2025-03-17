@@ -8,7 +8,7 @@ namespace Blazr.App.Infrastructure.Server;
 /// <summary>
 /// Mediatr Handler for executing list requests against a Customer Entity
 /// </summary>
-public sealed record CustomerLookUpHandler : IRequestHandler<CustomerLookupRequest, Result<ListResult<CustomerLookUpItem>>>
+public sealed record CustomerLookUpHandler : IRequestHandler<CustomerLookupRequest, Result<ListItemsProvider<CustomerLookUpItem>>>
 {
     private IListRequestBroker _broker;
 
@@ -17,7 +17,7 @@ public sealed record CustomerLookUpHandler : IRequestHandler<CustomerLookupReque
         this._broker = broker;
     }
 
-    public async Task<Result<ListResult<CustomerLookUpItem>>> Handle(CustomerLookupRequest request, CancellationToken cancellationToken)
+    public async Task<Result<ListItemsProvider<CustomerLookUpItem>>> Handle(CustomerLookupRequest request, CancellationToken cancellationToken)
     {
         IEnumerable<CustomerLookUpItem> records = Enumerable.Empty<CustomerLookUpItem>();
 
@@ -33,9 +33,9 @@ public sealed record CustomerLookUpHandler : IRequestHandler<CustomerLookupReque
 
         var result = await _broker.ExecuteAsync<CustomerLookUpItem>(query);
 
-        if (!result.HasSucceeded(out ListResult<CustomerLookUpItem> listResult))
-            return result.ConvertFail<ListResult<CustomerLookUpItem>>();
+        if (!result.HasSucceeded(out ListItemsProvider<CustomerLookUpItem>? listResult))
+            return result.ConvertFail<ListItemsProvider<CustomerLookUpItem>>();
 
-        return Result<ListResult<CustomerLookUpItem>>.Success( new(listResult.Items, listResult.TotalCount));
+        return Result<ListItemsProvider<CustomerLookUpItem>>.Success( new(listResult.Items, listResult.TotalCount));
     }
 }

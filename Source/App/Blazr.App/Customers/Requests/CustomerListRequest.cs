@@ -7,5 +7,5 @@
 namespace Blazr.App.Core;
 
 public record CustomerListRequest
-    : BaseListRequest, IRequest<Result<ListResult<DmoCustomer>>>
+    : BaseListRequest, IRequest<Result<ListItemsProvider<DmoCustomer>>>
 { }

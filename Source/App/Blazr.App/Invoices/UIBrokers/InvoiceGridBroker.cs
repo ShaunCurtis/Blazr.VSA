@@ -16,7 +16,7 @@ public class InvoiceGridBroker : GridUIBroker<DmoInvoice>
         : base(mediator, messageBus, keyedFluxGateStore)
     { }
 
-    protected override async Task<Result<ListResult<DmoInvoice>>> GetItemsAsync(GridState<DmoInvoice> state)
+    protected override async Task<Result<ListItemsProvider<DmoInvoice>>> GetItemsAsync(GridState<DmoInvoice> state)
     {
         // Get the list request from the Flux Context and get the result
         var listRequest = new InvoiceRequests.InvoiceListRequest()

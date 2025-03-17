@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.Antimony.Core;
 
-public readonly record struct RecordQueryRequest<TRecord>
+public record RecordQueryRequest<TRecord>
 {
     public Expression<Func<TRecord, bool>> FindExpression { get; private init; }
     public CancellationToken Cancellation { get; private init; }

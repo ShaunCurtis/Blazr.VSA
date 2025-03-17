@@ -17,16 +17,16 @@ public sealed class ListRequestServerBroker<TDbContext>
         _factory = factory;
     }
 
-    public async ValueTask<Result<ListResult<TRecord>>> ExecuteAsync<TRecord>(ListQueryRequest<TRecord> request)
+    public async ValueTask<Result<ListItemsProvider<TRecord>>> ExecuteAsync<TRecord>(ListQueryRequest<TRecord> request)
         where TRecord : class
     {
         return await this.GetItemsAsync<TRecord>(request);
     }
 
-    private async ValueTask<Result<ListResult<TRecord>>> GetItemsAsync<TRecord>(ListQueryRequest<TRecord> request)
+    private async ValueTask<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(ListQueryRequest<TRecord> request)
         where TRecord : class
     {
-        int totalRecordCount = 0;
+        int totalRecordCount;
 
         // Get a Unit of Work DbContext for the scope of the method
         using var dbContext = _factory.CreateDbContext();
@@ -64,6 +64,6 @@ public sealed class ListRequestServerBroker<TDbContext>
             ? await query.ToListAsync().ConfigureAwait(ConfigureAwaitOptions.None)
             : query.ToList();
 
-        return Result<ListResult<TRecord>>.Success(new(list, totalRecordCount));
+        return Result<ListItemsProvider<TRecord>>.Success(new(list, totalRecordCount));
     }
 }

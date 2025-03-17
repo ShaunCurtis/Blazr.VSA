@@ -16,5 +16,5 @@ public static class InvoiceRequests
 
     public readonly record struct InvoiceRecordRequest(InvoiceId Id) : IRequest<Result<DmoInvoice>>;
 
-    public record InvoiceListRequest : BaseListRequest, IRequest<Result<ListResult<DmoInvoice>>> { }
+    public record InvoiceListRequest : BaseListRequest, IRequest<Result<ListItemsProvider<DmoInvoice>>> { }
 }

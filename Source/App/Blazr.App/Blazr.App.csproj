@@ -6,18 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="ApplicationServerInfrastructureServices.cs~RF343cfeb1.TMP" />
-    <None Remove="Common\Grids\IGridState.cs~RF102bc92.TMP" />
-    <None Remove="Common\Grids\IGridState.cs~RFfdb799.TMP" />
-    <None Remove="Customers\UI\Forms\CustomerEditForm.razor~RF67fcd3a4.TMP" />
-    <None Remove="Customers\UI\Forms\CustomerEditForm.razor~RF68018a4e.TMP" />
-    <None Remove="Invoices\Services\InvoiceServices.cs~RF394e99b4.TMP" />
-    <None Remove="Invoices\UI\Forms\InvoiceDashboard.razor~RF380f1bd9.TMP" />
-    <None Remove="Invoices\UI\Forms\InvoiceEditForm.razor~RF6807d9f7.TMP" />
-    <None Remove="Invoices\UI\Routes\InvoiceGridRoute.razor~RF3893c892.TMP" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
 		<PackageReference Include="MediatR" Version="12.4.1" />

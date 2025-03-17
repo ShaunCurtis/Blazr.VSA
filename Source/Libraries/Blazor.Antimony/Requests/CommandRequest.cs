@@ -5,4 +5,4 @@
 /// ============================================================
 namespace Blazr.Antimony.Core;
 
-public readonly record struct CommandRequest<TRecord>(TRecord Item, CommandState State );
+public record CommandRequest<TRecord>(TRecord Item, CommandState State );

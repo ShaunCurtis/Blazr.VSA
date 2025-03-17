@@ -93,7 +93,7 @@ public abstract class GridUIBroker<TRecord>
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>
-    protected abstract Task<Result<ListResult<TRecord>>> GetItemsAsync(GridState<TRecord> state);
+    protected abstract Task<Result<ListItemsProvider<TRecord>>> GetItemsAsync(GridState<TRecord> state);
 
     /// <summary>
     /// Method called by QuickGrid to get the items
@@ -104,7 +104,7 @@ public abstract class GridUIBroker<TRecord>
         var result = await this.GetItemsAsync(this.GridState);
         this.LastResult = result.ToDataResult;
 
-        if (result.HasNotSucceeded(out ListResult<TRecord> listResult))
+        if (result.HasNotSucceeded(out ListItemsProvider<TRecord>? listResult))
             return GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0);
 
         // return a new GridItemsProviderResult created from the ListQueryResult

@@ -17,7 +17,7 @@ public abstract class EditorFormBase<TRecord, TKey, TEditContext, TEntityService
     where TEditContext : class, IRecordEditContext<TRecord>, new()
     where TEntityService : class, IUIEntityProvider<TRecord>
 {
-    [Inject] protected IEditPresenterFactory PresenterFactory { get; set; } = default!;
+    [Inject] protected IEditUIBrokerFactory PresenterFactory { get; set; } = default!;
     [Inject] protected NavigationManager NavManager { get; set; } = default!;
     [Inject] protected IJSRuntime Js { get; set; } = default!;
     [Inject] protected IUIEntityProvider<TRecord> UIEntityService { get; set; } = default!;
@@ -38,7 +38,7 @@ public abstract class EditorFormBase<TRecord, TKey, TEditContext, TEntityService
     {
         ArgumentNullException.ThrowIfNull(Uid);
 
-        this.Presenter = await this.PresenterFactory.GetPresenterAsync<TEditContext, TKey>(Uid);
+        this.Presenter = await this.PresenterFactory.GetAsync<TEditContext, TKey>(Uid);
         this.Presenter.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
     }
 

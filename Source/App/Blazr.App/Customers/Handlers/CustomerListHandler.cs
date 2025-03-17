@@ -8,7 +8,7 @@ namespace Blazr.App.Infrastructure.Server;
 /// <summary>
 /// Mediatr Handler for executing list requests against a Customer Entity
 /// </summary>
-public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, Result<ListResult<DmoCustomer>>>
+public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, Result<ListItemsProvider<DmoCustomer>>>
 {
     private IListRequestBroker _broker;
 
@@ -17,7 +17,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
         this._broker = broker;
     }
 
-    public async Task<Result<ListResult<DmoCustomer>>> Handle(CustomerListRequest request, CancellationToken cancellationToken)
+    public async Task<Result<ListItemsProvider<DmoCustomer>>> Handle(CustomerListRequest request, CancellationToken cancellationToken)
     {
         IEnumerable<DmoCustomer> forecasts = Enumerable.Empty<DmoCustomer>();
 
@@ -33,12 +33,12 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
 
         var result = await _broker.ExecuteAsync<DboCustomer>(query);
 
-        if (!result.HasSucceeded(out ListResult<DboCustomer> listResult))
-            return result.ConvertFail<ListResult<DmoCustomer>>();
+        if (!result.HasSucceeded(out ListItemsProvider<DboCustomer>? listResult))
+            return result.ConvertFail<ListItemsProvider<DmoCustomer>>();
 
         var list = listResult.Items.Select(item => DboCustomerMap.Map(item));
 
-        return Result<ListResult<DmoCustomer>>.Success( new(list, listResult.TotalCount));
+        return Result<ListItemsProvider<DmoCustomer>>.Success( new(list, listResult.TotalCount));
     }
 
     private Expression<Func<DboCustomer, object>> GetSorter(string? field)

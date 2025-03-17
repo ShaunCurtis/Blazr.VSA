@@ -13,4 +13,4 @@ namespace Blazr.Antimony.Core;
 /// <typeparam name="TRecord"></typeparam>
 /// <param name="Items"></param>
 /// <param name="TotalCount"></param>
-public readonly record struct  ListResult<TRecord>(IEnumerable<TRecord> Items, int TotalCount);
+public record ListItemsProvider<TRecord>(IEnumerable<TRecord> Items, int TotalCount);

@@ -10,7 +10,7 @@ namespace Blazr.App.Infrastructure.Server;
 /// <summary>
 /// Mediatr Handler for executing list requests against a Invoice Entity
 /// </summary>
-public sealed class InvoiceListHandler : IRequestHandler<InvoiceListRequest, Result<ListResult<DmoInvoice>>>
+public sealed class InvoiceListHandler : IRequestHandler<InvoiceListRequest, Result<ListItemsProvider<DmoInvoice>>>
 {
     private IListRequestBroker _broker;
 
@@ -19,7 +19,7 @@ public sealed class InvoiceListHandler : IRequestHandler<InvoiceListRequest, Res
         this._broker = broker;
     }
 
-    public async Task<Result<ListResult<DmoInvoice>>> Handle(InvoiceListRequest request, CancellationToken cancellationToken)
+    public async Task<Result<ListItemsProvider<DmoInvoice>>> Handle(InvoiceListRequest request, CancellationToken cancellationToken)
     {
         IEnumerable<DmoInvoice> forecasts = Enumerable.Empty<DmoInvoice>();
 
@@ -35,12 +35,12 @@ public sealed class InvoiceListHandler : IRequestHandler<InvoiceListRequest, Res
 
         var result = await _broker.ExecuteAsync<DvoInvoice>(query);
 
-        if (!result.HasSucceeded(out ListResult<DvoInvoice> listResult))
-            return result.ConvertFail<ListResult<DmoInvoice>>();
+        if (!result.HasSucceeded(out ListItemsProvider<DvoInvoice>? listResult))
+            return result.ConvertFail<ListItemsProvider<DmoInvoice>>();
 
         var list = listResult.Items.Select(item => DvoInvoiceMap.Map(item));
 
-        return Result<ListResult<DmoInvoice>>.Success( new(list, listResult.TotalCount));
+        return Result<ListItemsProvider<DmoInvoice>>.Success( new(list, listResult.TotalCount));
     }
 
     private Expression<Func<DvoInvoice, object>> GetSorter(string? field)

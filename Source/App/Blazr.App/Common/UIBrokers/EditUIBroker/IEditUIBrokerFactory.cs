@@ -8,11 +8,11 @@ namespace Blazr.App.Presentation;
 public interface IEditUIBrokerFactory<TRecordEditContext, TKey>
         where TKey : notnull, IEntityId
 {
-    public ValueTask<IEditUIBroker<TRecordEditContext, TKey>> GetPresenterAsync(TKey id);
+    public ValueTask<IEditUIBroker<TRecordEditContext, TKey>> GetAsync(TKey id);
 }
 
-public interface IEditPresenterFactory
+public interface IEditUIBrokerFactory
 {
-    public ValueTask<IEditUIBroker<TRecordEditContext, TKey>> GetPresenterAsync<TRecordEditContext, TKey>(TKey id)
+    public ValueTask<IEditUIBroker<TRecordEditContext, TKey>> GetAsync<TRecordEditContext, TKey>(TKey id)
                 where TKey : notnull, IEntityId;
 }

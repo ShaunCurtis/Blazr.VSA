@@ -64,9 +64,9 @@
     private EditFormButtonsOptions _editFormButtonsOptions = new();
     private List<CustomerLookUpItem> _customerList = new();
 
-    private bUIBrokNewRecord => this.Presenter.IsNew;
+    private bool _isNewRecord => this.Presenter.IsNew;
 
-    private ILookUpPresenter<CustomerLookUpItem> CustomerLookupPresenter = default!;
+    private ILookUpUIBroker<CustomerLookUpItem> CustomerLookupPresenter = default!;
     private string _exitUrl = "/";
 
     private bool _isDirty;

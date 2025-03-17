@@ -40,17 +40,27 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
 
         this.Presenter.SetContext(this.GridContextId);
         this.Pagination.ItemsPerPage = this.PageSize;
+
+        // If we are resetting the grid context, then we need to reset the saved grid state
         if (ResetGridContext)
             this.Presenter.DispatchGridStateChange(new UpdateGridRequest<TRecord>(0, this.PageSize, false, null));
 
+        // Set the current page index in the pager.
+        // This will trigger the GetItemsAsync method to be called with the correct page index.
         await Pagination.SetCurrentPageIndexAsync(this.Presenter.GridState.Page);
 
-        // Make sure we yield so we have the first UI render 
+        // Make sure we yield so we have the first UI render
+        // before testing the modalDialog and quickGrid components exist in the form
+        // We can't trust previous waits to have yielded.
         await Task.Yield();
+
+        // Check the modalDialog and quickGrid components exist in the form
         ArgumentNullException.ThrowIfNull(this.modalDialog);
         ArgumentNullException.ThrowIfNull(this.quickGrid);
     }
 
+    // This method provides the data to the QuickGrid component whenever the grid is refreshed or the page changes.
+    // It updates the GridState with the new page index and page size, then calls the UIBroker to get the new data.
     public async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
     {
         //mutate the GridState
@@ -85,7 +95,7 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
     protected virtual async Task OnAddAsync()
     {
         var options = new ModalOptions();
-        // we don't set UId
+        // we don't set UId, so it will be default telling the edit this is a new record
 
         ArgumentNullException.ThrowIfNull(this.UIEntityService.EditForm);
 
@@ -102,17 +112,6 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
     private void OnStateChanged(object? message)
     {
         this.InvokeAsync(quickGrid.RefreshDataAsync);
-    }
-
-    protected Task LogErrorMessageAsync(string message)
-    {
-        Logger.LogError(message);
-        return Task.CompletedTask;
-    }
-
-    protected void LogErrorMessage(string message)
-    {
-        Logger.LogError(message);
     }
 
     public void Dispose()

@@ -45,7 +45,7 @@ public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceReque
             var query = new ListQueryRequest<DboInvoiceItem>() { FilterExpression=filterExpression };
             var result = await _listBroker.ExecuteAsync<DboInvoiceItem>(query);
             
-            if (!result.HasSucceeded(out ListResult<DboInvoiceItem> records))
+            if (!result.HasSucceeded(out ListItemsProvider<DboInvoiceItem>? records))
                 return result.ConvertFail<InvoiceComposite>();
             
             invoiceItems = records.Items.Select(item => DboInvoiceItemMap.Map(item)).ToList();
