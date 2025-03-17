@@ -35,9 +35,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data Pipeline", "Data Pipel
 		Documents\Data-Pipeline\Data-Objects.md = Documents\Data-Pipeline\Data-Objects.md
 		Documents\Data-Pipeline\Data-Pipeline.md = Documents\Data-Pipeline\Data-Pipeline.md
 		Documents\Data-Pipeline\List-Requests.md = Documents\Data-Pipeline\List-Requests.md
-		Documents\Data-Pipeline\Results.md = Documents\Data-Pipeline\Results.md
 		Documents\Data-Pipeline\Record-Requests.md = Documents\Data-Pipeline\Record-Requests.md
+		Documents\Data-Pipeline\Results.md = Documents\Data-Pipeline\Results.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Common", "Source\App\Blazr.App.Common\Blazr.App.Common.csproj", "{E17360EA-1469-4721-A5D8-8CBE3A258034}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Weather", "Source\App\Blazr.App.Weather\Blazr.App.Weather.csproj", "{690A6BB6-C06E-4098-9913-09DB9CEF7553}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +81,14 @@ Global
 		{258B3F80-0F70-3630-4E66-B4BD4407CEB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{258B3F80-0F70-3630-4E66-B4BD4407CEB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{258B3F80-0F70-3630-4E66-B4BD4407CEB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E17360EA-1469-4721-A5D8-8CBE3A258034}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E17360EA-1469-4721-A5D8-8CBE3A258034}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E17360EA-1469-4721-A5D8-8CBE3A258034}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E17360EA-1469-4721-A5D8-8CBE3A258034}.Release|Any CPU.Build.0 = Release|Any CPU
+		{690A6BB6-C06E-4098-9913-09DB9CEF7553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{690A6BB6-C06E-4098-9913-09DB9CEF7553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{690A6BB6-C06E-4098-9913-09DB9CEF7553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{690A6BB6-C06E-4098-9913-09DB9CEF7553}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -91,6 +103,8 @@ Global
 		{8EC81A0B-AF9A-0692-CFEF-564CB2C7C380} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
 		{258B3F80-0F70-3630-4E66-B4BD4407CEB6} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
 		{021A123C-5242-4A26-A499-1A867B2A243F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{E17360EA-1469-4721-A5D8-8CBE3A258034} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
+		{690A6BB6-C06E-4098-9913-09DB9CEF7553} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F315C1D-A801-428C-93C3-CD98FD416A00}

@@ -33,7 +33,7 @@ public sealed class RecordRequestServerBroker<TDbContext>
             .ConfigureAwait(false);
 
         if (record is null)
-            return Result<TRecord>.Fail(new ItemQueryException($"No record retrieved with the Key provided"));
+            return Result<TRecord>.Fail(new RecordQueryException($"No record retrieved with the Key provided"));
 
         return Result<TRecord>.Success(record);
     }

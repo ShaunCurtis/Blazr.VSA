@@ -3,7 +3,6 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Presentation.Bootstrap;
 using Blazr.App.Presentation;
 using Blazr.App.UI;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +16,7 @@ public static class CustomerServices
         services.AddScoped<IEntityProvider<DmoCustomer, CustomerId>, CustomerEntityProvider>();
         services.AddSingleton<IUIEntityProvider<DmoCustomer>, CustomerUIEntityProvider>();
 
-        services.AddTransient<IGridUIBroker<DmoCustomer>, CustomerGridBroker>();
+        services.AddTransient<IGridUIBroker<DmoCustomer>, GridUIBroker<DmoCustomer,CustomerId>>();
         services.AddTransient<IEditUIBroker<CustomerEditContext, CustomerId>, EditUIBroker<DmoCustomer, CustomerEditContext, CustomerId>>();
         services.AddTransient<IReadUIBroker<DmoCustomer, CustomerId>, ReadUIBroker<DmoCustomer,CustomerId>>();
     }

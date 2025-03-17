@@ -4,29 +4,49 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
+using Blazr.App.Presentation;
+
 namespace Blazr.App.Core;
 
 public class CustomerEntityProvider : IEntityProvider<DmoCustomer, CustomerId>
 {
-    public Func<IMediator, CustomerId,  Task<Result<DmoCustomer>>> RecordRequest
-        => (broker, id) => broker.Send(new CustomerRecordRequest(id));
+    private readonly IMediator _mediator;
 
-    public Func<IMediator, DmoCustomer, CommandState,  Task<Result<CustomerId>>> RecordCommand
-        => (broker, record, state) => broker.Send(new CustomerCommandRequest(record, state));
+    public Func<CustomerId,  Task<Result<DmoCustomer>>> RecordRequest
+        => (id) => _mediator.Send(new CustomerRecordRequest(id));
 
-    public CustomerId GetKey(object key)
+    public Func<DmoCustomer, CommandState,  Task<Result<CustomerId>>> RecordCommand
+        => (record, state) => _mediator.Send(new CustomerCommandRequest(record, state));
+
+    public Func<GridState<DmoCustomer>, Task<Result<ListItemsProvider<DmoCustomer>>>> ListRequest
+        => (state) => _mediator.Send(new CustomerListRequest()
+        {
+            PageSize = state.PageSize,
+            StartIndex = state.StartIndex,
+            SortColumn = state.SortField,
+            SortDescending = state.SortDescending
+        });
+
+    public CustomerEntityProvider(IMediator mediator)   
     {
-        return key switch
+        _mediator = mediator;
+    }
+
+    public CustomerId GetKey(object obj)
+    {
+        return obj switch
         {
             CustomerId id => id,
+            DmoCustomer record => record.Id,
             Guid guid => new CustomerId(guid),
             _ => CustomerId.Default
         };
     }
 
-    public CustomerId GetKey(DmoCustomer record)
+    public bool TryGetKey(object obj, out CustomerId key)
     {
-        return record.Id;
+        key = GetKey(obj);
+        return key != CustomerId.Default;
     }
 
     public DmoCustomer NewRecord

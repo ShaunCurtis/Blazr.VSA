@@ -1,5 +1,5 @@
 ﻿@namespace Blazr.App.UI
-@inherits ViewerFormBase<DmoCustomer, CustomerId>
+@inherits ViewerModalFormBase<DmoCustomer, CustomerId>
 
 <PageTitle>@this.FormTitle</PageTitle>
 
@@ -10,7 +10,6 @@
 </div>
 
 <div class="modal-body px-3">
-
 
     <div class="row">
 
@@ -30,13 +29,5 @@
 </div>
 
 <div class="modal-footer bg-light text-end">
-
-    @if (!this.HideFooter)
-    {
-        <UIButton ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnExit>Exit</UIButton>
-    }
+    <UIButton ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnExit>Exit</UIButton>
 </div>
-
-@code {
-    protected virtual string FormTitle => $"{this.UIEntityService.SingleDisplayName} Viewer";
-}

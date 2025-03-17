@@ -1,32 +1,54 @@
-﻿/// ============================================================
+﻿
+/// ============================================================
 /// Author: Shaun Curtis, Cold Elm Coders
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
+using Blazr.App.Presentation;
+using static Blazr.App.Core.InvoiceRequests;
+
 namespace Blazr.App.Core;
 
 public class InvoiceEntityProvider : IEntityProvider<DmoInvoice, InvoiceId>
 {
-    public Func<IMediator, InvoiceId, Task<Result<DmoInvoice>>> RecordRequest
-        => (broker, id) => broker.Send(new InvoiceRequests.InvoiceRecordRequest(id));
+    private readonly IMediator _mediator;
 
-    public Func<IMediator, DmoInvoice, CommandState, Task<Result<InvoiceId>>> RecordCommand
-        => (broker, record, state) => Task.FromResult(Result<InvoiceId>.Fail(new Exception("You can't Update an Invoice this way")));
+    public Func<InvoiceId, Task<Result<DmoInvoice>>> RecordRequest
+        => (id) => _mediator.Send(new InvoiceRequests.InvoiceRecordRequest(id));
 
-    public InvoiceId GetKey(object key)
+    public Func<DmoInvoice, CommandState, Task<Result<InvoiceId>>> RecordCommand
+        => (record, state) => Task.FromResult(Result<InvoiceId>.Fail(new Exception("You can't Update an Invoice this way")));
+
+    public Func<GridState<DmoInvoice>, Task<Result<ListItemsProvider<DmoInvoice>>>> ListRequest
+        => (state) => _mediator.Send(new InvoiceListRequest()
+        {
+            PageSize = state.PageSize,
+            StartIndex = state.StartIndex,
+            SortColumn = state.SortField,
+            SortDescending = state.SortDescending
+        });
+
+    public InvoiceEntityProvider(IMediator mediator)
     {
-        return key switch
+        _mediator = mediator;
+    }
+
+    public InvoiceId GetKey(object obj)
+    {
+        return obj switch
         {
             InvoiceId id => id,
+            DmoInvoice record => record.Id,
             Guid guid => new InvoiceId(guid),
             _ => InvoiceId.Default
         };
     }
 
-    public InvoiceId GetKey(DmoInvoice record)
+    public bool TryGetKey(object obj, out InvoiceId key)
     {
-        return record.Id;
+        key = GetKey(obj);
+        return key != InvoiceId.Default;
     }
 
     public DmoInvoice NewRecord

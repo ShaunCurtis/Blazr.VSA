@@ -3,7 +3,6 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Presentation.Bootstrap;
 using Blazr.App.Presentation;
 using Microsoft.Extensions.DependencyInjection;
 using Blazr.App.UI;
@@ -18,7 +17,7 @@ public static class InvoiceServices
         services.AddSingleton<IUIEntityProvider<DmoInvoice>, InvoiceUIEntityProvider>();
         services.AddScoped<InvoiceCompositeBroker>();
 
-        services.AddTransient<IGridUIBroker<DmoInvoice>, InvoiceGridBroker>();
+        services.AddTransient<IGridUIBroker<DmoInvoice>, GridUIBroker<DmoInvoice, InvoiceId>>();
         services.AddTransient<IReadUIBroker<DmoInvoice, InvoiceId>, ReadUIBroker<DmoInvoice, InvoiceId>>();
 
         services.AddTransient<InvoiceEditBroker>();

@@ -1,10 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
 
 	<ItemGroup>
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
@@ -24,14 +25,12 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.2" />
 	</ItemGroup>
 
+
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Libraries\Blazor.Antimony\Blazor.Antimony.csproj" />
 	  <ProjectReference Include="..\..\Libraries\Blazr.Antimony.Server\Blazr.Antimony.Server.csproj" />
-	  <ProjectReference Include="..\..\Libraries\Blazr.EditStateTracker\Blazr.EditStateTracker.csproj" />
-	  <ProjectReference Include="..\..\Libraries\Blazr.FluentValidation\Blazr.FluentValidation.csproj" />
 	  <ProjectReference Include="..\..\Libraries\Blazr.Gallium\Blazr.Gallium.csproj" />
 	  <ProjectReference Include="..\..\Libraries\Blazr.UI\Blazr.UI.csproj" />
-	  <ProjectReference Include="..\Blazr.App.Common\Blazr.App.Common.csproj" />
 	</ItemGroup>
 
 </Project>
