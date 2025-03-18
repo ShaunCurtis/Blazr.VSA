@@ -3,15 +3,17 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Microsoft.EntityFrameworkCore;
+
 namespace Blazr.App.Infrastructure;
 
-public sealed class TestDataProvider
+public sealed class WeatherTestDataProvider
 {
     public IEnumerable<DboWeatherForecast> WeatherForecasts => _weatherForecasts.AsEnumerable();
 
     private List<DboWeatherForecast> _weatherForecasts = new List<DboWeatherForecast>();
 
-    public TestDataProvider()
+    public WeatherTestDataProvider()
     {
         this.Load();
     }
@@ -22,7 +24,7 @@ public sealed class TestDataProvider
         var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
         _weatherForecasts = Enumerable.Range(1, 50).Select(index => new DboWeatherForecast
         {
-            WeatherForecastID = UUIDProvider.GetGuid(),
+            WeatherForecastID = Guid.CreateVersion7(),
             Date = startDate.AddDays(index),
             Temperature = new(Random.Shared.Next(-20, 55)),
             Summary = summaries[Random.Shared.Next(summaries.Length)]

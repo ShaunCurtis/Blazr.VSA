@@ -3,20 +3,24 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Blazr.App.Core;
+
 namespace Blazr.App.Infrastructure;
 
-public sealed class DboWeatherForecastMap : IDboEntityMap<DboWeatherForecast, DmoWeatherForecast>
+public sealed class WeatherForecastMap 
 {
-    public DmoWeatherForecast MapTo(DboWeatherForecast item)
-        => Map(item);
-
-    public DboWeatherForecast MapTo(DmoWeatherForecast item)
-        => Map(item);
-
-    public static DmoWeatherForecast Map(DboWeatherForecast item)
+    public static DmoWeatherForecast Map(DvoWeatherForecast item)
         => new()
         {
       Id = new(item.WeatherForecastID),
+            Date = new(item.Date),
+            Temperature = new(item.Temperature),
+            Summary = item.Summary ?? "Not Defined"
+        };
+    public static DmoWeatherForecast Map(DboWeatherForecast item)
+        => new()
+        {
+            Id = new(item.WeatherForecastID),
             Date = new(item.Date),
             Temperature = new(item.Temperature),
             Summary = item.Summary ?? "Not Defined"

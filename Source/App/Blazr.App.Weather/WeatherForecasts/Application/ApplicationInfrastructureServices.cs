@@ -16,15 +16,15 @@ public static class ApplicationInfrastructureServices
     /// <param name="services"></param>
     public static void AddAppServerMappedInfrastructureServices(this IServiceCollection services)
     {
-        services.AddDbContextFactory<InMemoryTestDbContext>(options
+        services.AddDbContextFactory<InMemoryWeatherTestDbContext>(options
             => options.UseInMemoryDatabase($"TestDatabase-{Guid.NewGuid().ToString()}"));
 
         services.AddScoped<IDataBroker, DataBroker>();
 
         // Add the standard handlers
-        services.AddScoped<IListRequestHandler, ListRequestServerHandler<InMemoryTestDbContext>>();
-        services.AddScoped<IItemRequestHandler, ItemRequestServerHandler<InMemoryTestDbContext>>();
-        services.AddScoped<ICommandHandler, CommandServerHandler<InMemoryTestDbContext>>();
+        services.AddScoped<IListRequestHandler, ListRequestServerHandler<InMemoryWeatherTestDbContext>>();
+        services.AddScoped<IItemRequestHandler, ItemRequestServerHandler<InMemoryWeatherTestDbContext>>();
+        services.AddScoped<ICommandHandler, CommandServerHandler<InMemoryWeatherTestDbContext>>();
 
         // Add any individual entity services
         services.AddMappedWeatherForecastServerInfrastructureServices();
@@ -69,10 +69,10 @@ public static class ApplicationInfrastructureServices
     /// <param name="provider"></param>
     public static void AddTestData(IServiceProvider provider)
     {
-        var factory = provider.GetService<IDbContextFactory<InMemoryTestDbContext>>();
+        var factory = provider.GetService<IDbContextFactory<InMemoryWeatherTestDbContext>>();
 
         if (factory is not null)
-            TestDataProvider.Instance().LoadDbContext<InMemoryTestDbContext>(factory);
+            TestDataProvider.Instance().LoadDbContext<InMemoryWeatherTestDbContext>(factory);
     }
 
     /// <summary>
@@ -82,9 +82,9 @@ public static class ApplicationInfrastructureServices
     public static void AddMappedWeatherForecastServerInfrastructureServices(this IServiceCollection services)
     {
         services.AddScoped<IDboEntityMap<DboWeatherForecast, DmoWeatherForecast>, DboWeatherForecastMap>();
-        services.AddScoped<IListRequestHandler<DmoWeatherForecast>, MappedListRequestServerHandler<InMemoryTestDbContext, DmoWeatherForecast, DboWeatherForecast>>();
-        services.AddScoped<IItemRequestHandler<DmoWeatherForecast, WeatherForecastId>, MappedItemRequestServerHandler<InMemoryTestDbContext, DmoWeatherForecast, DboWeatherForecast, WeatherForecastId>>();
-        services.AddScoped<ICommandHandler<DmoWeatherForecast>, MappedCommandServerHandler<InMemoryTestDbContext, DmoWeatherForecast, DboWeatherForecast>>();
+        services.AddScoped<IListRequestHandler<DmoWeatherForecast>, MappedListRequestServerHandler<InMemoryWeatherTestDbContext, DmoWeatherForecast, DboWeatherForecast>>();
+        services.AddScoped<IItemRequestHandler<DmoWeatherForecast, WeatherForecastId>, MappedItemRequestServerHandler<InMemoryWeatherTestDbContext, DmoWeatherForecast, DboWeatherForecast, WeatherForecastId>>();
+        services.AddScoped<ICommandHandler<DmoWeatherForecast>, MappedCommandServerHandler<InMemoryWeatherTestDbContext, DmoWeatherForecast, DboWeatherForecast>>();
 
         services.AddTransient<IKeyProvider<WeatherForecastId>, WeatherForecastKeyProvider>();
 

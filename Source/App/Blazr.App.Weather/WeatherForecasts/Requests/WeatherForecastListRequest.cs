@@ -3,18 +3,10 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using UuidExtensions;
-
 namespace Blazr.App.Core;
 
-public class NewWeatherForecastProvider : INewRecordProvider<DmoWeatherForecast>
+public record WeatherForecastListRequest
+    : BaseListRequest, IRequest<Result<ListItemsProvider<DmoWeatherForecast>>>
 {
-    public DmoWeatherForecast NewRecord()
-    {
-        return new DmoWeatherForecast() { 
-            Id = new(Uuid7.Guid()), 
-            Date = new(DateTime.Now) 
-        };
-    }
+    public string? Summary { get; init }
 }
-

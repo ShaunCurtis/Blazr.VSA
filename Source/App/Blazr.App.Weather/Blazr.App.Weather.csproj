@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -16,7 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="WeatherForecasts\" />
+    <ProjectReference Include="..\..\Libraries\Blazor.Antimony\Blazor.Antimony.csproj" />
+    <ProjectReference Include="..\Blazr.App.Common\Blazr.App.Common.csproj" />
   </ItemGroup>
 
 </Project>

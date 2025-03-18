@@ -1,13 +1,12 @@
-﻿/// ============================================================
+﻿/// ===========================
 /// Author: Shaun Curtis, Cold Elm Coders
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Blazr.Antimony.Core;
+
 namespace Blazr.App.Core;
 
-public readonly record struct WeatherForecastId(Guid Value);
-
-[APIInfo(pathName: "WeatherForecast", clientName: AppDictionary.Common.WeatherHttpClient)]
 public sealed record DmoWeatherForecast : ICommandEntity
 {
     public WeatherForecastId Id { get; init; } = new(Guid.Empty);

@@ -5,40 +5,26 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public sealed class WeatherForecastEditContext : IRecordEditContext<DmoWeatherForecast>
+public sealed class WeatherForecastEditContext : BaseRecordEditContext<DmoWeatherForecast, WeatherForecastId>, IRecordEditContext<DmoWeatherForecast>
 {
-    public DmoWeatherForecast BaseRecord { get; private set; }
-    public bool IsDirty => this.BaseRecord != this.AsRecord;
-
     [TrackState] public string? Summary { get; set; }
     [TrackState] public decimal Temperature { get; set; }
     [TrackState] public DateTime? Date { get; set; }
 
-    public DmoWeatherForecast AsRecord =>
+    public override DmoWeatherForecast AsRecord =>
         this.BaseRecord with
         {
             Date = new(this.Date ?? DateTime.Now),
             Summary = this.Summary?? "Not Set",
             Temperature = new(this.Temperature)
         };
+    public WeatherForecastEditContext() : base() { }
 
-    public WeatherForecastEditContext()
+    public WeatherForecastEditContext(DmoWeatherForecast record) : base(record) { }
+
+    public override IDataResult Load(DmoWeatherForecast record)
     {
-        this.BaseRecord = new DmoWeatherForecast();
-        this.Load(this.BaseRecord);
-    }
-
-    public WeatherForecastEditContext(DmoWeatherForecast record)
-    {
-        this.BaseRecord = record;
-        this.Load(record);
-    }
-
-    public IDataResult Load(DmoWeatherForecast record)
-    {
-        var alreadyLoaded = this.BaseRecord.Id != default;
-
-        if (alreadyLoaded)
+        if (!this.BaseRecord.Id.IsDefault)
             return DataResult.Failure("A record has already been loaded.  You can't overload it.");
 
         this.BaseRecord = record;
