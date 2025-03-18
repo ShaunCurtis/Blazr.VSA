@@ -1,0 +1,34 @@
+﻿@namespace Blazr.App.UI
+@inherits GridFormBase<DmoWeatherForecast,WeatherForecastId>
+
+ <div class="d-flex flex-row mb-1 pt-1 border-bottom">
+    <div class="flex-fill justify-content-start h4">
+        @this.formTitle
+    </div>
+    <div class="justify-content-end">
+        <button class="btn btn-sm btn-primary" @onclick="() => OnAddAsync()">Add New Weather Forecast</button>
+    </div>
+</div>
+
+<BlazrPaginator State="Pagination" />
+
+<div class="@this.GridCss" tabindex="-1">
+    <QuickGrid Theme="None" TGridItem="DmoWeatherForecast" ItemsProvider="this.GetItemsAsync" Pagination="Pagination" @ref="this.quickGrid" Class="@this.TableCss">
+        <SortedPropertyColumn SortField="WeatherForecastID" Class="nowrap-column" Sortable="true" Title="ID">
+            @context.Id.Value.ToDisplayId()
+        </SortedPropertyColumn>
+        <PropertyColumn Title="Date" Property="@(c => c!.Date.Value)" Format="dd-MMM-yy" Sortable="true" IsDefaultSortColumn InitialSortDirection="SortDirection.Ascending" Align=Align.Start />
+        <PropertyColumn Title="Temp &deg; C" Sortable="true" Format="N0" Property="@(c => c!.Temperature.TemperatureC)" Align=Align.End />
+        <PropertyColumn Title="Temp &deg; F" Sortable="true" Format="N0" Property="@(c => c!.Temperature.TemperatureF)" Align=Align.End />
+        <PropertyColumn Title="Summary" Sortable="true" Property="@(c => c!.Summary)" Align=Align.Center />
+        <TemplateColumn Class="" Align="Align.End">
+            <UIButtonGroup>
+                <button class="btn btn-sm btn-secondary" @onclick="() => OnViewAsync(context.Id)">View</button>
+                <button class="btn btn-sm btn-primary" @onclick="() => OnEditAsync(context.Id)">Edit</button>
+            </UIButtonGroup>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+<BsModalDialog @ref=modalDialog />
+

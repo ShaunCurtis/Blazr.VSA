@@ -6,6 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="WeatherForecasts\UI\Forms\WeatherForecastEditForm.razor~RF18d1765.TMP" />
+    <None Remove="WeatherForecasts\UI\Forms\WeatherForecastViewForm.razor~RF1a39370.TMP" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
@@ -17,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\Blazor.Antimony\Blazor.Antimony.csproj" />
+    <ProjectReference Include="..\..\Libraries\Blazr.FluentValidation\Blazr.FluentValidation.csproj" />
     <ProjectReference Include="..\Blazr.App.Common\Blazr.App.Common.csproj" />
   </ItemGroup>
 

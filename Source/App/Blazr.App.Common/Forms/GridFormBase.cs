@@ -33,6 +33,9 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
     protected PaginationState Pagination = new PaginationState { ItemsPerPage = 10 };
     protected Expression<Func<TRecord, bool>>? DefaultFilter { get; set; } = null;
 
+    protected string TableCss = "table table-sm table-striped table-hover border-bottom no-margin hide-blank-rows";
+    protected string GridCss = "grid";
+
     protected async override Task OnInitializedAsync()
     {
         this.UIBroker.StateChanged += OnStateChanged;

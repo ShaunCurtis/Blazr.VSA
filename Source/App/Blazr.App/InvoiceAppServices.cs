@@ -12,9 +12,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.App.Infrastructure.Server;
 
-public static class ApplicationServerServices
+public static class InvoiceApplicationServerServices
 {
-    public static void AddAppServices(this IServiceCollection services)
+    public static void AddInvoiceAppServices(this IServiceCollection services)
     {
         // Add the InMemory Database
         services.AddDbContextFactory<InMemoryInvoiceTestDbContext>(options
