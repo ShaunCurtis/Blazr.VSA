@@ -7,10 +7,13 @@ using Blazored.Toast;
 using Blazr.Antimony.Core;
 using Blazr.Antimony.Infrastructure.Server;
 using Blazr.App.Core;
+using Blazr.App.Invoice.Core;
+using Blazr.App.Invoice.Infrastructure;
+using Blazr.App.Invoice.Infrastructure.Server;
 using Blazr.App.Presentation;
+//using Blazr.App.Weather.Core;
 using Blazr.Gallium;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.App.Infrastructure.Server;
 
@@ -18,9 +21,14 @@ public static class ApplicationServerServices
 {
     public static void AddAppServices(this IServiceCollection services)
     {
+        // Add the InMemory Database
+        services.AddDbContextFactory<InMemoryInvoiceTestDbContext>(options
+            => options.UseInMemoryDatabase($"TestDatabase-{Guid.NewGuid().ToString()}"));
+
         // Add MediatR
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
                 typeof(DmoCustomer).Assembly
+                //,typeof(DmoWeatherForecast).Assembly
                 ));
 
         // Add the Gallium Message Bus Server services
@@ -49,7 +57,7 @@ public static class ApplicationServerServices
         services.AddCustomerServices();
         services.AddInvoiceServices();
         //services.AddInvoiceItemInfrastructureServices();
-   }
+    }
 
     public static void AddTestData(IServiceProvider provider)
     {

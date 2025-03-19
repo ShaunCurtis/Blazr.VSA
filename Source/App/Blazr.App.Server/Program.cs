@@ -1,5 +1,6 @@
 using Blazr.App.Infrastructure.Server;
-using Blazr.App.Server.Components;
+using Blazr.App.Invoice.Infrastructure;
+using Blazr.App.Invoice.Infrastructure.Server;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -34,8 +35,11 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapRazorComponents<App>()
+app.MapRazorComponents<Blazr.App.Server.Components.ServerApp>()
     .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(Blazr.App.UI._Imports).Assembly);
+    .AddAdditionalAssemblies(
+    typeof(Blazr.App.Invoice.UI.InvoiceDashboard).Assembly 
+    //,typeof(Blazr.App.Weather.Core.Date).Assembly
+    );
 
 app.Run();

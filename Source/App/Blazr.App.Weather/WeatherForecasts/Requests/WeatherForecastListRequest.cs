@@ -3,10 +3,12 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.App.Core;
+using Blazr.App.Core;
+
+namespace Blazr.App.Weather.Core;
 
 public record WeatherForecastListRequest
     : BaseListRequest, IRequest<Result<ListItemsProvider<DmoWeatherForecast>>>
 {
-    public string? Summary { get; init }
+    public string? Summary { get; init; }
 }

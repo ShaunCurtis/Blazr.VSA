@@ -4,9 +4,9 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazored.Toast;
-using Blazr.Antimony.Infrastructure.Server;
-using Blazr.App.Core;
 using Blazr.App.Presentation;
+using Blazr.App.Weather.Core;
+using Blazr.App.Weather.Infrastructure;
 using Blazr.Gallium;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,11 +28,6 @@ public static class WeatherApplicationServerServices
         // Add the Blazored Toast services
         services.AddBlazoredToast();
 
-        // Add the standard Antimony Server handlers used by simple entities
-        services.AddScoped<IListRequestBroker, ListRequestServerBroker<InMemoryWeatherTestDbContext>>();
-        services.AddScoped<IRecordRequestBroker, RecordRequestServerBroker<InMemoryWeatherTestDbContext>>();
-        services.AddScoped<ICommandBroker, CommandServerBroker<InMemoryWeatherTestDbContext>>();
-
         // InMemory Scoped State Store 
         services.AddScoped<ScopedStateProvider>();
 
@@ -53,7 +48,7 @@ public static class WeatherApplicationServerServices
 
         // Add any individual entity services
         services.AddWeatherForecastServices();
-   }
+    }
 
     public static void AddTestData(IServiceProvider provider)
     {

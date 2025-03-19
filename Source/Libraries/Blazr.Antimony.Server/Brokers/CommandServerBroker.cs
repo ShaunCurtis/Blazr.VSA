@@ -26,6 +26,14 @@ public sealed class CommandServerBroker<TDbContext>
     {
         using var dbContext = _factory.CreateDbContext();
 
+        var result = await ExecuteCommandAsync<TRecord>(dbContext, request, cancellationToken);
+
+        return result;
+    }
+
+    public static async ValueTask<Result<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+        where TRecord : class
+    {
         if ((request.Item is not ICommandEntity))
             return Result<TRecord>.Fail(new CommandException($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly."));
 
@@ -39,7 +47,7 @@ public sealed class CommandServerBroker<TDbContext>
 
             return result == 1
                 ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail( new CommandException("Error adding Record"));
+                : Result<TRecord>.Fail(new CommandException("Error adding Record"));
         }
 
         // Check if we should delete it
@@ -47,10 +55,10 @@ public sealed class CommandServerBroker<TDbContext>
         {
             dbContext.Remove<TRecord>(request.Item);
             var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            
+
             return result == 1
                 ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail(new CommandException( "Error deleting Record"));
+                : Result<TRecord>.Fail(new CommandException("Error deleting Record"));
         }
 
         // Finally it changed
@@ -66,4 +74,5 @@ public sealed class CommandServerBroker<TDbContext>
 
         return Result<TRecord>.Fail(new CommandException("Nothing executed.  Unrecognised State."));
     }
+
 }

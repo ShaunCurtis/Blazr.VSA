@@ -4,6 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.App.Core;
+using Blazr.App.Weather.Core;
 
 namespace Blazr.App.Presentation;
 

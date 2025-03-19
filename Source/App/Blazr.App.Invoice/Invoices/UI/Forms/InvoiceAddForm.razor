@@ -1,0 +1,156 @@
+﻿@namespace Blazr.App.Invoice.UI
+
+@inject ILookupUIBrokerFactory LookupUIBrokerFactory
+@inject InvoiceEditBroker UIBroker
+@inject NavigationManager NavManager
+
+<PageTitle>@_formTitle</PageTitle>
+
+<div class="d-flex flex-row mb-4 pt-1 pb-2 border-bottom">
+    <div class="flex-fill justify-content-start h4">
+        @_formTitle
+    </div>
+    <div class="justify-content-end">
+        @* Header Buttons *@
+    </div>
+</div>
+
+<EditForm EditContext=this.UIBroker.EditContext OnValidSubmit="this.OnSaveAsync">
+
+    <Blazr.FluentValidation.BlazrFluentValidator TRecord="DmoInvoiceEditContext" TValidator="DmoInvoiceEditContextValidator" />
+    <BlazrEditStateTracker />
+
+    <div class="row">
+
+        <BlazrDateControl class="form-control mb-2"
+                          ColumnCss="col-12 col-md-4 mb-2"
+                          Label="Date"
+                          @bind-Value="this.UIBroker.RecordEditContext.Date" />
+
+        <BlazrSelectControl class="form-control mb-2"
+                            ColumnCss="col-12 col-md-6 mb-2"
+                            Label="Group"
+                            TValue="Guid"
+                            TListItem="CustomerLookUpItem"
+                            @bind-Value=this.UIBroker.RecordEditContext.CustomerId
+                            @bind-Value:after="this.OnCustomerUpdate"
+                            DisplayOptionsItems=_customerList
+                            OptionValueDelegate="(item) => item.Id.ToString()"
+                            OptionTextDelegate="(item) => item.Name"
+                            PlaceholderText="Choose a Customer" />
+
+    </div>
+
+    <div class="row">
+        <div class="text-end">
+            <UIButton Type="button" ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnExit>Exit</UIButton>
+            <UIButton Type="submit" Hidden=@_isClean ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Save>Continue</UIButton>
+        </div>
+    </div>
+
+</EditForm>
+
+@code {
+    [Parameter] public EventCallback InvoiceCreated { get; set; }
+
+    private string _formTitle => $"Create A New Invoice";
+    private EditFormButtonsOptions _editFormButtonsOptions = new();
+    private List<CustomerLookUpItem> _customerList = new();
+
+    private ILookUpUIBroker<CustomerLookUpItem> CustomerLookupUIBroker = default!;
+    private string _exitUrl = "/invoices";
+
+    private bool _isDirty;
+    private bool _isClean => !_isDirty;
+    private bool _stateStoreAttached;
+    private BlazrEditStateStore? _store;
+
+    protected async override Task OnInitializedAsync()
+    {
+        this.CustomerLookupUIBroker = await this.LookupUIBrokerFactory.GetAsync<CustomerLookUpItem, CustomerLookupBrokerr>();
+        _customerList = this.CustomerLookupUIBroker.Items.ToList();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _isDirty = this.UIBroker.EditContext.GetEditState();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // The EditContext is only created after the first render.
+        // We need to make sure the StateStore has been attached to the EditContext
+        // before we try and get it.
+        // The only place we can do this is in the second OnAfterRender UI event
+        _store = _store ?? this.UIBroker.EditContext.GetStateStore();
+        if (_store is not null && !_stateStoreAttached)
+        {
+            _store.StoreUpdated += OnEditStateMayHaveChanged;
+            _stateStoreAttached = true;
+        }
+    }
+
+    /// <summary>
+    /// Set the customer name when the customerId is changed
+    /// </summary>
+    private void OnCustomerUpdate()
+    {
+        this.UIBroker.RecordEditContext.CustomerName = _customerList.FirstOrDefault(c => c.Id == this.UIBroker.RecordEditContext.CustomerId)?.Name ?? "[Not Set]";
+    }
+
+    /// <summary>
+    /// Update the edit context whenever an edit control is updated
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void OnEditStateMayHaveChanged(object? sender, EventArgs e)
+    {
+        _isDirty = this.UIBroker.EditContext.GetEditState();
+        this.StateHasChanged();
+    }
+
+    /// <summary>
+    /// Save handler
+    /// </summary>
+    /// <returns></returns>
+    private async Task OnSaveAsync()
+    {
+        if (!this.UIBroker.EditContext.Validate())
+            return;
+
+        await this.UIBroker.SaveItemToAggregateAsync();
+
+        await this.InvoiceCreated.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Exit Handler
+    /// </summary>
+    /// <returns></returns>
+    private Task OnExit()
+    {
+        // reset the edit state store so the edit state is clean
+        _store?.Reset();
+
+        this.NavManager.NavigateTo(_exitUrl);
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Get the edit state and only allow navigation if it's clean
+    /// </summary>
+    /// <param name="context"></param>
+    private void OnLocationChanged(LocationChangingContext context)
+    {
+        var isdirty = this.UIBroker.EditContext.GetEditState();
+
+        if (isdirty)
+            context.PreventNavigation();
+    }
+
+    public void Dispose()
+    {
+        this.UIBroker.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
+    }
+}

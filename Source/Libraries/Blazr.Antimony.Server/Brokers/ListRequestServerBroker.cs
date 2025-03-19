@@ -20,16 +20,18 @@ public sealed class ListRequestServerBroker<TDbContext>
     public async ValueTask<Result<ListItemsProvider<TRecord>>> ExecuteAsync<TRecord>(ListQueryRequest<TRecord> request)
         where TRecord : class
     {
-        return await this.GetItemsAsync<TRecord>(request);
+        // Get a Unit of Work DbContext for the scope of the method
+        using var dbContext = _factory.CreateDbContext();
+        var result =  await GetItemsAsync<TRecord>(dbContext, request);
+
+        return result;
     }
 
-    private async ValueTask<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(ListQueryRequest<TRecord> request)
+    public static async ValueTask<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
         where TRecord : class
     {
         int totalRecordCount;
 
-        // Get a Unit of Work DbContext for the scope of the method
-        using var dbContext = _factory.CreateDbContext();
         // Turn off tracking.  We're only querying, no changes
         dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 

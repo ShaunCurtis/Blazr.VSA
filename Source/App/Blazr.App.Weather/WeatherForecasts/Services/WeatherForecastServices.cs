@@ -3,10 +3,12 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Core;
+using Blazr.App.Weather.Core;
 using Blazr.App.Presentation;
 using Blazr.App.UI;
 using Microsoft.Extensions.DependencyInjection;
+using Blazr.App.Core;
+using Blazr.App.Weather.UI;
 
 namespace Blazr.App.Infrastructure;
 

@@ -3,6 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Blazr.App.Weather.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blazr.App.Infrastructure;
@@ -46,12 +47,12 @@ public sealed class WeatherTestDataProvider
         dbContext.SaveChanges();
     }
 
-    private static TestDataProvider? _provider;
+    private static WeatherTestDataProvider? _provider;
 
-    public static TestDataProvider Instance()
+    public static WeatherTestDataProvider Instance()
     {
         if (_provider is null)
-            _provider = new TestDataProvider();
+            _provider = new WeatherTestDataProvider();
 
         return _provider;
     }

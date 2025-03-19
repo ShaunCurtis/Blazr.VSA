@@ -3,7 +3,9 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Core;
+using Blazr.App.Weather.Core;
+using Blazr.App.Weather.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace Blazr.App.Infrastructure.Server;
 
@@ -12,15 +14,17 @@ namespace Blazr.App.Infrastructure.Server;
 /// </summary>
 public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecastListRequest, Result<ListItemsProvider<DmoWeatherForecast>>>
 {
-    private IListRequestBroker _broker;
+    private readonly IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
 
-    public WeatherForecastListHandler(IListRequestBroker broker)
+    public WeatherForecastListHandler(IDbContextFactory<InMemoryWeatherTestDbContext> factory)
     {
-        this._broker = broker;
+        _factory = factory;
     }
 
     public async Task<Result<ListItemsProvider<DmoWeatherForecast>>> Handle(WeatherForecastListRequest request, CancellationToken cancellationToken)
     {
+        using var dbContext = _factory.CreateDbContext();
+
         IEnumerable<DmoWeatherForecast> forecasts = Enumerable.Empty<DmoWeatherForecast>();
 
         var query = new ListQueryRequest<DvoWeatherForecast>()
@@ -33,7 +37,7 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
             Cancellation = cancellationToken
         };
 
-        var result = await _broker.ExecuteAsync<DvoWeatherForecast>(query);
+        var result = await dbContext.GetItemsAsync<DvoWeatherForecast>(query);
 
         if (!result.HasSucceeded(out ListItemsProvider<DvoWeatherForecast>? listResult))
             return result.ConvertFail<ListItemsProvider<DmoWeatherForecast>>();

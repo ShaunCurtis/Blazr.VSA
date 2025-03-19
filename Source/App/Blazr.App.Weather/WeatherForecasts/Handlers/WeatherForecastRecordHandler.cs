@@ -3,8 +3,8 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.Antimony.Infrastructure.Server;
-using Blazr.App.Core;
+using Blazr.App.Weather.Core;
+using Blazr.App.Weather.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blazr.App.Infrastructure.Server;
@@ -23,15 +23,14 @@ public sealed class WeatherForecastRecordHandler : IRequestHandler<WeatherForeca
 
     public async Task<Result<DmoWeatherForecast>> Handle(WeatherForecastRecordRequest request, CancellationToken cancellationToken)
     {
-        using var context = _factory.CreateDbContext();
+        using var dbContext = _factory.CreateDbContext();
 
         Expression<Func<DvoWeatherForecast, bool>> findExpression = (item) =>
             item.WeatherForecastID == request.Id.Value;
 
         var query = new RecordQueryRequest<DvoWeatherForecast>(findExpression);
 
-        var result = await RecordRequestServerBroker<InMemoryWeatherTestDbContext>
-            .GetRecordAsync<DvoWeatherForecast>(context, query);
+        var result = await dbContext.GetRecordAsync<DvoWeatherForecast>(query);
 
         if (!result.HasSucceeded(out DvoWeatherForecast? record))
             return result.ConvertFail<DmoWeatherForecast>();

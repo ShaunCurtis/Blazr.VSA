@@ -5,7 +5,7 @@
 /// ============================================================
 using System.ComponentModel.DataAnnotations;
 
-namespace Blazr.App.Infrastructure;
+namespace Blazr.App.Weather.Infrastructure;
 
 public sealed record DvoWeatherForecast
 {

@@ -4,7 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
-namespace Blazr.App.Core;
+namespace Blazr.App.Weather.Core;
 
 public static class SummaryOptions
 {

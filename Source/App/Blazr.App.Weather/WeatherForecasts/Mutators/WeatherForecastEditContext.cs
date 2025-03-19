@@ -4,6 +4,8 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.App.Core;
+using Blazr.App.Weather.Core;
+using Blazr.EditStateTracker.Core;
 
 namespace Blazr.App.Presentation;
 
@@ -17,7 +19,7 @@ public sealed class WeatherForecastEditContext : BaseRecordEditContext<DmoWeathe
         this.BaseRecord with
         {
             Date = new(this.Date ?? DateTime.Now),
-            Summary = this.Summary?? "Not Set",
+            Summary = this.Summary ?? "Not Set",
             Temperature = new(this.Temperature)
         };
     public WeatherForecastEditContext() : base() { }

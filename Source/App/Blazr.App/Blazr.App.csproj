@@ -31,7 +31,6 @@
 	  <ProjectReference Include="..\..\Libraries\Blazr.FluentValidation\Blazr.FluentValidation.csproj" />
 	  <ProjectReference Include="..\..\Libraries\Blazr.Gallium\Blazr.Gallium.csproj" />
 	  <ProjectReference Include="..\..\Libraries\Blazr.UI\Blazr.UI.csproj" />
-	  <ProjectReference Include="..\Blazr.App.Common\Blazr.App.Common.csproj" />
 	</ItemGroup>
 
 </Project>

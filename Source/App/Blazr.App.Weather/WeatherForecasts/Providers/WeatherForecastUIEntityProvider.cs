@@ -3,9 +3,10 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Core;
+using Blazr.App.UI;
+using Blazr.App.Weather.Core;
 
-namespace Blazr.App.UI;
+namespace Blazr.App.Weather.UI;
 
 public sealed record WeatherForecastUIEntityProvider : IUIEntityProvider<DmoWeatherForecast>
 {

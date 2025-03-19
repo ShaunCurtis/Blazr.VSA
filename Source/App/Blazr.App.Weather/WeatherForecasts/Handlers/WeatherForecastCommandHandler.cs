@@ -3,8 +3,11 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Core;
+using Blazr.App.Weather.Core;
+using Blazr.App.Weather.Infrastructure;
 using Blazr.Gallium;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Blazr.App.Infrastructure.Server;
 
@@ -13,18 +16,20 @@ namespace Blazr.App.Infrastructure.Server;
 /// </summary>
 public sealed record WeatherForecastCommandHandler : IRequestHandler<WeatherForecastCommandRequest, Result<WeatherForecastId>>
 {
-    private ICommandBroker _broker;
-    private IMessageBus _messageBus;
+    private readonly IMessageBus _messageBus;
+    private readonly IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
 
-    public WeatherForecastCommandHandler(ICommandBroker broker, IMessageBus messageBus)
+    public WeatherForecastCommandHandler(IDbContextFactory<InMemoryWeatherTestDbContext> factory, IMessageBus messageBus)
     {
+        _factory = factory;
         _messageBus = messageBus;
-        _broker = broker;
     }
 
     public async Task<Result<WeatherForecastId>> Handle(WeatherForecastCommandRequest request, CancellationToken cancellationToken)
     {
-        var result = await _broker.ExecuteAsync<DboWeatherForecast>(new CommandRequest<DboWeatherForecast>(
+        using var dbContext = _factory.CreateDbContext();
+
+        var result = await dbContext.ExecuteCommandAsync<DboWeatherForecast>(new CommandRequest<DboWeatherForecast>(
             Item: WeatherForecastMap.Map(request.Item),
             State: request.State
         ), cancellationToken);

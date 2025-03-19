@@ -5,7 +5,7 @@
 /// ============================================================
 using System.Text.Json.Serialization;
 
-namespace Blazr.App.Core;
+namespace Blazr.App.Weather.Core;
 
 public readonly record struct Temperature
 {
