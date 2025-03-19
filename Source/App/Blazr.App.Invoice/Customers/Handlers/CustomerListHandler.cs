@@ -4,6 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony.Core;
+using Blazr.Antimony.Infrastructure.Server;
 using Blazr.App.Invoice.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -16,16 +17,17 @@ namespace Blazr.App.Invoice.Infrastructure.Server;
 /// </summary>
 public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, Result<ListItemsProvider<DmoCustomer>>>
 {
-    private IListRequestBroker _broker;
-    //private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
+    private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public CustomerListHandler(IListRequestBroker broker)
+    public CustomerListHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory)
     {
-        this._broker = broker;
+        _factory = factory;
     }
 
     public async Task<Result<ListItemsProvider<DmoCustomer>>> Handle(CustomerListRequest request, CancellationToken cancellationToken)
     {
+        var dbContext = _factory.CreateDbContext();
+
         IEnumerable<DmoCustomer> forecasts = Enumerable.Empty<DmoCustomer>();
 
         var query = new ListQueryRequest<DboCustomer>()
@@ -38,7 +40,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
             Cancellation = cancellationToken
         };
 
-        var result = await _broker.ExecuteAsync<DboCustomer>(query);
+        var result = await dbContext.GetItemsAsync<DboCustomer>(query);
 
         if (!result.HasSucceeded(out ListItemsProvider<DboCustomer>? listResult))
             return result.ConvertFail<ListItemsProvider<DmoCustomer>>();

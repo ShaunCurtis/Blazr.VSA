@@ -6,6 +6,7 @@
 using Blazr.App.Weather.Core;
 using Blazr.App.Weather.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Blazr.Antimony.Infrastructure.Server;
 
 namespace Blazr.App.Infrastructure.Server;
 
@@ -51,6 +52,8 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
         => field switch
         {
             "Id" => (Item) => Item.WeatherForecastID,
+            "ID" => (Item) => Item.WeatherForecastID,
+            "Temperature" => (Item) => Item.Temperature,
             "Summary" => (Item) => Item.Summary ?? string.Empty,
             _ => (item) => item.Date
         };

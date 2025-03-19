@@ -43,6 +43,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Weather", "Source
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Invoice", "Source\App\Blazr.App.Invoice\Blazr.App.Invoice.csproj", "{47A9AF2D-159D-4A5C-A047-F4BCE35FCF99}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.Auth", "Source\App\Blazr.Auth\Blazr.Auth.csproj", "{F14BF994-BBC1-4391-83E9-CFA37C6FBCE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Shared", "Source\App\Blazr.App.Shared\Blazr.App.Shared.csproj", "{9CB233A6-A313-4D18-8295-33805C346EB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -89,6 +93,14 @@ Global
 		{47A9AF2D-159D-4A5C-A047-F4BCE35FCF99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47A9AF2D-159D-4A5C-A047-F4BCE35FCF99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47A9AF2D-159D-4A5C-A047-F4BCE35FCF99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F14BF994-BBC1-4391-83E9-CFA37C6FBCE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F14BF994-BBC1-4391-83E9-CFA37C6FBCE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F14BF994-BBC1-4391-83E9-CFA37C6FBCE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F14BF994-BBC1-4391-83E9-CFA37C6FBCE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CB233A6-A313-4D18-8295-33805C346EB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CB233A6-A313-4D18-8295-33805C346EB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CB233A6-A313-4D18-8295-33805C346EB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CB233A6-A313-4D18-8295-33805C346EB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -105,6 +117,8 @@ Global
 		{021A123C-5242-4A26-A499-1A867B2A243F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{690A6BB6-C06E-4098-9913-09DB9CEF7553} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
 		{47A9AF2D-159D-4A5C-A047-F4BCE35FCF99} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
+		{F14BF994-BBC1-4391-83E9-CFA37C6FBCE1} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
+		{9CB233A6-A313-4D18-8295-33805C346EB3} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F315C1D-A801-428C-93C3-CD98FD416A00}

@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="AppServices.cs~RFeaec61.TMP" />
+    <None Remove="Program.cs~RF155d789.TMP" />
+  </ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
 		<PackageReference Include="MediatR" Version="12.4.1" />
@@ -26,6 +31,7 @@
 
 	<ItemGroup>
     <ProjectReference Include="..\Blazr.App.Invoice\Blazr.App.Invoice.csproj" />
+    <ProjectReference Include="..\Blazr.App.Weather\Blazr.App.Weather.csproj" />
   </ItemGroup>
 
 </Project>

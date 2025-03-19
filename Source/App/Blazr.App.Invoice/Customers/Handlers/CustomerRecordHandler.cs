@@ -4,8 +4,10 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony.Core;
+using Blazr.Antimony.Infrastructure.Server;
 using Blazr.App.Invoice.Core;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace Blazr.App.Invoice.Infrastructure;
@@ -15,21 +17,23 @@ namespace Blazr.App.Invoice.Infrastructure;
 /// </summary>
 public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordRequest, Result<DmoCustomer>>
 {
-    private IRecordRequestBroker _broker;
+    private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public CustomerRecordHandler(IRecordRequestBroker broker)
+    public CustomerRecordHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory)
     {
-        _broker = broker;
+        _factory = factory;
     }
 
     public async Task<Result<DmoCustomer>> Handle(CustomerRecordRequest request, CancellationToken cancellationToken)
     {
+        var dbContext = _factory.CreateDbContext();
+
         Expression<Func<DboCustomer, bool>> findExpression = (item) =>
             item.CustomerID == request.Id.Value;
 
         var query = new RecordQueryRequest<DboCustomer>(findExpression);
 
-        var result = await _broker.ExecuteAsync<DboCustomer>(query);
+        var result = await dbContext.GetRecordAsync<DboCustomer>(query);
 
         if (!result.HasSucceeded(out DboCustomer? record))
             return result.ConvertFail<DmoCustomer>();

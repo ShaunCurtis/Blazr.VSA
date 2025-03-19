@@ -4,9 +4,11 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony.Core;
+using Blazr.Antimony.Infrastructure.Server;
 using Blazr.App.Invoice.Core;
 using Blazr.Gallium;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Blazr.App.Invoice.Infrastructure;
 
@@ -15,18 +17,20 @@ namespace Blazr.App.Invoice.Infrastructure;
 /// </summary>
 public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandRequest, Result<CustomerId>>
 {
-    private ICommandBroker _broker;
-    private IMessageBus _messageBus;
+    private readonly IMessageBus _messageBus;
+    private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public CustomerCommandHandler(ICommandBroker broker, IMessageBus messageBus)
+    public CustomerCommandHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus)
     {
+        _factory = factory;
         _messageBus = messageBus;
-        _broker = broker;
     }
 
     public async Task<Result<CustomerId>> Handle(CustomerCommandRequest request, CancellationToken cancellationToken)
     {
-        var result = await _broker.ExecuteAsync<DboCustomer>(new CommandRequest<DboCustomer>(
+        var dbContext = _factory.CreateDbContext();
+
+        var result = await dbContext.ExecuteCommandAsync<DboCustomer>(new CommandRequest<DboCustomer>(
             Item: DboCustomerMap.Map(request.Item),
             State: request.State
         ), cancellationToken);

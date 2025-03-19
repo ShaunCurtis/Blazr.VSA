@@ -5,53 +5,6 @@
 /// ============================================================
 namespace Blazr.Antimony.Infrastructure.Server;
 
-public static class DbContextExtensions
-{
-    public static async ValueTask<Result<TRecord>> ExecuteCommandAsync<TRecord>(this DbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
-    where TRecord : class
-    {
-        if ((request.Item is not ICommandEntity))
-            return Result<TRecord>.Fail(new CommandException($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly."));
-
-        var stateRecord = request.Item;
-
-        // First check if it's new.
-        if (request.State == CommandState.Add)
-        {
-            dbContext.Add<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
-            return result == 1
-                ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail(new CommandException("Error adding Record"));
-        }
-
-        // Check if we should delete it
-        if (request.State == CommandState.Delete)
-        {
-            dbContext.Remove<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
-            return result == 1
-                ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail(new CommandException("Error deleting Record"));
-        }
-
-        // Finally it changed
-        if (request.State == CommandState.Update)
-        {
-            dbContext.Update<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
-            return result == 1
-                ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail(new CommandException("Error saving Record"));
-        }
-
-        return Result<TRecord>.Fail(new CommandException("Nothing executed.  Unrecognised State."));
-    }
-}
-
 /// <summary>
 /// This class implements the "standard" CQS Handlers
 /// against an EF `TDbContext`

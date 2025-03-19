@@ -4,9 +4,10 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony.Core;
-using Blazr.App.Core;
+using Blazr.Antimony.Infrastructure.Server;
 using Blazr.App.Invoice.Core;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Blazr.App.Invoice.Infrastructure;
 
@@ -15,15 +16,17 @@ namespace Blazr.App.Invoice.Infrastructure;
 /// </summary>
 public sealed record CustomerLookUpHandler : IRequestHandler<CustomerLookupRequest, Result<ListItemsProvider<CustomerLookUpItem>>>
 {
-    private IListRequestBroker _broker;
+    private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public CustomerLookUpHandler(IListRequestBroker broker)
+    public CustomerLookUpHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory)
     {
-        this._broker = broker;
+        _factory = factory;
     }
 
     public async Task<Result<ListItemsProvider<CustomerLookUpItem>>> Handle(CustomerLookupRequest request, CancellationToken cancellationToken)
     {
+        var dbContext = _factory.CreateDbContext();
+
         IEnumerable<CustomerLookUpItem> records = Enumerable.Empty<CustomerLookUpItem>();
 
         var query = new ListQueryRequest<CustomerLookUpItem>()
@@ -36,11 +39,11 @@ public sealed record CustomerLookUpHandler : IRequestHandler<CustomerLookupReque
             Cancellation = cancellationToken
         };
 
-        var result = await _broker.ExecuteAsync<CustomerLookUpItem>(query);
+        var result = await dbContext.GetItemsAsync<CustomerLookUpItem>(query);
 
         if (!result.HasSucceeded(out ListItemsProvider<CustomerLookUpItem>? listResult))
             return result.ConvertFail<ListItemsProvider<CustomerLookUpItem>>();
 
-        return Result<ListItemsProvider<CustomerLookUpItem>>.Success( new(listResult.Items, listResult.TotalCount));
+        return Result<ListItemsProvider<CustomerLookUpItem>>.Success(new(listResult.Items, listResult.TotalCount));
     }
 }

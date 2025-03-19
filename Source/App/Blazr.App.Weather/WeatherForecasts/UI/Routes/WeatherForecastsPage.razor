@@ -1,8 +1,8 @@
 ﻿@page "/weather"
 @namespace Blazr.App.Weather.UI
 
-<WeatherForecastGridForm/>
+<WeatherForecastGridForm GridContextId="RouteId"/>
 
 @code {
-
+    private static Guid RouteId = Guid.NewGuid();
 }

@@ -14,6 +14,7 @@ public sealed class WeatherForecastMap
         {
       Id = new(item.WeatherForecastID),
             Date = new(item.Date),
+            OwnerId = new(item.OwnerID),
             Temperature = new(item.Temperature),
             Summary = item.Summary ?? "Not Defined"
         };
@@ -23,6 +24,7 @@ public sealed class WeatherForecastMap
             Id = new(item.WeatherForecastID),
             Date = new(item.Date),
             Temperature = new(item.Temperature),
+            OwnerId = new(item.OwnerID),
             Summary = item.Summary ?? "Not Defined"
         };
 
@@ -30,6 +32,7 @@ public sealed class WeatherForecastMap
         => new()
         {
             WeatherForecastID = item.Id.Value,
+            OwnerID = item.OwnerId.Value,
             Date = item.Date.Value.ToDateTime(TimeOnly.MinValue),
             Temperature = item.Temperature.TemperatureC,
             Summary = item.Summary

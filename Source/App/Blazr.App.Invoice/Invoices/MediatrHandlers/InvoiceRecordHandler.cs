@@ -3,33 +3,37 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.App.Invoice.Infrastructure.Server;
 using Blazr.Antimony.Core;
+using Blazr.Antimony.Infrastructure.Server;
 using Blazr.App.Invoice.Core;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
+namespace Blazr.App.Invoice.Infrastructure.Server;
 
 /// <summary>
 /// Mediator Handler to get an Invoice Entity - A DmoInvoice object
 /// </summary>
 public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceRequests.InvoiceRecordRequest, Result<DmoInvoice>>
 {
-    private IRecordRequestBroker _broker;
+    private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public InvoiceRecordHandler(IRecordRequestBroker broker)
+    public InvoiceRecordHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory)
     {
-        _broker = broker;
+        _factory = factory;
     }
 
     public async Task<Result<DmoInvoice>> Handle(InvoiceRequests.InvoiceRecordRequest request, CancellationToken cancellationToken)
     {
+        var dbContext = _factory.CreateDbContext();
+
         Expression<Func<DvoInvoice, bool>> findExpression = (item) =>
             item.InvoiceID == request.Id.Value;
 
         var query = new RecordQueryRequest<DvoInvoice>(findExpression);
 
-        var result = await _broker.ExecuteAsync<DvoInvoice>(query);
+        var result = await dbContext.GetRecordAsync<DvoInvoice>(query);
 
         if (!result.HasSucceeded(out DvoInvoice? record))
             return result.ConvertFail<DmoInvoice>();

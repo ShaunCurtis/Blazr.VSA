@@ -31,22 +31,4 @@ public sealed class InMemoryWeatherTestDbContext
                    }).HasKey(x => x.WeatherForecastID);
 
     }
-
-    public async ValueTask<Result<TRecord>> ExecuteCommandAsync<TRecord>(CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
-        where TRecord : class
-    {
-        return await DbBroker<InMemoryWeatherTestDbContext>.ExecuteCommandAsync<TRecord>(this, request, cancellationToken);
-    }
-
-    public async ValueTask<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(ListQueryRequest<TRecord> request)
-    where TRecord : class
-    {
-        return await DbBroker<InMemoryWeatherTestDbContext>.GetItemsAsync<TRecord>(this, request);
-    }
-
-    public async ValueTask<Result<TRecord>> GetRecordAsync<TRecord>(RecordQueryRequest<TRecord> request)
-    where TRecord : class
-    {
-        return await DbBroker<InMemoryWeatherTestDbContext>.GetRecordAsync<TRecord>(this, request);
-    }
 }

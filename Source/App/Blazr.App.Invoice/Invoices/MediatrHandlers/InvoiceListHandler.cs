@@ -4,8 +4,10 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony.Core;
+using Blazr.Antimony.Infrastructure.Server;
 using Blazr.App.Invoice.Core;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using static Blazr.App.Invoice.Core.InvoiceRequests;
 
@@ -17,15 +19,17 @@ namespace Blazr.App.Invoice.Infrastructure.Server;
 /// </summary>
 public sealed class InvoiceListHandler : IRequestHandler<InvoiceListRequest, Result<ListItemsProvider<DmoInvoice>>>
 {
-    private IListRequestBroker _broker;
+    private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public InvoiceListHandler(IListRequestBroker broker)
+    public InvoiceListHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> _factory)
     {
-        this._broker = broker;
+        this._factory = _factory;
     }
 
     public async Task<Result<ListItemsProvider<DmoInvoice>>> Handle(InvoiceListRequest request, CancellationToken cancellationToken)
     {
+        var dbContext = _factory.CreateDbContext();
+
         IEnumerable<DmoInvoice> forecasts = Enumerable.Empty<DmoInvoice>();
 
         var query = new ListQueryRequest<DvoInvoice>()
@@ -38,7 +42,7 @@ public sealed class InvoiceListHandler : IRequestHandler<InvoiceListRequest, Res
             Cancellation = cancellationToken
         };
 
-        var result = await _broker.ExecuteAsync<DvoInvoice>(query);
+        var result = await dbContext.GetItemsAsync<DvoInvoice>(query);
 
         if (!result.HasSucceeded(out ListItemsProvider<DvoInvoice>? listResult))
             return result.ConvertFail<ListItemsProvider<DmoInvoice>>();

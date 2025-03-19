@@ -10,6 +10,7 @@ namespace Blazr.App.Weather.Infrastructure;
 public sealed record DvoWeatherForecast
 {
     [Key] public Guid WeatherForecastID { get; init; } = Guid.Empty;
+    public Guid OwnerID { get; init; } = Guid.Empty;
     public DateTime Date { get; init; }
     public decimal Temperature { get; set; }
     public string? Summary { get; set; }

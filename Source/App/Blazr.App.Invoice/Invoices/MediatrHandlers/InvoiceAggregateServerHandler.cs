@@ -4,8 +4,10 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony.Core;
+using Blazr.Antimony.Infrastructure.Server;
 using Blazr.App.Invoice.Core;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace Blazr.App.Invoice.Infrastructure.Server;
@@ -16,17 +18,17 @@ namespace Blazr.App.Invoice.Infrastructure.Server;
 /// </summary>
 public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceRequests.InvoiceRequest, Result<InvoiceComposite>>
 {
-    private readonly IListRequestBroker _listBroker;
-    private readonly IRecordRequestBroker _recordBroker;
+    private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public InvoiceAggregateServerHandler(IRecordRequestBroker recordBroker, IListRequestBroker listBroker)
+    public InvoiceAggregateServerHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory)
     {
-        _listBroker = listBroker;
-        _recordBroker = recordBroker;
+        _factory = factory;
     }
 
     public async Task<Result<InvoiceComposite>> Handle(InvoiceRequests.InvoiceRequest request, CancellationToken cancellationToken)
     {
+        var dbContext = _factory.CreateDbContext();
+
         DmoInvoice? invoice = null;
         
         {
@@ -34,7 +36,7 @@ public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceReque
                 item.InvoiceID == request.Id.Value;
 
             var query = new RecordQueryRequest<DvoInvoice>(findExpression);
-            var result = await _recordBroker.ExecuteAsync<DvoInvoice>(query);
+            var result = await dbContext.GetRecordAsync<DvoInvoice>(query);
             
             if (!result.HasSucceeded(out DvoInvoice? record))
                 return result.ConvertFail<InvoiceComposite>();
@@ -48,7 +50,7 @@ public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceReque
                 item.InvoiceID == request.Id.Value;
             
             var query = new ListQueryRequest<DboInvoiceItem>() { FilterExpression=filterExpression };
-            var result = await _listBroker.ExecuteAsync<DboInvoiceItem>(query);
+            var result = await dbContext.GetItemsAsync<DboInvoiceItem>(query);
             
             if (!result.HasSucceeded(out ListItemsProvider<DboInvoiceItem>? records))
                 return result.ConvertFail<InvoiceComposite>();

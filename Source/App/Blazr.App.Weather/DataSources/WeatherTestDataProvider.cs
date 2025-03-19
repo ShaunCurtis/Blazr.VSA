@@ -26,6 +26,7 @@ public sealed class WeatherTestDataProvider
         _weatherForecasts = Enumerable.Range(1, 50).Select(index => new DboWeatherForecast
         {
             WeatherForecastID = Guid.CreateVersion7(),
+            OwnerID = new Guid($"10000000-0000-0000-0000-20000000000{Random.Shared.Next(1, 3)}"),
             Date = startDate.AddDays(index),
             Temperature = new(Random.Shared.Next(-20, 55)),
             Summary = summaries[Random.Shared.Next(summaries.Length)]

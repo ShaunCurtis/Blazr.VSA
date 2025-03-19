@@ -23,7 +23,7 @@ public static class InvoiceApplicationServerServices
         services.AddInvoiceServices();
     }
 
-    public static void AddTestData(IServiceProvider provider)
+    public static void AddInvoiceTestData(this IServiceProvider provider)
     {
         var factory = provider.GetService<IDbContextFactory<InMemoryInvoiceTestDbContext>>();
 

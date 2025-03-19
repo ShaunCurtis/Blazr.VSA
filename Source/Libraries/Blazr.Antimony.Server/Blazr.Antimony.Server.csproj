@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <None Remove="Brokers\CommandServerBroker.cs~RFf4d0b00.TMP" />
+    <None Remove="Brokers\DbBroker - Copy.cs~RF1283eaf.TMP" />
+    <None Remove="Brokers\DbBroker.cs~RF1006479.TMP" />
   </ItemGroup>
 
 	<ItemGroup>

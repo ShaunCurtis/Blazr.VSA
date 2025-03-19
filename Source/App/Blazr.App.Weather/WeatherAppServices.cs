@@ -3,11 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazored.Toast;
-using Blazr.App.Presentation;
-using Blazr.App.Weather.Core;
 using Blazr.App.Weather.Infrastructure;
-using Blazr.Gallium;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,31 +11,6 @@ namespace Blazr.App.Infrastructure.Server;
 
 public static class WeatherApplicationServerServices
 {
-    public static void AddWeatherForecastSharedAppServices(this IServiceCollection services)
-    {
-        // Add MediatR
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
-                typeof(DmoWeatherForecast).Assembly
-                ));
-
-        // Add the Gallium Message Bus Server services
-        services.AddScoped<IMessageBus, MessageBus>();
-
-        // Add the Blazored Toast services
-        services.AddBlazoredToast();
-
-        // InMemory Scoped State Store 
-        services.AddScoped<ScopedStateProvider>();
-
-        // Presenter Factories
-        services.AddScoped<ILookupUIBrokerFactory, LookupUIBrokerFactory>();
-        services.AddScoped<IEditUIBrokerFactory, EditUIBrokerFactory>();
-        services.AddTransient<IReadUIBrokerFactory, ReadUIBrokerFactory>();
-
-        // Add the QuickGrid Entity Framework Adapter
-        services.AddQuickGridEntityFrameworkAdapter();
-    }
-
     public static void AddWeatherAppServices(this IServiceCollection services)
     {
         // Add the InMemory Database
@@ -50,7 +21,7 @@ public static class WeatherApplicationServerServices
         services.AddWeatherForecastServices();
     }
 
-    public static void AddTestData(IServiceProvider provider)
+    public static void AddWeatherTestData(this IServiceProvider provider)
     {
         var factory = provider.GetService<IDbContextFactory<InMemoryWeatherTestDbContext>>();
 
