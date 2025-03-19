@@ -7,6 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="DataSources\InMemoryWeatherTestDbContext.cs~RF2c5409a.TMP" />
+    <None Remove="DataSources\WeatherTestDataProvider.cs~RF2cac9e6.TMP" />
+    <None Remove="Users\EntityObjects\UserMap.cs~RF2b97929.TMP" />
     <None Remove="WeatherForecasts\EntityObjects\DmoWeatherForecast.cs~RF2648f7d.TMP" />
   </ItemGroup>
 
@@ -35,6 +38,7 @@
     <ProjectReference Include="..\..\Libraries\Blazr.FluentValidation\Blazr.FluentValidation.csproj" />
     <ProjectReference Include="..\..\Libraries\Blazr.Gallium\Blazr.Gallium.csproj" />
     <ProjectReference Include="..\..\Libraries\Blazr.UI\Blazr.UI.csproj" />
+    <ProjectReference Include="..\Blazr.App.Shared\Blazr.App.Shared.csproj" />
     <ProjectReference Include="..\Blazr.App\Blazr.App.csproj" />
   </ItemGroup>
 

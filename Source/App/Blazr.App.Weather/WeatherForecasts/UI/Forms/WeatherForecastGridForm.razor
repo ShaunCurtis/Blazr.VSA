@@ -29,6 +29,8 @@
             @context.Temperature.TemperatureF.ToString("F0")
         </SortedPropertyColumn>
 
+        <PropertyColumn Title="Owner" Sortable="true" Property="@(c => c!.Owner)" Align=Align.End />
+
         <PropertyColumn Title="Summary" Sortable="true" Property="@(c => c!.Summary)" Align=Align.End />
 
         <TemplateColumn Class="" Align="Align.End">

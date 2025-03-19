@@ -4,6 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.App.Weather.Infrastructure;
+using Blazr.Auth.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blazr.App.Infrastructure;
@@ -26,7 +27,7 @@ public sealed class WeatherTestDataProvider
         _weatherForecasts = Enumerable.Range(1, 50).Select(index => new DboWeatherForecast
         {
             WeatherForecastID = Guid.CreateVersion7(),
-            OwnerID = new Guid($"10000000-0000-0000-0000-20000000000{Random.Shared.Next(1, 3)}"),
+            OwnerID = new Guid($"10000000-0000-0000-0000-{Random.Shared.Next(1, 3)}0000000000{Random.Shared.Next(1, 3)}"),
             Date = startDate.AddDays(index),
             Temperature = new(Random.Shared.Next(-20, 55)),
             Summary = summaries[Random.Shared.Next(summaries.Length)]
@@ -45,6 +46,23 @@ public sealed class WeatherTestDataProvider
         if (dboWeatherForecasts.Count() == 0)
             dbContext.AddRange(_weatherForecasts);
 
+        dbContext.SaveChanges();
+
+        // Add the users
+        var dboUsers = dbContext.Set<DboUser>();
+
+        List<DboUser> users = new List<DboUser>();
+        foreach (var user in TestIdentities.Identities)
+        {
+            users.Add(new DboUser
+            {
+                UserID = user.Id,
+                Name = user.Name,
+                Role = user.Role
+            });
+        }
+
+        dbContext.AddRange(users);
         dbContext.SaveChanges();
     }
 

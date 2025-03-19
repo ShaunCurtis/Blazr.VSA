@@ -13,7 +13,7 @@ public static class TestIdentities
 
     public static ClaimsIdentity GetIdentity(string userName)
     {
-        var identity = identities.FirstOrDefault(item => item.Name.Equals(userName, StringComparison.OrdinalIgnoreCase));
+        var identity = Identities.FirstOrDefault(item => item.Name.Equals(userName, StringComparison.OrdinalIgnoreCase));
         if (identity == null)
             return new ClaimsIdentity();
 
@@ -22,14 +22,14 @@ public static class TestIdentities
     
     public static ClaimsIdentity GetIdentity(Guid token)
     {
-        var identity = identities.FirstOrDefault(item => item.Id == token);
+        var identity = Identities.FirstOrDefault(item => item.Id == token);
         if (identity == null)
             return new ClaimsIdentity();
 
         return new ClaimsIdentity(identity.Claims, Provider);
     }
 
-    private static List<TestIdentity> identities = new List<TestIdentity>()
+    public static List<TestIdentity> Identities = new List<TestIdentity>()
         {
             Visitor1Identity, 
             Visitor2Identity, 
@@ -42,14 +42,14 @@ public static class TestIdentities
     public static List<string> GetTestIdentities()
     {
         var list = new List<string> { "None" };
-        list.AddRange(identities.Select(identity => identity.Name!).ToList());
+        list.AddRange(Identities.Select(identity => identity.Name!).ToList());
         return list;
     }
 
     public static Dictionary<Guid, string> TestIdentitiesDictionary()
     {
         var list = new Dictionary<Guid, string>();
-        identities.ForEach(identity => list.Add(identity.Id, identity.Name));
+        Identities.ForEach(identity => list.Add(identity.Id, identity.Name));
         return list;
     }
 

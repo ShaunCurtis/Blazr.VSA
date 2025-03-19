@@ -15,6 +15,7 @@ public sealed class WeatherForecastMap
       Id = new(item.WeatherForecastID),
             Date = new(item.Date),
             OwnerId = new(item.OwnerID),
+            Owner = item.Owner ?? "Not Defined",
             Temperature = new(item.Temperature),
             Summary = item.Summary ?? "Not Defined"
         };
@@ -25,6 +26,7 @@ public sealed class WeatherForecastMap
             Date = new(item.Date),
             Temperature = new(item.Temperature),
             OwnerId = new(item.OwnerID),
+            Owner = "Not Defined",
             Summary = item.Summary ?? "Not Defined"
         };
 

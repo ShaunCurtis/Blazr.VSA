@@ -12,6 +12,6 @@ public sealed record DboWeatherForecast : ICommandEntity
     [Key] public Guid WeatherForecastID { get; init; } = Guid.Empty;
     public Guid OwnerID { get; init; } = Guid.Empty;
     public DateTime Date { get; init; }
-    public decimal Temperature { get; set; }
-    public string? Summary { get; set; }
+    public decimal Temperature { get; init; }
+    public string? Summary { get; init; }
 }

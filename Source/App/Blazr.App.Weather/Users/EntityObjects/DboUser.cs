@@ -7,12 +7,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Blazr.App.Weather.Infrastructure;
 
-public sealed record DvoWeatherForecast
+public sealed record DboUser : ICommandEntity
 {
-    [Key] public Guid WeatherForecastID { get; init; } = Guid.Empty;
-    public Guid OwnerID { get; init; } = Guid.Empty;
-    public string Owner { get; set; } = "[Not Set]";
-    public DateTime Date { get; init; }
-    public decimal Temperature { get; set; }
-    public string? Summary { get; set; }
+    [Key] public Guid UserID { get; init; } = Guid.Empty;
+    public string Name { get; init; } = "[Not Set]";
+    public string Role { get; init; } = "VisitorRole";
 }

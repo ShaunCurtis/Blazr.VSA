@@ -30,7 +30,7 @@ public sealed class InMemoryInvoiceTestDbContext
         modelBuilder.Entity<DboInvoiceItem>().ToTable("InvoiceItems");
         modelBuilder.Entity<DvoInvoice>()
             .ToInMemoryQuery(()
-                => from i in this.Invoices
+                => from i in this.Invoices 
                    join c in this.Customers! on i.CustomerID equals c.CustomerID
                    select new DvoInvoice
                    {
