@@ -3,10 +3,6 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazored.Toast;
-using Blazr.Antimony.Infrastructure.Server;
-using Blazr.App.Presentation;
-using Blazr.Gallium;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,41 +16,13 @@ public static class InvoiceApplicationServerServices
         services.AddDbContextFactory<InMemoryInvoiceTestDbContext>(options
             => options.UseInMemoryDatabase($"TestDatabase-{Guid.NewGuid().ToString()}"));
 
-        // Add MediatR
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
-                typeof(DmoCustomer).Assembly
-                ));
-
-        // Add the Gallium Message Bus Server services
-        services.AddScoped<IMessageBus, MessageBus>();
-
-        // Add the Blazored Toast services
-        services.AddBlazoredToast();
-
-        // Add the standard Antimony Server handlers used by simple entities
-        services.AddScoped<IListRequestBroker, ListRequestServerBroker<InMemoryInvoiceTestDbContext>>();
-        services.AddScoped<IRecordRequestBroker, RecordRequestServerBroker<InMemoryInvoiceTestDbContext>>();
-        services.AddScoped<ICommandBroker, CommandServerBroker<InMemoryInvoiceTestDbContext>>();
-
         // Add Custom Handlers
         services.AddScoped<ICommandBroker<InvoiceComposite>, InvoiceCommandServerBroker<InMemoryInvoiceTestDbContext>>();
-
-        // InMemory Scoped State Store 
-        services.AddScoped<ScopedStateProvider>();
-
-        // Presenter Factories
-        services.AddScoped<ILookupUIBrokerFactory, LookupUIBrokerFactory>();
-        services.AddScoped<IEditUIBrokerFactory, EditUIBrokerFactory>();
-        services.AddTransient<IReadUIBrokerFactory, ReadUIBrokerFactory>();
-
-        // Add the QuickGrid Entity Framework Adapter
-        services.AddQuickGridEntityFrameworkAdapter();
 
         // Add any individual entity services
         services.AddCustomerServices();
         services.AddInvoiceServices();
-        //services.AddInvoiceItemInfrastructureServices();
-   }
+    }
 
     public static void AddTestData(IServiceProvider provider)
     {

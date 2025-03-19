@@ -3,7 +3,9 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Blazr.Antimony.Infrastructure.Server;
 using Blazr.App.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace Blazr.App.Infrastructure.Server;
 
@@ -12,21 +14,24 @@ namespace Blazr.App.Infrastructure.Server;
 /// </summary>
 public sealed class WeatherForecastRecordHandler : IRequestHandler<WeatherForecastRecordRequest, Result<DmoWeatherForecast>>
 {
-    private IRecordRequestBroker _broker;
+    private IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
 
-    public WeatherForecastRecordHandler(IRecordRequestBroker broker)
+    public WeatherForecastRecordHandler(IDbContextFactory<InMemoryWeatherTestDbContext> dbContextFactory)
     {
-        _broker = broker;
+        _factory = dbContextFactory;
     }
 
     public async Task<Result<DmoWeatherForecast>> Handle(WeatherForecastRecordRequest request, CancellationToken cancellationToken)
     {
+        using var context = _factory.CreateDbContext();
+
         Expression<Func<DvoWeatherForecast, bool>> findExpression = (item) =>
             item.WeatherForecastID == request.Id.Value;
 
         var query = new RecordQueryRequest<DvoWeatherForecast>(findExpression);
 
-        var result = await _broker.ExecuteAsync<DvoWeatherForecast>(query);
+        var result = await RecordRequestServerBroker<InMemoryWeatherTestDbContext>
+            .GetRecordAsync<DvoWeatherForecast>(context, query);
 
         if (!result.HasSucceeded(out DvoWeatherForecast? record))
             return result.ConvertFail<DmoWeatherForecast>();

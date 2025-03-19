@@ -19,13 +19,16 @@ public sealed class RecordRequestServerBroker<TDbContext>
     public async ValueTask<Result<TRecord>> ExecuteAsync<TRecord>(RecordQueryRequest<TRecord> request)
         where TRecord : class
     {
-        return await this.GetItemAsync<TRecord>(request);
+        using var dbContext = _factory.CreateDbContext();
+
+        var result = await GetRecordAsync<TRecord>(dbContext, request);
+
+        return result;
     }
 
-    private async ValueTask<Result<TRecord>> GetItemAsync<TRecord>(RecordQueryRequest<TRecord> request)
+    public static async ValueTask<Result<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
         where TRecord : class
     {
-        using var dbContext = _factory.CreateDbContext();
         dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
         var record = await dbContext.Set<TRecord>()

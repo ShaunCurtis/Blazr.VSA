@@ -18,10 +18,6 @@ public static class ApplicationServerServices
 {
     public static void AddAppServices(this IServiceCollection services)
     {
-        // Add the InMemory Database
-        services.AddDbContextFactory<InMemoryInvoiceTestDbContext>(options
-            => options.UseInMemoryDatabase($"TestDatabase-{Guid.NewGuid().ToString()}"));
-
         // Add MediatR
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
                 typeof(DmoCustomer).Assembly
@@ -37,9 +33,6 @@ public static class ApplicationServerServices
         services.AddScoped<IListRequestBroker, ListRequestServerBroker<InMemoryInvoiceTestDbContext>>();
         services.AddScoped<IRecordRequestBroker, RecordRequestServerBroker<InMemoryInvoiceTestDbContext>>();
         services.AddScoped<ICommandBroker, CommandServerBroker<InMemoryInvoiceTestDbContext>>();
-
-        // Add Custom Handlers
-        services.AddScoped<ICommandBroker<InvoiceComposite>, InvoiceCommandServerBroker<InMemoryInvoiceTestDbContext>>();
 
         // InMemory Scoped State Store 
         services.AddScoped<ScopedStateProvider>();

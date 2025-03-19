@@ -15,12 +15,8 @@ namespace Blazr.App.Infrastructure.Server;
 
 public static class WeatherApplicationServerServices
 {
-    public static void AddWeatherAppServices(this IServiceCollection services)
+    public static void AddWeatherForecastSharedAppServices(this IServiceCollection services)
     {
-        // Add the InMemory Database
-        services.AddDbContextFactory<InMemoryWeatherTestDbContext>(options
-            => options.UseInMemoryDatabase($"TestDatabase-{Guid.NewGuid().ToString()}"));
-
         // Add MediatR
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
                 typeof(DmoWeatherForecast).Assembly
@@ -47,6 +43,13 @@ public static class WeatherApplicationServerServices
 
         // Add the QuickGrid Entity Framework Adapter
         services.AddQuickGridEntityFrameworkAdapter();
+    }
+
+    public static void AddWeatherAppServices(this IServiceCollection services)
+    {
+        // Add the InMemory Database
+        services.AddDbContextFactory<InMemoryWeatherTestDbContext>(options
+            => options.UseInMemoryDatabase($"TestDatabase-{Guid.NewGuid().ToString()}"));
 
         // Add any individual entity services
         services.AddWeatherForecastServices();
