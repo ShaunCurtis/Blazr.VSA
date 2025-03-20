@@ -20,41 +20,36 @@ public static class DbBroker<TDbContext>
             return Result<TRecord>.Fail(new CommandException($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly."));
 
         var stateRecord = request.Item;
-
-        // First check if it's new.
-        if (request.State == CommandState.Add)
+        var result = 0;
+        switch (request.State.Index)
         {
-            dbContext.Add<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            case CommandState.StateAdd:
+                dbContext.Add<TRecord>(request.Item);
+                result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-            return result == 1
-                ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail(new CommandException("Error adding Record"));
+                return result == 1
+                    ? Result<TRecord>.Success(request.Item)
+                    : Result<TRecord>.Fail(new CommandException("Error adding Record"));
+
+            case CommandState.StateDelete:
+                dbContext.Remove<TRecord>(request.Item);
+                result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+                return result == 1
+                    ? Result<TRecord>.Success(request.Item)
+                    : Result<TRecord>.Fail(new CommandException("Error deleting Record"));
+
+            case CommandState.StateUpdate:
+                dbContext.Update<TRecord>(request.Item);
+                result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+                return result == 1
+                    ? Result<TRecord>.Success(request.Item)
+                    : Result<TRecord>.Fail(new CommandException("Error saving Record"));
+
+            default:
+                return Result<TRecord>.Fail(new CommandException("Nothing executed.  Unrecognised State."));
         }
-
-        // Check if we should delete it
-        if (request.State == CommandState.Delete)
-        {
-            dbContext.Remove<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
-            return result == 1
-                ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail(new CommandException("Error deleting Record"));
-        }
-
-        // Finally it changed
-        if (request.State == CommandState.Update)
-        {
-            dbContext.Update<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
-            return result == 1
-                ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail(new CommandException("Error saving Record"));
-        }
-
-        return Result<TRecord>.Fail(new CommandException("Nothing executed.  Unrecognised State."));
     }
 
     public static async ValueTask<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
@@ -106,7 +101,7 @@ public static class DbBroker<TDbContext>
 
         var record = await dbContext.Set<TRecord>()
             .FirstOrDefaultAsync(request.FindExpression)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (record is null)
             return Result<TRecord>.Fail(new RecordQueryException($"No record retrieved with the Key provided"));

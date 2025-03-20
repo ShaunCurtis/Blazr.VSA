@@ -5,16 +5,7 @@
 /// ============================================================
 namespace Blazr.Antimony.Core;
 
-public record RecordQueryRequest<TRecord>
-{
-    public Expression<Func<TRecord, bool>> FindExpression { get; private init; }
-    public CancellationToken Cancellation { get; private init; }
-
-    public RecordQueryRequest(Expression<Func<TRecord, bool>> expression, CancellationToken? cancellation = null)
-    {
-        this.FindExpression = expression;
-        this.Cancellation = cancellation ?? new(); 
-    }
-    public static RecordQueryRequest<TRecord> Create(Expression<Func<TRecord, bool>> expression, CancellationToken? cancellation = null)
-        => new RecordQueryRequest<TRecord>(expression, cancellation ?? new());
-}
+public record RecordQueryRequest<TRecord>(
+    Expression<Func<TRecord, bool>> FindExpression,
+    CancellationToken? Cancellation = null
+);
