@@ -19,16 +19,6 @@ public sealed class WeatherForecastMap
             Temperature = new(item.Temperature),
             Summary = item.Summary ?? "Not Defined"
         };
-    public static DmoWeatherForecast Map(DboWeatherForecast item)
-        => new()
-        {
-            Id = new(item.WeatherForecastID),
-            Date = new(item.Date),
-            Temperature = new(item.Temperature),
-            OwnerId = new(item.OwnerID),
-            Owner = "Not Defined",
-            Summary = item.Summary ?? "Not Defined"
-        };
 
     public static DboWeatherForecast Map(DmoWeatherForecast item)
         => new()

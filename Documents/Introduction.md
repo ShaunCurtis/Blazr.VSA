@@ -1,4 +1,4 @@
-# An introduction to Antimony
+# An Introduction to Antimony
 
 Antimony is my implementation of the CQS pattern in DotNetCore. It is a simple library that provides the building blocks for implementing the CQS and Mediator patterns in your application.
 
@@ -147,13 +147,13 @@ The `DbContext` as an extension method:
 
 ### Commands
 
-The command pipeline is used to modify the database.  The `CommandRequest` is defined as:
+The command pipeline is used to modify records in the data store.  The `CommandRequest` is defined as:
 
 ```csharp
 public record CommandRequest<TRecord>(TRecord Item, CommandState State );
 ```
 
-CommandState defines the state of the command *Create/Update/Delete*:
+CommandState defines the command state i.e. *Create/Update/Delete*:
 
 ```csharp
 public readonly record struct CommandState
@@ -198,7 +198,7 @@ public readonly record struct CommandState
 }
 ```
 
-The execute method:
+The execute method.  Note it returns a `Result<TRecord>`, where `TRecord` is the updated record.  The calling may need to know the identity of an added record.
 
 ```csharp
 public static async ValueTask<Result<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
@@ -241,4 +241,85 @@ public static async ValueTask<Result<TRecord>> ExecuteCommandAsync<TRecord>(TDbC
     }
 }
 ```
+
+The `DbContext` extension method:
+
+```csharp
+    public static async ValueTask<Result<TRecord>> ExecuteCommandAsync<TRecord>(this DbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+    where TRecord : class
+    {
+        return await DbBroker<DbContext>.ExecuteCommandAsync(dbContext, request, cancellationToken);
+    }
+```
+
+## Integrating with the Mediator Pattern
+
+The demo app uses the Weather Forecast example from the Microsoft documentation. within the app, the `WeatherForecast` domain entity is defined as:
+
+```csharp
+public sealed record DmoWeatherForecast : ICommandEntity
+{
+    public WeatherForecastId Id { get; init; } = new(Guid.Empty);
+    public IdentityId OwnerId { get; init; } = new(Guid.Empty);
+    public string Owner { get; init; } = string.Empty;
+    public Date Date { get; init; }
+    public Temperature Temperature { get; set; }
+    public string Summary { get; set; } = "Not Defined";
+}
+```
+
+We can create Mediatr requests for the `RecordRequest`, `ListRequest` and `CommandRequest`.  I'll just cover the `RecordRequest` here:
+
+The request object is simple, just containing the identity field `WeatherForecastId`:
+
+```csharp
+public readonly record struct WeatherForecastRecordRequest(WeatherForecastId Id) 
+    : IRequest<Result<DmoWeatherForecast>>;
+```
+
+The handler:
+
+1. Creates a *unit of work* `DbContext` from the factory.
+1. Creates the predicate expression for finding the record.
+1. Calls the `GetRecordAsync` extension method on the `DbContext`.
+1. Converts the data store DTO record to the domain entity.
+1. Returns the result as a `Result<DmoWeatherForecast>`.
+ 
+```csharp
+public sealed class WeatherForecastRecordHandler : IRequestHandler<WeatherForecastRecordRequest, Result<DmoWeatherForecast>>
+{
+    private IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
+
+    public WeatherForecastRecordHandler(IDbContextFactory<InMemoryWeatherTestDbContext> dbContextFactory)
+    {
+        _factory = dbContextFactory;
+    }
+
+    public async Task<Result<DmoWeatherForecast>> Handle(WeatherForecastRecordRequest request, CancellationToken cancellationToken)
+    {
+        using var dbContext = _factory.CreateDbContext();
+
+        Expression<Func<DvoWeatherForecast, bool>> findExpression = (item) =>
+            item.WeatherForecastID == request.Id.Value;
+
+        var query = new RecordQueryRequest<DvoWeatherForecast>(findExpression);
+
+        var result = await dbContext.GetRecordAsync<DvoWeatherForecast>(query);
+
+        if (result.HasNotSucceeded(out DvoWeatherForecast? record))
+            return result.ConvertFail<DmoWeatherForecast>();
+
+        var returnItem = WeatherForecastMap.Map(record);
+
+        return Result<DmoWeatherForecast>.Success(returnItem);
+    }
+}
+```
+
+So, from the front end you can simply call:
+
+```csharp
+Task<Result<DmoWeatherForecast>> result = _mediator.Send(new WeatherForecastRecordRequest(id))
+```
+
 

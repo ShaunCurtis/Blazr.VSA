@@ -30,7 +30,7 @@ public class AuthorizeButton : ComponentBase
     [Inject] protected IAuthorizationService? _authorizationService { get; set; }
     protected IAuthorizationService AuthorizationService => _authorizationService!;
 
-    protected CSSBuilder CssClass = new CSSBuilder("btn me-1");
+    protected CSSBuilder CssClass = new CSSBuilder();
 
     protected override void OnInitialized()
     {

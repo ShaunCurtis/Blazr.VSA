@@ -5,4 +5,5 @@
 /// ============================================================
 namespace Blazr.App.Weather.Core;
 
-public readonly record struct WeatherForecastRecordRequest(WeatherForecastId Id) : IRequest<Result<DmoWeatherForecast>>;
+public readonly record struct WeatherForecastRecordRequest(WeatherForecastId Id) 
+    : IRequest<Result<DmoWeatherForecast>>;

@@ -8,7 +8,9 @@ using Blazr.App.Invoice.Core;
 using Blazr.App.Invoice.Infrastructure.Server;
 using Blazr.App.Presentation;
 using Blazr.App.Weather.Core;
+using Blazr.Auth.Core;
 using Blazr.Gallium;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Blazr.App.Infrastructure.Server;
 
@@ -16,6 +18,16 @@ public static class ApplicationServerServices
 {
     public static void AddAppServices(this IServiceCollection services)
     {
+        services.AddScoped<AuthenticationStateProvider, VerySimpleAuthenticationStateProvider>();
+        services.AddAppPolicyServices();
+        services.AddAuthorization(config =>
+        {
+            foreach (var policy in AppPolicies.Policies)
+            {
+                config.AddPolicy(policy.Key, policy.Value);
+            }
+        });
+
         // Add MediatR
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
                 typeof(DmoCustomer).Assembly

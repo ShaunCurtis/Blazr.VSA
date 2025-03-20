@@ -40,7 +40,7 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
 
         var result = await dbContext.GetItemsAsync<DvoWeatherForecast>(query);
 
-        if (!result.HasSucceeded(out ListItemsProvider<DvoWeatherForecast>? listResult))
+        if (result.HasNotSucceeded(out ListItemsProvider<DvoWeatherForecast>? listResult))
             return result.ConvertFail<ListItemsProvider<DmoWeatherForecast>>();
 
         var list = listResult.Items.Select(item => WeatherForecastMap.Map(item));

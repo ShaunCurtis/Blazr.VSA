@@ -35,7 +35,7 @@ public sealed record WeatherForecastCommandHandler : IRequestHandler<WeatherFore
             State: request.State
         ), cancellationToken);
 
-        if (!result.HasSucceeded(out DboWeatherForecast? record))
+        if (result.HasNotSucceeded(out DboWeatherForecast? record))
             return result.ConvertFail<WeatherForecastId>();
 
         var id = new WeatherForecastId(record.WeatherForecastID);

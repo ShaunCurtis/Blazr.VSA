@@ -33,7 +33,7 @@ public sealed class WeatherForecastRecordHandler : IRequestHandler<WeatherForeca
 
         var result = await dbContext.GetRecordAsync<DvoWeatherForecast>(query);
 
-        if (!result.HasSucceeded(out DvoWeatherForecast? record))
+        if (result.HasNotSucceeded(out DvoWeatherForecast? record))
             return result.ConvertFail<DmoWeatherForecast>();
 
         var returnItem = WeatherForecastMap.Map(record);

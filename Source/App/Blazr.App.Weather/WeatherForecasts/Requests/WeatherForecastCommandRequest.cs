@@ -6,7 +6,5 @@
 
 namespace Blazr.App.Weather.Core;
 
-public readonly record struct WeatherForecastCommandRequest(
-        DmoWeatherForecast Item,
-        CommandState State)
+public readonly record struct WeatherForecastCommandRequest(DmoWeatherForecast Item, CommandState State)
     : IRequest<Result<WeatherForecastId>>;

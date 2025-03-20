@@ -40,6 +40,7 @@
     <ProjectReference Include="..\..\Libraries\Blazr.UI\Blazr.UI.csproj" />
     <ProjectReference Include="..\Blazr.App.Shared\Blazr.App.Shared.csproj" />
     <ProjectReference Include="..\Blazr.App\Blazr.App.csproj" />
+    <ProjectReference Include="..\Blazr.Auth\Blazr.Auth.csproj" />
   </ItemGroup>
 
   <ItemGroup>
