@@ -26,7 +26,7 @@ public sealed class WeatherForecastEditContext : BaseRecordEditContext<DmoWeathe
 
     public WeatherForecastEditContext(DmoWeatherForecast record) : base(record) { }
 
-    public override IDataResult Load(DmoWeatherForecast record)
+    public override IResult Load(DmoWeatherForecast record)
     {
         if (!this.BaseRecord.Id.IsDefault)
             return DataResult.Failure("A record has already been loaded.  You can't overload it.");

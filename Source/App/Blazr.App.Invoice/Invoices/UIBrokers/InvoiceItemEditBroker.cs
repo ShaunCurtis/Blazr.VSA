@@ -16,7 +16,7 @@ public sealed class InvoiceItemEditBroker
     private readonly InvoiceComposite _invoice;
     private InvoiceItemId _invoiceItemId = InvoiceItemId.Default;
 
-    public IDataResult LastResult { get; private set; } = DataResult.Success();
+    public IResult LastResult { get; private set; } = Result.Success();
     public EditContext EditContext { get; private set; }
     public DmoInvoiceItemEditContext RecordEditContext { get; private set; }
     public bool IsNew { get; private set; }
@@ -38,12 +38,12 @@ public sealed class InvoiceItemEditBroker
         this.EditContext = new(this.RecordEditContext);
     }
 
-    public Task<IDataResult> ProcessItemAsync()
+    public Task<IResult> ProcessItemAsync()
     {
 
         if (!this.RecordEditContext.IsDirty)
         {
-            this.LastResult = DataResult.Failure("The record has not changed and therefore has not been updated.");
+            this.LastResult = Result.Failure("The record has not changed and therefore has not been updated.");
             _toastService.ShowWarning("The record has not changed and therefore has not been updated.");
             return Task.FromResult(this.LastResult);
         }
@@ -56,20 +56,20 @@ public sealed class InvoiceItemEditBroker
             {
                 var message = "The Invoice Item was added to the invoice.";
                 _toastService.ShowSuccess(message);
-                this.LastResult = DataResult.Success(message);
+                this.LastResult = Result.Success();
             }
             else
             {
                 var message = "The Invoice Item could not be added to the invoice.";
                 _toastService.ShowError(message);
-                this.LastResult = DataResult.Failure(message);
+                this.LastResult = Result.Failure(message);
             }
 
             return Task.FromResult(this.LastResult);
         }
 
         var updateResult = _invoice.Dispatch(new InvoiceActions.UpdateInvoiceItemAction(this.RecordEditContext.AsRecord));
-        this.LastResult = updateResult.ToDataResult;
+        this.LastResult = updateResult;
 
         if (updateResult.IsSuccess)
             _toastService.ShowSuccess("The invoice item was updated.");
@@ -79,21 +79,21 @@ public sealed class InvoiceItemEditBroker
         return Task.FromResult(this.LastResult);
     }
 
-    public Task<IDataResult> DeleteItemAsync()
+    public Task<IResult> DeleteItemAsync()
     {
         if (IsNew)
         {
             var message = "You can't delete an item that you haven't created.";
             _toastService.ShowError(message);
-            this.LastResult = DataResult.Failure(message);
+            this.LastResult = Result.Failure(message);
 
             return Task.FromResult(this.LastResult);
         }
 
         var deleteResult = _invoice.Dispatch(new InvoiceActions.DeleteInvoiceItemAction(this.RecordEditContext.Id));
-        this.LastResult = deleteResult.ToDataResult;
+        this.LastResult = deleteResult;
 
-        if (this.LastResult.Successful)
+        if (this.LastResult.IsSuccess)
             _toastService.ShowSuccess("The invoice item was deleted.");
         else
             _toastService.ShowError(this.LastResult.Message ?? "The Invoice Item could not be deleted from the invoice.");

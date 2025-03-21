@@ -10,7 +10,7 @@ namespace Blazr.App.Presentation;
 public interface IEditUIBroker<TRecordEditContext, TKey>
         where TKey : notnull, IEntityId
 {
-    public IDataResult LastResult { get; }
+    public IResult LastResult { get; }
     public TRecordEditContext EditMutator { get; }
     public EditContext EditContext { get; }
     public CommandState CommandState { get; }

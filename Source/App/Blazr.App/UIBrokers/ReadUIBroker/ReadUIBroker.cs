@@ -17,7 +17,7 @@ public class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>, IDispos
 
     public TRecord Item { get; protected set; } = new TRecord();
     public event EventHandler? RecordChanged;
-    public IDataResult LastResult { get; protected set; } = DataResult.Success();
+    public IResult LastResult { get; protected set; } = DataResult.Success();
 
     public ReadUIBroker(IEntityProvider<TRecord, TKey> entityProvider, IMessageBus messageBus)
     {

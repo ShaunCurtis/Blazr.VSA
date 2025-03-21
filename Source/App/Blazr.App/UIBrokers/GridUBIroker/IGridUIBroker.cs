@@ -13,11 +13,11 @@ public interface IGridUIBroker<TRecord>
 {
     public Guid StateContextUid { get; }
     public GridState<TRecord> GridState { get; }
-    public IDataResult LastResult { get; }
+    public IResult LastResult { get; }
 
     public event EventHandler<EventArgs>? StateChanged;
 
     public void SetContext(Guid context);
     public ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync();
-    public IDataResult DispatchGridStateChange(UpdateGridRequest<TRecord> request);
+    public IResult DispatchGridStateChange(UpdateGridRequest<TRecord> request);
 }

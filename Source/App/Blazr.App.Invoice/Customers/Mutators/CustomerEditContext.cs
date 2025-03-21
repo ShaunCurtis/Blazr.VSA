@@ -22,7 +22,7 @@ public sealed class CustomerEditContext : BaseRecordEditContext<DmoCustomer, Cus
 
     public CustomerEditContext(DmoCustomer record) : base(record) { }
 
-    public override IDataResult Load(DmoCustomer record)
+    public override IResult Load(DmoCustomer record)
     {
         if (!this.BaseRecord.Id.IsDefault)
             return DataResult.Failure("A record has already been loaded.  You can't overload it.");
