@@ -13,10 +13,11 @@ namespace Blazr.App.Core;
 public abstract class BaseRecordEditContext<TRecord, TKey>
     where TRecord : class, new()
 {
-    public TRecord BaseRecord { get; protected set; } 
-        = new();
+    public TRecord BaseRecord { get; protected set; } = new();
 
     public abstract TRecord AsRecord { get; }
+
+    public bool IsDirty => this.BaseRecord != this.AsRecord;
 
     public BaseRecordEditContext()
     {
@@ -27,9 +28,6 @@ public abstract class BaseRecordEditContext<TRecord, TKey>
     {
         this.Load(record);
     }
-
-    public bool IsDirty 
-        => this.BaseRecord != this.AsRecord;
 
     public abstract IDataResult Load(TRecord record);
 

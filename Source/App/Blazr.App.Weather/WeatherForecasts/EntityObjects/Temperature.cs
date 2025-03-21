@@ -3,15 +3,13 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using System.Text.Json.Serialization;
-
 namespace Blazr.App.Weather.Core;
 
 public readonly record struct Temperature
 {
     public decimal TemperatureC { get; init; } = -273;
-    public bool IsValid { get; init; }
-    [JsonIgnore] public decimal TemperatureF => 32 + (this.TemperatureC / 0.5556m);
+    public bool IsValid { get; private init; }
+    public decimal TemperatureF => 32 + (this.TemperatureC / 0.5556m);
 
     public Temperature() { }
 

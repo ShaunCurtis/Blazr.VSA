@@ -38,7 +38,7 @@ public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceRequests.Invoi
         if (!result.HasSucceeded(out DvoInvoice? record))
             return result.ConvertFail<DmoInvoice>();
 
-        var returnItem = DvoInvoiceMap.Map(record);
+        var returnItem = InvoiceMap.Map(record);
 
         return Result<DmoInvoice>.Success(returnItem);
     }

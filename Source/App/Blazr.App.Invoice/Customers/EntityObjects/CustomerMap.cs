@@ -3,20 +3,13 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.Antimony.Infrastructure;
 using Blazr.App.Invoice.Core;
 
 namespace Blazr.App.Invoice.Infrastructure;
 
-public sealed class DboCustomerMap : IDboEntityMap<DboCustomer, DmoCustomer>
+public sealed class CustomerMap
 {
-    public DmoCustomer MapTo(DboCustomer item)
-        => Map(item);
-
-    public DboCustomer MapTo(DmoCustomer item)
-        => Map(item);
-
-    public static DmoCustomer Map(DboCustomer item)
+    public static DmoCustomer Map(DvoCustomer item)
         => new()
         {
             Id = new(item.CustomerID),

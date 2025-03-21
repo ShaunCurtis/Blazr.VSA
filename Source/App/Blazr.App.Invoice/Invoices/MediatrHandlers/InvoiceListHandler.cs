@@ -47,7 +47,7 @@ public sealed class InvoiceListHandler : IRequestHandler<InvoiceListRequest, Res
         if (!result.HasSucceeded(out ListItemsProvider<DvoInvoice>? listResult))
             return result.ConvertFail<ListItemsProvider<DmoInvoice>>();
 
-        var list = listResult.Items.Select(item => DvoInvoiceMap.Map(item));
+        var list = listResult.Items.Select(item => InvoiceMap.Map(item));
 
         return Result<ListItemsProvider<DmoInvoice>>.Success(new(list, listResult.TotalCount));
     }

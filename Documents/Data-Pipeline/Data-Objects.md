@@ -1,49 +1,58 @@
 #  Data Objects
 
-When data is retrieved from a data source, it's a **copy**.  It's not a pointer to the source data to mutate as you wish: it's read only.
+The application data pipeline is designed on *Clean Design* principles.
 
-That's the philosophy behind `OneWayStreet`.  Data sets are represented as readonly objects.
+Core business objects are defined as entities using value objects where appropriate.
 
-Data is mutated through a controlled process.  Create an editable object from the readonly data object.  Edit that object and then derive a new version of the read only object to pass back through the command pipeline to update the data store.
+All data is *READONLY*: either `record` or `readonly record struct`.  Data retrieved from a data source is a **copy** of the data within the data source.  Data is mutated by creating a new copy, not by changing the copy.
 
-Implementing readonly objects is simple in modern C# using `record` value based objects with `{ get; init; }` property definitions.
+The Weather Forecast entity provides a good example.
 
-The core *WeatherForecast* model object can be defined like this:
+## Entity
+
+The core entity is defined as:
 
 ```csharp
-public sealed record DmoWeatherForecast: ICommandEntity
+public sealed record DmoWeatherForecast : ICommandEntity
 {
-    public WeatherForecastId WeatherForecastId { get; init; } = new(Guid.Empty);
-    public DateOnly Date { get; init; }
-    public Temperature Temperature { get; set; } = new(0);
-    public string? Summary { get; set; }
+    public WeatherForecastId Id { get; init; } = new(Guid.Empty);
+    public IdentityId OwnerId { get; init; } = new(Guid.Empty);
+    public string Owner { get; init; } = string.Empty;
+    public Date Date { get; init; }
+    public Temperature Temperature { get; init; }
+    public string Summary { get; init; } = "Not Defined";
 }
 ```
 
-I'm avoiding *Primitive Obsession* for the Id and temperature.  Both are defined as value objects.
+Note:
+
+1. The object is sealed - there's no business case for inheritance.
+2. It's a record and all the properties are `init` - it's immutable.
+3. The use of a strongly typed Id based on a Guid.
+4. Value objects for the Date and Temperature.
+5. Foreign key strongly typed Id for the owner.
+
 
 ```csharp
-public readonly record struct WeatherForecastId : IEntityKey
+public readonly record struct WeatherForecastId(Guid Value) : IEntityId
 {
-    public Guid Value { get; init; }
-    public object KeyValue => this.Value;
+    public bool IsDefault => this == Default;
+    public static WeatherForecastId Default => new(Guid.Empty);
 
-    public WeatherForecastId(Guid value)
-        => this.Value = value;
-
-    public static WeatherForecastId NewEntity
-        => new(Guid.Empty);
+    public override string ToString()
+    {
+        return Value.ToString();
+    }
 }
 ```
 
-And:
+`Temperature` encapsulates the temperature entity and provides the various unit versions and validation.
 
 ```csharp
 public readonly record struct Temperature
 {
-    public decimal TemperatureC { get; init; }
-    
-    [JsonIgnore]
+    public decimal TemperatureC { get; init; } = -273;
+    public bool IsValid { get; private init; }
     public decimal TemperatureF => 32 + (this.TemperatureC / 0.5556m);
 
     public Temperature() { }
@@ -52,115 +61,200 @@ public readonly record struct Temperature
     /// temperature should be provided in degrees Celcius
     /// </summary>
     /// <param name="temperature"></param>
-    public Temperature(decimal temperature)
+    public Temperature(decimal temperatureAsDegCelcius)
     {
-        this.TemperatureC = temperature;
+        this.TemperatureC = temperatureAsDegCelcius;
+        if (temperatureAsDegCelcius > -273)
+            IsValid = true;
+    }
+
+    public override string ToString()
+    {
+        return this.IsValid ? TemperatureC.ToString() : "Not Valid";
     }
 }
 ```
 
-Stepping down into the *Infrastructure* domain, the database object is represented as `DmoWeatherForecast`:
+`Date` provides validation and string formatting.
 
 ```csharp
-public sealed record DboWeatherForecast : ICommandEntity, IKeyedEntity
+public readonly record struct Date
 {
-    [Key] public Guid WeatherForecastID { get; init; } = Guid.Empty;
-    public DateTime Date { get; init; }
-    public decimal Temperature { get; set; }
-    public string? Summary { get; set; }
+    public DateOnly Value { get; init; }
+     public bool IsValid { get; private init; }
 
-    public object KeyValue => this.WeatherForecastID;
+    public Date() { }
+
+    public Date(DateOnly date)
+    {
+        this.Value = date;
+        if (date > DateOnly.MinValue)
+            this.IsValid = true;
+    }
+
+    public Date(DateTime date)
+    {
+        this.Value = DateOnly.FromDateTime(date);
+        if (date > DateTime.MinValue)
+            this.IsValid = true;
+    }
+
+    public Date(DateTimeOffset date)
+    {
+        this.Value = DateOnly.FromDateTime(date.DateTime);
+        if (date > DateTime.MinValue)
+            this.IsValid = true;
+    }
+
+    public override string ToString()
+    {
+        return this.IsValid ? this.Value.ToString("dd-MMM-yy")  : "Not Valid";
+    }
 }
 ```
 
-Primitives are used here because that's how the data is stored in the  data store [a SQL database].
+## Database Infrastructure Objects
 
-A mapper object provides the connection between the domain and infrastructure objects:
+Entities normal need converting to save and retrieve from data stores.  As we're using a SQL database and records with foreign keys that need views to produce the data for the entity we have a `DboWeatherForecast` database table object that used for commands.  All data queries return a view based `DvoWeatherForecast` object.
+
+Note properties are now primitives and we have the possiblity of nulls.
+
+The database table record to match the database table is:
 
 ```csharp
-public sealed class DboWeatherForecastMap : IDboEntityMap<DboWeatherForecast, DmoWeatherForecast>
+public sealed record DboWeatherForecast : ICommandEntity
 {
-    public DmoWeatherForecast MapTo(DboWeatherForecast item)
-        => Map(item);
+    [Key] public Guid WeatherForecastID { get; init; } = Guid.Empty;
+    public Guid OwnerID { get; init; } = Guid.Empty;
+    public DateTime Date { get; init; }
+    public decimal Temperature { get; init; }
+    public string? Summary { get; init; }
+}
+```
 
-    public DboWeatherForecast MapTo(DmoWeatherForecast item)
-        => Map(item);
+The view object:
 
-    public static DmoWeatherForecast Map(DboWeatherForecast item)
+```csharp
+public sealed record DvoWeatherForecast
+{
+    [Key] public Guid WeatherForecastID { get; init; } = Guid.Empty;
+    public Guid OwnerID { get; init; } = Guid.Empty;
+    public string Owner { get; set; } = "[Not Set]";
+    public DateTime Date { get; init; }
+    public decimal Temperature { get; set; }
+    public string? Summary { get; set; }
+}
+```
+
+## Mapping
+
+We can define a mapper that maps to the Dmo entity from the Dvo object and from the Dmo entity to the Dbo object. 
+
+```csharp
+public sealed class WeatherForecastMap 
+{
+    public static DmoWeatherForecast Map(DvoWeatherForecast item)
         => new()
         {
-            WeatherForecastId = new(item.WeatherForecastID),
-            Date = DateOnly.FromDateTime(item.Date),
+            Id = new(item.WeatherForecastID),
+            Date = new(item.Date),
+            OwnerId = new(item.OwnerID),
+            Owner = item.Owner ?? "Not Defined",
             Temperature = new(item.Temperature),
-            Summary = item.Summary
+            Summary = item.Summary ?? "Not Defined"
         };
 
     public static DboWeatherForecast Map(DmoWeatherForecast item)
         => new()
         {
-            WeatherForecastID = item.WeatherForecastId.Value,
-            Date = item.Date.ToDateTime(TimeOnly.MinValue),
+            WeatherForecastID = item.Id.Value,
+            OwnerID = item.OwnerId.Value,
+            Date = item.Date.Value.ToDateTime(TimeOnly.MinValue),
             Temperature = item.Temperature.TemperatureC,
             Summary = item.Summary
         };
 }
 ```
 
-The mapper is used in the CQS handlers.
+## Editing
 
-## The Edit Context
+All our objects are records so we need to create an edit context for the UI editor.
 
-The application allows adding and editing of *WeatherForecast* records so we need an edit context.
+1. `BaseRecordEditContext` contains the boilerplate code and is shown below.
+2. The `[TrackState]` attribute tells the `EditStateTracker` component to track this property's state in the `EditForm`.
 
 ```csharp
-public sealed class WeatherForecastEditContext
+public sealed class WeatherForecastEditContext : BaseRecordEditContext<DmoWeatherForecast, WeatherForecastId>, IRecordEditContext<DmoWeatherForecast>
 {
-    public DmoWeatherForecast BaseRecord { get; private set; }
-    public bool IsDirty => this.BaseRecord != this.AsRecord;
-
     [TrackState] public string? Summary { get; set; }
     [TrackState] public decimal Temperature { get; set; }
     [TrackState] public DateTime? Date { get; set; }
 
-    public DmoWeatherForecast AsRecord =>
+    public override DmoWeatherForecast AsRecord =>
         this.BaseRecord with
         {
-            Date = DateOnly.FromDateTime(this.Date ?? DateTime.Now),
-            Summary = this.Summary,
+            Date = new(this.Date ?? DateTime.Now),
+            Summary = this.Summary ?? "Not Set",
             Temperature = new(this.Temperature)
         };
+    public WeatherForecastEditContext() : base() { }
 
-    public WeatherForecastEditContext()
+    public WeatherForecastEditContext(DmoWeatherForecast record) : base(record) { }
+
+    public override IDataResult Load(DmoWeatherForecast record)
     {
-        this.BaseRecord = new DmoWeatherForecast();
-        this.Load(this.BaseRecord);
-    }
-
-    public WeatherForecastEditContext(DmoWeatherForecast record)
-    {
-        this.BaseRecord = record;
-        this.Load(record);
-    }
-
-    public IDataResult Load(DmoWeatherForecast record)
-    {
-        var alreadyLoaded = this.BaseRecord.WeatherForecastId != WeatherForecastId.NewEntity;
-
-        if (alreadyLoaded)
+        if (!this.BaseRecord.Id.IsDefault)
             return DataResult.Failure("A record has already been loaded.  You can't overload it.");
 
         this.BaseRecord = record;
         this.Summary = record.Summary;
         this.Temperature = record.Temperature.TemperatureC;
-        this.Date = record.Date.ToDateTime(TimeOnly.MinValue);
+        this.Date = record.Date.Value.ToDateTime(TimeOnly.MinValue);
+
         return DataResult.Success();
     }
 }
 ```
 
-The record edit context is the model in edit forms. It's the `EditContext` model and it's public properties are used by the edit controls. The `TrackState` attribute is used by the `EditStateTracker` control to identify which *model* properties to track.
+The `BaseRecordEditContext` boilerplate code:
 
-`AsRecord` provides a `DmoWeatherForecast` object representing the current state, and can be compared with `BaseRecord` to detect the current edit state. `EditStateTracker` provides access to individual property state.  
+```csharp
+public abstract class BaseRecordEditContext<TRecord, TKey>
+    where TRecord : class, new()
+{
+    public TRecord BaseRecord { get; protected set; } = new();
+
+    public abstract TRecord AsRecord { get; }
+
+    public bool IsDirty => this.BaseRecord != this.AsRecord;
+
+    public BaseRecordEditContext()
+    {
+        this.Load(this.BaseRecord);
+    }
+
+    public BaseRecordEditContext(TRecord record)
+    {
+        this.Load(record);
+    }
+
+    public abstract IDataResult Load(TRecord record);
+
+    public void Reset()
+    {
+        var record = this.BaseRecord;
+        this.BaseRecord = new();
+        this.Load(record);
+    }
+
+    public void SetAsPersisted()
+    {
+        var record = this.AsRecord;
+        this.BaseRecord = new();
+        this.Load(record);
+    }
+}
+```
 
 ## Edit Context Validation
 
@@ -192,35 +286,28 @@ public class WeatherForecastEditContextValidator : AbstractValidator<WeatherFore
 
 It's easy to new up a record like this `new()`, but it doesn't always get you what you want.
 
- `INewRecordProvider<TRecord>` abstracts the creation to a DI defined service.
+ `IEntityProvider<TRecord>` abstracts the creation in a DI defined service.
 
-Here's the `NewWeatherForecastProvider` which doesn't do anything that `new()` can't do.
-
-```csharp
-public class NewWeatherForecastProvider : INewRecordProvider<DmoWeatherForecast>
-{
-    public DmoWeatherForecast NewRecord()
-    {
-        return new DmoWeatherForecast() { WeatherForecastId = new(Guid.NewGuid()), Date = DateOnly.FromDateTime(DateTime.Now) };
-    }
-}
+ ```csharp
+     public TRecord NewRecord { get; }
 ```
 
-But consider creating an `InvoiceItem` in the Invoice application.
+Here's the `WeatherForecastEntityProvider`.  It's registered as a *Scoped* service, so can `SetOwnerIdContext` can be used to set the context for the SPA. 
 
 ```csharp
-public class NewInvoiceItemProvider : INewRecordProvider<DmoInvoiceItem>
+public class WeatherForecastEntityProvider : IEntityProvider<DmoWeatherForecast, WeatherForecastId>
 {
-    public InvoiceId InvoiceId { get; private set; } = InvoiceId.NewEntity;
+    private IdentityId _ownerId = IdentityId.Default;
 
-    public void SetInvoiceContext(InvoiceId invoiceId)
-        => this.InvoiceId = invoiceId;
+    //.....
 
-    public DmoInvoiceItem NewRecord()
+
+    public void SetOwnerIdContext(IdentityId ownerId)
     {
-        return new DmoInvoiceItem() { InvoiceId = this.InvoiceId };
+        _ownerId = ownerId;
     }
+
+    public DmoWeatherForecast NewRecord
+        => new DmoWeatherForecast { Id = WeatherForecastId.Default, OwnerId = _ownerId };
 }
 ```
-
-The service is defined *scoped* and within the *Invoice* edit context, the context sets the `InvoiceId' to the loaded invoice.     

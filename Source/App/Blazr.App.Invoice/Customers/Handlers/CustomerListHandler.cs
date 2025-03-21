@@ -45,7 +45,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
         if (!result.HasSucceeded(out ListItemsProvider<DboCustomer>? listResult))
             return result.ConvertFail<ListItemsProvider<DmoCustomer>>();
 
-        var list = listResult.Items.Select(item => DboCustomerMap.Map(item));
+        var list = listResult.Items.Select(item => CustomerMap.Map(item));
 
         return Result<ListItemsProvider<DmoCustomer>>.Success( new(list, listResult.TotalCount));
     }

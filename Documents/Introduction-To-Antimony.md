@@ -2,9 +2,17 @@
 
 Antimony is my implementation of the CQS pattern in DotNetCore. It is a simple library that provides the building blocks for implementing the CQS and Mediator patterns in your application.
 
+The diagram below shows thw basic structure and data flows for Blazor Server and WebAssembly applications.
+
+In Blazor Server, the Hub session dispatches requests directly to the server-side Mediatr service and the reqiestered server-side handlers.
+
+In Blazor WebAssembly, the hub session dispatches the requests to the local client-side Mediator service.  This has different API based registered handlers.  These call the API endpoints with the Mediatr requests.  The endpoints dispatch the requests to the server-side handlers.
+
+![Antimony](../images/antinomy-1.png)
+
 ## The Backend Pipelines
 
-Requests can be split into three categories, each with their own pipeline:
+Requests can be split into three categories, each with their own pipeline.
 
 ### Record Queries
 
@@ -254,7 +262,7 @@ The `DbContext` extension method:
 
 ## Integrating with the Mediator Pattern
 
-The demo app uses the Weather Forecast example from the Microsoft documentation. within the app, the `WeatherForecast` domain entity is defined as:
+The demo app uses the Weather Forecast example from the Microsoft documentation. within the app, the `WeatherForecast` domain entity is defined as below.  Ignore the owner fields, they are part of the authentication demo.
 
 ```csharp
 public sealed record DmoWeatherForecast : ICommandEntity

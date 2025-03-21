@@ -8,19 +8,14 @@ using Blazr.App.Invoice.Core;
 
 namespace Blazr.App.Invoice.Infrastructure;
 
-public sealed class DboInvoiceMap : IDboEntityMap<DboInvoice, DmoInvoice>
+public sealed class InvoiceMap
 {
-    public DmoInvoice MapTo(DboInvoice item)
-        => Map(item);
-
-    public DboInvoice MapTo(DmoInvoice item)
-        => Map(item);
-
-    public static DmoInvoice Map(DboInvoice item)
+    public static DmoInvoice Map(DvoInvoice item)
         => new()
         {
             Id = new(item.InvoiceID),
             CustomerId = new(item.CustomerID),
+            CustomerName = item.CustomerName,
             TotalAmount = item.TotalAmount,
             Date = DateOnly.FromDateTime(item.Date)
         };

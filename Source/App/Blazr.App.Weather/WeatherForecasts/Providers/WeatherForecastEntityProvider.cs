@@ -11,6 +11,7 @@ namespace Blazr.App.Presentation;
 public class WeatherForecastEntityProvider : IEntityProvider<DmoWeatherForecast, WeatherForecastId>
 {
     private readonly IMediator _mediator;
+    private IdentityId _ownerId = IdentityId.Default;
 
     public Func<WeatherForecastId, Task<Result<DmoWeatherForecast>>> RecordRequest
         => (id) => _mediator.Send(new WeatherForecastRecordRequest(id));
@@ -49,9 +50,11 @@ public class WeatherForecastEntityProvider : IEntityProvider<DmoWeatherForecast,
         return key != WeatherForecastId.Default;
     }
 
-    public DmoWeatherForecast NewRecord
-        => DefaultRecord;
+    public void SetOwnerIdContext(IdentityId ownerId)
+    {
+        _ownerId = ownerId;
+    }
 
-    public static DmoWeatherForecast DefaultRecord
-        => new DmoWeatherForecast { Id = WeatherForecastId.Default };
+    public DmoWeatherForecast NewRecord
+        => new DmoWeatherForecast { Id = WeatherForecastId.Default, OwnerId = _ownerId };
 }

@@ -31,15 +31,17 @@ public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandReq
         var dbContext = _factory.CreateDbContext();
 
         var result = await dbContext.ExecuteCommandAsync<DboCustomer>(new CommandRequest<DboCustomer>(
-            Item: DboCustomerMap.Map(request.Item),
+            Item: CustomerMap.Map(request.Item),
             State: request.State
         ), cancellationToken);
 
         if (!result.HasSucceeded(out DboCustomer? record))
             return result.ConvertFail<CustomerId>();
 
-        _messageBus.Publish<DmoCustomer>(DboCustomerMap.Map(record));
+        var customerId = new CustomerId(record.CustomerID);
 
-        return Result<CustomerId>.Success(new CustomerId(record.CustomerID));
+        _messageBus.Publish<DmoCustomer>(customerId);
+
+        return Result<CustomerId>.Success(customerId);
     }
 }

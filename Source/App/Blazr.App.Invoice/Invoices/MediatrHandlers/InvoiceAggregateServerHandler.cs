@@ -41,7 +41,7 @@ public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceReque
             if (!result.HasSucceeded(out DvoInvoice? record))
                 return result.ConvertFail<InvoiceComposite>();
             
-            invoice = DvoInvoiceMap.Map(record);
+            invoice = InvoiceMap.Map(record);
         }
 
         List<DmoInvoiceItem>? invoiceItems = new();
@@ -55,7 +55,7 @@ public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceReque
             if (!result.HasSucceeded(out ListItemsProvider<DboInvoiceItem>? records))
                 return result.ConvertFail<InvoiceComposite>();
             
-            invoiceItems = records.Items.Select(item => DboInvoiceItemMap.Map(item)).ToList();
+            invoiceItems = records.Items.Select(item => InvoiceItemMap.Map(item)).ToList();
         }
 
         var invoiceComposite = new InvoiceComposite(invoice, invoiceItems);

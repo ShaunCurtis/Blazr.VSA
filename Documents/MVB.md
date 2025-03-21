@@ -1,16 +1,16 @@
-# Model-View-Broker
+# The Model-View-Broker Pattern
 
 **MVB** is my Blazor centric version of the **MVx** patterns.  It's specific focus in on Blazor, and how to structure a Blazor Applicatiion.
 
 It fits within multi-project Clean Design solutions or single project Vertical Slice solutions.  The demo solution has a *Vertical Slice* structure with namespace segregation of the clean design domains.
 
-## TLDR;
+## TL;DR
 
 In a nutshell, the older design patterns were products of their time and the architectures they were used in.  Blazor is a little different, so the relationship between the model and the glue (the Cointroller/Presenter/ViewModel) has changed, and requires a different division of labour.  There's nothing wrong with applying the older models, but you will find yourself breaking some of their rules to implement a good solution.
 
 ## CQS, Mediator, Flux and the Readonly World
 
-C# now provides built-in immutable objects, so we can easily apply some functional programming paradigms.  I use records and readonlky structs extwnsively.
+C# now provides built-in immutable objects, so we can apply some functional programming paradigms.  I use records and readonlky structs extensively.
 
 The data pipeline is read only and base on CQS.  There are three standard operations:
 
@@ -18,13 +18,13 @@ The data pipeline is read only and base on CQS.  There are three standard operat
 2. Read a Collection by providing a list request.
 3. Execute a Command by providing the updated record and a command action (Create/Update/Delete).
 
-Mediator provides the glue between thw CQS design and the core application.
+Mediator provides the glue between the CQS implementation and the core application.
 
-I mention Flux in the secvtion header because you will see the influence of the *Flux Pattern* in my aggregate implementation.
+I mention the *Flux Pattern* in the section header because you will see it's influence in my code, particularly in my aggregate implementation.
 
 ## The View
 
-I'll look at the Customer Viewer as an example view. 
+The Customer Viewer is used as the example view. 
 
 The view is built using a `ViewerModalFormBase` base class which contains all the boilerplate code.
 
@@ -253,5 +253,3 @@ public class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>, IDispos
     }
 }
 ```
-
-

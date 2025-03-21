@@ -38,7 +38,7 @@ public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordReques
         if (!result.HasSucceeded(out DboCustomer? record))
             return result.ConvertFail<DmoCustomer>();
 
-        var returnItem = DboCustomerMap.Map(record);
+        var returnItem = CustomerMap.Map(record);
 
         return Result<DmoCustomer>.Success(returnItem);
     }

@@ -32,7 +32,7 @@ public sealed class PersistInvoiceServerHandler : IRequestHandler<InvoiceRequest
 
         using var dbContext = _factory.CreateDbContext();
 
-        var invoiceRecord = DboInvoiceMap.Map(invoice.InvoiceRecord.Record);
+        var invoiceRecord = InvoiceMap.Map(invoice.InvoiceRecord.Record);
 
         if (invoice.InvoiceRecord.State == CommandState.Update)
             dbContext.Update<DboInvoice>(invoiceRecord);
@@ -45,7 +45,7 @@ public sealed class PersistInvoiceServerHandler : IRequestHandler<InvoiceRequest
 
         foreach (var invoiceItem in invoice.InvoiceItems)
         {
-            var invoiceItemRecord = DboInvoiceItemMap.Map(invoiceItem.Record);
+            var invoiceItemRecord = InvoiceItemMap.Map(invoiceItem.Record);
 
             if (invoiceItem.State == CommandState.Update)
                 dbContext.Update<DboInvoiceItem>(invoiceItemRecord);
@@ -58,7 +58,7 @@ public sealed class PersistInvoiceServerHandler : IRequestHandler<InvoiceRequest
         {
             if (invoiceItem.State != CommandState.Add)
             {
-                var invoiceItemRecord = DboInvoiceItemMap.Map(invoiceItem.Record);
+                var invoiceItemRecord = InvoiceItemMap.Map(invoiceItem.Record);
 
                 dbContext.Remove<DboInvoiceItem>(invoiceItemRecord);
             }

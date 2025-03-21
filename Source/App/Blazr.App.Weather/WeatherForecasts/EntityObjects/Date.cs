@@ -9,7 +9,7 @@ namespace Blazr.App.Weather.Core;
 public readonly record struct Date
 {
     public DateOnly Value { get; init; }
-    public bool IsValid { get; init; }
+    public bool IsValid { get; private init; }
 
     public Date() { }
 

@@ -8,15 +8,9 @@ using Blazr.App.Invoice.Core;
 
 namespace Blazr.App.Invoice.Infrastructure;
 
-public sealed class DboInvoiceItemMap : IDboEntityMap<DboInvoiceItem, DmoInvoiceItem>
+public sealed class InvoiceItemMap
 {
-    public DmoInvoiceItem MapTo(DboInvoiceItem item)
-        => Map(item);
-
-    public DboInvoiceItem MapTo(DmoInvoiceItem item)
-        => Map(item);
-
-    public static DmoInvoiceItem Map(DboInvoiceItem item)
+     public static DmoInvoiceItem Map(DboInvoiceItem item)
         => new()
         {
             Id = new(item.InvoiceItemID),
