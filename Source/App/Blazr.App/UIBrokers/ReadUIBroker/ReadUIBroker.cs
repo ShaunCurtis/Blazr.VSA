@@ -17,7 +17,7 @@ public class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>, IDispos
 
     public TRecord Item { get; protected set; } = new TRecord();
     public event EventHandler? RecordChanged;
-    public IResult LastResult { get; protected set; } = DataResult.Success();
+    public IResult LastResult { get; protected set; } = Result.Success();
 
     public ReadUIBroker(IEntityProvider<TRecord, TKey> entityProvider, IMessageBus messageBus)
     {
@@ -37,7 +37,7 @@ public class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>, IDispos
         // Call the RecordRequest on the record specific EntityProvider to get the record
         var result = await _entityProvider.RecordRequest.Invoke(id);
 
-        LastResult = result.ToDataResult;
+        LastResult = result;
 
         if (result.HasSucceeded(out TRecord? record))
             this.Item = record ?? _entityProvider.NewRecord;
