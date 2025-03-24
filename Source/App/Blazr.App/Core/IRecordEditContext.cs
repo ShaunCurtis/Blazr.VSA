@@ -12,7 +12,7 @@ public interface IRecordEditContext<TRecord>
     public TRecord AsRecord { get; }
     public bool IsDirty { get; }
 
-    public IDataResult Load(TRecord record);
+    public IResult Load(TRecord record);
     public void Reset();
     public void SetAsPersisted();
 }

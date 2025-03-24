@@ -25,7 +25,7 @@ public class GridUIBroker<TRecord, TKey>
 
     public Guid StateContextUid { get; private set; } = Guid.NewGuid();
     public GridState<TRecord> GridState { get; private set; } = new();
-    public IDataResult LastResult { get; protected set; } = DataResult.Success("New");
+    public IResult LastResult { get; protected set; } = Result.Success();
 
     public event EventHandler<EventArgs>? StateChanged;
     
@@ -60,13 +60,13 @@ public class GridUIBroker<TRecord, TKey>
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    public IDataResult DispatchGridStateChange(UpdateGridRequest<TRecord> request)
+    public IResult DispatchGridStateChange(UpdateGridRequest<TRecord> request)
     {
         this.GridState = new() { PageSize = request.PageSize, StartIndex = request.StartIndex, SortField = request.SortField, SortDescending = request.SortDescending };
 
         _gridStateStore.Dispatch(this.StateContextUid, this.GridState);
 
-        return DataResult.Success();
+        return Result.Success();
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public class GridUIBroker<TRecord, TKey>
     public async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync()
     {
         var result = await _entityProvider.ListRequest.Invoke(this.GridState);
-        this.LastResult = result.ToDataResult;
+        this.LastResult = result;
 
         if (result.HasNotSucceeded(out ListItemsProvider<TRecord>? listResult))
             return GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0);

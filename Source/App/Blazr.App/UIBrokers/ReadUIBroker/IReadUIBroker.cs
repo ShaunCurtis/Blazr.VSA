@@ -13,7 +13,7 @@ public interface IReadUIBroker<TRecord, TKey>
 
     public event EventHandler? RecordChanged;
 
-    public IDataResult LastResult { get;}
+    public IResult LastResult { get;}
 
     public ValueTask LoadAsync(TKey id);
 

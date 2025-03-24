@@ -125,7 +125,7 @@
 
         await this.UIBroker.SaveItemToAggregateAsync();
 
-        if (this.UIBroker.LastResult.Successful)
+        if (this.UIBroker.LastResult.IsSuccess)
             ModalDialog?.Close(ModalResult.OK());
     }
 

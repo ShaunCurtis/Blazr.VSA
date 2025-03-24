@@ -5,8 +5,8 @@
 /// ============================================================
 namespace Blazr.Antimony.Core;
 
-public interface IDataResult
+public class ResultException : Exception
 {
-    public bool Successful { get; }
-    public string? Message { get; }
+    public ResultException() : base("The Result is Failure.") { }
+    public ResultException(string message) : base(message) { }
 }

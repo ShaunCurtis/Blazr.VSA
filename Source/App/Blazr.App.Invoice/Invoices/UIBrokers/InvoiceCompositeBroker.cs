@@ -13,7 +13,7 @@ public sealed class InvoiceCompositeBroker
 {
     private readonly IMediator _dispatcher;
 
-    public IDataResult LastResult { get; private set; } = DataResult.Success();
+    public IResult LastResult { get; private set; } = Result.Success();
 
     public InvoiceComposite Invoice { get; private set; }
 
@@ -29,7 +29,7 @@ public sealed class InvoiceCompositeBroker
 
     public async Task LoadAsync(InvoiceId id)
     {
-        this.LastResult = DataResult.Success();
+        this.LastResult = Result.Success();
 
         // if we have an empty guid them we go with the new context created in the constructor
         if (id.Value != Guid.Empty)
@@ -37,7 +37,7 @@ public sealed class InvoiceCompositeBroker
             var request = new InvoiceRequests.InvoiceRequest(id);
             var result = await _dispatcher.Send(request);
 
-            LastResult = result.ToDataResult;
+            LastResult = result;
 
             if (result.HasSucceeded(out InvoiceComposite? invoice))
                 this.Invoice = invoice!;
@@ -46,7 +46,7 @@ public sealed class InvoiceCompositeBroker
 
     public void Reset()
     {
-        this.LastResult = DataResult.Success();
+        this.LastResult = Result.Success();
         this.Invoice = InvoiceComposite.Default;
     }
 
@@ -54,7 +54,7 @@ public sealed class InvoiceCompositeBroker
     {
         var result = await _dispatcher.Send(new InvoiceRequests.InvoiceSaveRequest(this.Invoice));
 
-        LastResult = result.ToDataResult;
+        LastResult = result;
 
         if (result.IsFailure)
             return result;

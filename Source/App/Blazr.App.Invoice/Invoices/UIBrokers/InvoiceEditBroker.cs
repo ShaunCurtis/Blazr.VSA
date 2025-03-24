@@ -18,7 +18,7 @@ public sealed class InvoiceEditBroker
     private readonly IToastService _toastService;
     private readonly InvoiceComposite _invoice;
 
-    public IDataResult LastResult { get; private set; } = DataResult.Success();
+    public IResult LastResult { get; private set; } = DataResult.Success();
     public EditContext EditContext { get; private set; }
     public DmoInvoiceEditContext RecordEditContext { get; private set; }
     public bool IsNew => _invoice.InvoiceRecord.Record.Id == InvoiceId.Default;
@@ -35,7 +35,7 @@ public sealed class InvoiceEditBroker
     /// Updates the Invoice entity in the Invoice Aggregate
     /// </summary>
     /// <returns></returns>
-    public Task<IDataResult> SaveItemToAggregateAsync()
+    public Task<IResult> SaveItemToAggregateAsync()
     {
         if (!this.RecordEditContext.IsDirty)
         {

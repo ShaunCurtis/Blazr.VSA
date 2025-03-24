@@ -11,12 +11,12 @@ namespace Blazr.Antimony.Core;
 /// <summary>
 /// My Result implementation
 /// </summary>
-/// <typeparam name="T"></typeparam>
-public record Result
+public record Result : IResult
 {
     private readonly Exception? _error;
 
-    public readonly bool IsSuccess;
+    [MemberNotNullWhen(false, nameof(_error))]
+    public bool IsSuccess { get; private init; }
     public bool IsFailure => !IsSuccess;
     
     private Result()
@@ -47,9 +47,19 @@ public record Result
     }
 
     /// <summary>
-    /// Converts the Result to a UI DataResult
+    /// The standard Map/Switch method
     /// </summary>
-    public IDataResult ToDataResult => new DataResult() { Message = _error?.Message, Successful = this.IsSuccess };
+    /// <param name="onSuccess"></param>
+    /// <param name="onFail"></param>
+    public void Map(Action onSuccess, Action<Exception> onFail)
+    {
+        if (this.IsSuccess)
+            onSuccess();
+        else
+            onFail(_error);
+    }
+
+    string? IResult.Message => _error?.Message;
 
     /// <summary>
     /// Static Success constructor
@@ -63,9 +73,21 @@ public record Result
     /// <param name="error"></param>
     /// <returns></returns>
     public static Result Fail(Exception error) => new(error);
+
+    /// <summary>
+    /// Static Failure constructor
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public static Result Failure(string message) => new(new ResultException(message));
+
 }
 
-public record Result<T>
+/// <summary>
+/// My Result<T> implementation
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public record Result<T> : IResult
 {
     // Hidden
     private readonly T? _value;
@@ -73,7 +95,8 @@ public record Result<T>
 
     [MemberNotNullWhen(true, nameof(_value))]
     [MemberNotNullWhen(false, nameof(_error))]
-    private bool IsSuccess { get; }
+    public bool IsSuccess { get; private init; }
+
     private bool IsFailure => !IsSuccess;
 
     /// <summary>
@@ -159,11 +182,6 @@ public record Result<T>
     }
 
     /// <summary>
-    /// Converts the Result to a UI DataResult
-    /// </summary>
-    public IDataResult ToDataResult => new DataResult() { Message = _error?.Message, Successful = this.IsSuccess };
-
-    /// <summary>
     /// Converts a failed Result from Result<T> to Result<TOut>
     /// Used in the data pipeline where we map a data object to domain entities
     /// </summary>
@@ -177,6 +195,8 @@ public record Result<T>
 
         return Result<TOut>.Fail(this._error);
     }
+
+    string? IResult.Message => _error?.Message;
 
     /// <summary>
     /// Static Success constructor

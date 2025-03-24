@@ -32,7 +32,7 @@ public sealed class DmoInvoiceEditContext : BaseRecordEditContext<DmoInvoice, In
 
     public DmoInvoiceEditContext(DmoInvoice record) : base(record) { }
 
-    public override IDataResult Load(DmoInvoice record)
+    public override IResult Load(DmoInvoice record)
     {
         if (!this.BaseRecord.Id.IsDefault)
             return DataResult.Failure("A record has already been loaded.  You can't overload it.");
