@@ -3,14 +3,14 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.Antimony.Infrastructure.Server;
+namespace Blazr.Antimony.Infrastructure.EntityFramework;
 
 /// <summary>
-/// This class implements the "standard" CQS Handlers
+/// This static class implements CQS Handlers
 /// against an EF `TDbContext`
 /// </summary>
 /// <typeparam name="TDbContext"></typeparam>
-public static class DbBroker<TDbContext>
+public static class CQSEFBroker<TDbContext>
     where TDbContext : DbContext
 {
     public static async ValueTask<Result<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())

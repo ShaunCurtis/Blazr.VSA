@@ -9,8 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App", "App", "{A0770D77-E3E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.Antimony", "Source\Libraries\Blazor.Antimony\Blazor.Antimony.csproj", "{B6405563-C115-4C25-8CBA-7EC9C3B8AC95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.Antimony.Server", "Source\Libraries\Blazr.Antimony.Server\Blazr.Antimony.Server.csproj", "{7AFBAA20-1984-408D-84A2-20C8E9F31564}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.EditStateTracker", "Source\Libraries\Blazr.EditStateTracker\Blazr.EditStateTracker.csproj", "{767C1834-657B-47C8-92A1-646EE5EB693F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.FluentValidation", "Source\Libraries\Blazr.FluentValidation\Blazr.FluentValidation.csproj", "{54BF9491-D434-49BF-81AF-8621C8D6610D}"
@@ -50,6 +48,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.Auth", "Source\App\Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Shared", "Source\App\Blazr.App.Shared\Blazr.App.Shared.csproj", "{9CB233A6-A313-4D18-8295-33805C346EB3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.Antimony.EntityFramework", "Source\Libraries\Blazr.Antimony.EntityFramework\Blazr.Antimony.EntityFramework.csproj", "{AE9C314D-BD34-4399-453D-99540BF397F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,10 +60,6 @@ Global
 		{B6405563-C115-4C25-8CBA-7EC9C3B8AC95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6405563-C115-4C25-8CBA-7EC9C3B8AC95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6405563-C115-4C25-8CBA-7EC9C3B8AC95}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7AFBAA20-1984-408D-84A2-20C8E9F31564}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7AFBAA20-1984-408D-84A2-20C8E9F31564}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7AFBAA20-1984-408D-84A2-20C8E9F31564}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7AFBAA20-1984-408D-84A2-20C8E9F31564}.Release|Any CPU.Build.0 = Release|Any CPU
 		{767C1834-657B-47C8-92A1-646EE5EB693F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{767C1834-657B-47C8-92A1-646EE5EB693F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{767C1834-657B-47C8-92A1-646EE5EB693F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -104,13 +100,16 @@ Global
 		{9CB233A6-A313-4D18-8295-33805C346EB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CB233A6-A313-4D18-8295-33805C346EB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CB233A6-A313-4D18-8295-33805C346EB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE9C314D-BD34-4399-453D-99540BF397F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE9C314D-BD34-4399-453D-99540BF397F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE9C314D-BD34-4399-453D-99540BF397F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE9C314D-BD34-4399-453D-99540BF397F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B6405563-C115-4C25-8CBA-7EC9C3B8AC95} = {B0C6C72D-97AA-49B3-8392-611DD7BB8133}
-		{7AFBAA20-1984-408D-84A2-20C8E9F31564} = {B0C6C72D-97AA-49B3-8392-611DD7BB8133}
 		{767C1834-657B-47C8-92A1-646EE5EB693F} = {B0C6C72D-97AA-49B3-8392-611DD7BB8133}
 		{54BF9491-D434-49BF-81AF-8621C8D6610D} = {B0C6C72D-97AA-49B3-8392-611DD7BB8133}
 		{5EF98895-3A19-428C-B91F-7EAF2FCD49F4} = {B0C6C72D-97AA-49B3-8392-611DD7BB8133}
@@ -122,6 +121,7 @@ Global
 		{47A9AF2D-159D-4A5C-A047-F4BCE35FCF99} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
 		{F14BF994-BBC1-4391-83E9-CFA37C6FBCE1} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
 		{9CB233A6-A313-4D18-8295-33805C346EB3} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
+		{AE9C314D-BD34-4399-453D-99540BF397F3} = {B0C6C72D-97AA-49B3-8392-611DD7BB8133}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F315C1D-A801-428C-93C3-CD98FD416A00}

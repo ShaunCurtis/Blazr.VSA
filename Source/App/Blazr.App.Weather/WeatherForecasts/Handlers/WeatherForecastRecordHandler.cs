@@ -6,7 +6,7 @@
 using Blazr.App.Weather.Core;
 using Blazr.App.Weather.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Blazr.Antimony.Infrastructure.Server;
+using Blazr.Antimony.Infrastructure.EntityFramework;
 
 namespace Blazr.App.Infrastructure.Server;
 

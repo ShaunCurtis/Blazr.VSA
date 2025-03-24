@@ -34,7 +34,7 @@
 
 	<ItemGroup>
     <ProjectReference Include="..\..\Libraries\Blazor.Antimony\Blazor.Antimony.csproj" />
-    <ProjectReference Include="..\..\Libraries\Blazr.Antimony.Server\Blazr.Antimony.Server.csproj" />
+    <ProjectReference Include="..\..\Libraries\Blazr.Antimony.EntityFramework\Blazr.Antimony.EntityFramework.csproj" />
     <ProjectReference Include="..\..\Libraries\Blazr.EditStateTracker\Blazr.EditStateTracker.csproj" />
     <ProjectReference Include="..\..\Libraries\Blazr.FluentValidation\Blazr.FluentValidation.csproj" />
     <ProjectReference Include="..\..\Libraries\Blazr.Gallium\Blazr.Gallium.csproj" />
