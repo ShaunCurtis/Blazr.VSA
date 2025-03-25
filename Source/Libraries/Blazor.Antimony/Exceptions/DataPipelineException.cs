@@ -4,7 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
-namespace Blazr.Antimony.Infrastructure;
+namespace Blazr.Antimony;
 
 public class DataPipelineException : Exception
 {

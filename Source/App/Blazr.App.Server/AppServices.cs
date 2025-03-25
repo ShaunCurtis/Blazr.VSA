@@ -20,6 +20,10 @@ public static class ApplicationServerServices
     {
         services.AddScoped<AuthenticationStateProvider, VerySimpleAuthenticationStateProvider>();
         services.AddAppPolicyServices();
+
+        services.AddAuthentication( options => options.DefaultScheme = TestIdentities.Provider)
+            .AddScheme<VerySimpleAuthSchemeOptions, VerySimpleAuthenticationHandler>(TestIdentities.Provider, options => { });
+
         services.AddAuthorization(config =>
         {
             foreach (var policy in AppPolicies.Policies)

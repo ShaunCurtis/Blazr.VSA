@@ -7,9 +7,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+	  <None Remove="WeatherAppServices.cs~RF7846a15.TMP" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="MediatR" Version="12.4.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.2" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>

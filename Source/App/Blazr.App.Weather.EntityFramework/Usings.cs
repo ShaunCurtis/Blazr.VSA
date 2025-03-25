@@ -6,3 +6,4 @@ global using Blazr.Gallium;
 global using MediatR;
 global using Microsoft.EntityFrameworkCore;
 global using System.Linq.Expressions;
+global using Blazr.App.Shared;

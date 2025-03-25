@@ -6,38 +6,28 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="DataSources\Auth\**" />
-    <EmbeddedResource Remove="DataSources\Auth\**" />
-    <None Remove="DataSources\Auth\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="WeatherAppServices.cs~RF51ce247.TMP" />
-    <None Remove="WeatherAppServices.cs~RF51e1336.TMP" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
 		<PackageReference Include="MediatR" Version="12.4.1" />
 		<PackageReference Include="Blazored.Toast" Version="4.2.1" />
 		<PackageReference Include="Blazr.BaseComponents" Version="1.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="9.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="9.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
+		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="9.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="9.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>
     <ProjectReference Include="..\..\Libraries\Blazor.Antimony\Blazor.Antimony.csproj" />
     <ProjectReference Include="..\..\Libraries\Blazr.Antimony.EntityFramework\Blazr.Antimony.EntityFramework.csproj" />
+    <ProjectReference Include="..\Blazr.App.Shared\Blazr.App.Shared.csproj" />
     <ProjectReference Include="..\Blazr.App.Weather\Blazr.App.Weather.csproj" />
   </ItemGroup>
 

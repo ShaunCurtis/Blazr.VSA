@@ -3,6 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
 namespace Blazr.Auth.Core;
@@ -19,7 +20,7 @@ public static class TestIdentities
 
         return new ClaimsIdentity(identity.Claims, Provider);
     }
-    
+
     public static ClaimsIdentity GetIdentity(Guid token)
     {
         var identity = Identities.FirstOrDefault(item => item.Id == token);
@@ -27,6 +28,14 @@ public static class TestIdentities
             return new ClaimsIdentity();
 
         return new ClaimsIdentity(identity.Claims, Provider);
+    }
+
+    public static bool TryGetIdentity(Guid token, out ClaimsIdentity claimsIdentity)
+    {
+        var identity = Identities.FirstOrDefault(item => item.Id == token);
+        claimsIdentity = new ClaimsIdentity(identity?.Claims, Provider) ?? new();
+
+        return identity is not null;
     }
 
     public static List<TestIdentity> Identities = new List<TestIdentity>()

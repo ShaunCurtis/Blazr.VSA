@@ -3,10 +3,9 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-
 using System.Diagnostics.CodeAnalysis;
 
-namespace Blazr.Antimony.Core;
+namespace Blazr.Antimony;
 
 /// <summary>
 /// My Result implementation

@@ -35,6 +35,8 @@ app.Services.AddWeatherTestData();
 //if (factory is not null)
 //    InvoiceTestDataProvider.Instance().LoadDbContext<InMemoryInvoiceTestDbContext>(factory);
 
+app.AddWeatherForecastAPIEndpoints();
+
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();

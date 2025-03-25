@@ -3,7 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.Antimony.Core;
+namespace Blazr.Antimony;
 
 /// <summary>
 /// Result object used to return a list request up the data pipeline
