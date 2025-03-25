@@ -28,14 +28,14 @@ public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordReques
     {
         var dbContext = _factory.CreateDbContext();
 
-        Expression<Func<DboCustomer, bool>> findExpression = (item) =>
+        Expression<Func<DvoCustomer, bool>> findExpression = (item) =>
             item.CustomerID == request.Id.Value;
 
-        var query = new RecordQueryRequest<DboCustomer>(findExpression);
+        var query = new RecordQueryRequest<DvoCustomer>(findExpression);
 
-        var result = await dbContext.GetRecordAsync<DboCustomer>(query);
+        var result = await dbContext.GetRecordAsync<DvoCustomer>(query);
 
-        if (!result.HasSucceeded(out DboCustomer? record))
+        if (!result.HasSucceeded(out DvoCustomer? record))
             return result.ConvertFail<DmoCustomer>();
 
         var returnItem = CustomerMap.Map(record);

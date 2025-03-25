@@ -31,6 +31,7 @@
 
 	<ItemGroup>
     <ProjectReference Include="..\Blazr.App.Invoice\Blazr.App.Invoice.csproj" />
+    <ProjectReference Include="..\Blazr.App.Weather.EntityFramework\Blazr.App.Weather.EntityFramework.csproj" />
     <ProjectReference Include="..\Blazr.App.Weather\Blazr.App.Weather.csproj" />
     <ProjectReference Include="..\Blazr.Auth\Blazr.Auth.csproj" />
   </ItemGroup>

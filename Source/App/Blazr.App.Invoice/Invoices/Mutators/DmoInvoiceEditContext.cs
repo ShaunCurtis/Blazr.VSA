@@ -35,12 +35,12 @@ public sealed class DmoInvoiceEditContext : BaseRecordEditContext<DmoInvoice, In
     public override IResult Load(DmoInvoice record)
     {
         if (!this.BaseRecord.Id.IsDefault)
-            return DataResult.Failure("A record has already been loaded.  You can't overload it.");
+            return Result.Failure("A record has already been loaded.  You can't overload it.");
 
         this.BaseRecord = record;
         this.Date = record.Date.ToDateTime(TimeOnly.MinValue);
         this.CustomerName = record.CustomerName;
         this.CustomerId = record.CustomerId.Value;
-        return DataResult.Success();
+        return Result.Success();
     }
 }

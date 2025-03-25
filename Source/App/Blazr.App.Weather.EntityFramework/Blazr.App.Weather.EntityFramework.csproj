@@ -12,6 +12,11 @@
     <None Remove="DataSources\Auth\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="WeatherAppServices.cs~RF51ce247.TMP" />
+    <None Remove="WeatherAppServices.cs~RF51e1336.TMP" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
 		<PackageReference Include="MediatR" Version="12.4.1" />

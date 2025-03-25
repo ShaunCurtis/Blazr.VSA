@@ -30,7 +30,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
 
         IEnumerable<DmoCustomer> forecasts = Enumerable.Empty<DmoCustomer>();
 
-        var query = new ListQueryRequest<DboCustomer>()
+        var query = new ListQueryRequest<DvoCustomer>()
         {
             PageSize = request.PageSize,
             StartIndex = request.StartIndex,
@@ -40,9 +40,9 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
             Cancellation = cancellationToken
         };
 
-        var result = await dbContext.GetItemsAsync<DboCustomer>(query);
+        var result = await dbContext.GetItemsAsync<DvoCustomer>(query);
 
-        if (!result.HasSucceeded(out ListItemsProvider<DboCustomer>? listResult))
+        if (!result.HasSucceeded(out ListItemsProvider<DvoCustomer>? listResult))
             return result.ConvertFail<ListItemsProvider<DmoCustomer>>();
 
         var list = listResult.Items.Select(item => CustomerMap.Map(item));
@@ -50,7 +50,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
         return Result<ListItemsProvider<DmoCustomer>>.Success( new(list, listResult.TotalCount));
     }
 
-    private Expression<Func<DboCustomer, object>> GetSorter(string? field)
+    private Expression<Func<DvoCustomer, object>> GetSorter(string? field)
         => field switch
         {
             AppDictionary.Customer.CustomerName => (Item) => Item.CustomerName,
@@ -58,7 +58,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
         };
 
     // No Filter Defined
-    private Expression<Func<DboCustomer, bool>>? GetFilter(CustomerListRequest request)
+    private Expression<Func<DvoCustomer, bool>>? GetFilter(CustomerListRequest request)
     {
         return null;
     }

@@ -3,7 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.App.Presentation;
+namespace Blazr.App.Weather.Presentation;
 
 public class WeatherForecastEditContextValidator : AbstractValidator<WeatherForecastEditContext>
 {

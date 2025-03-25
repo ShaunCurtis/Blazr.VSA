@@ -25,10 +25,10 @@ public sealed class CustomerEditContext : BaseRecordEditContext<DmoCustomer, Cus
     public override IResult Load(DmoCustomer record)
     {
         if (!this.BaseRecord.Id.IsDefault)
-            return DataResult.Failure("A record has already been loaded.  You can't overload it.");
+            return Result.Failure("A record has already been loaded.  You can't overload it.");
 
         this.BaseRecord = record;
         this.CustomerName = record.CustomerName;
-        return DataResult.Success();
+        return Result.Success();
     }
 }

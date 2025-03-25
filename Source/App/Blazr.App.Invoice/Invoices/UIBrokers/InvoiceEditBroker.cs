@@ -18,7 +18,7 @@ public sealed class InvoiceEditBroker
     private readonly IToastService _toastService;
     private readonly InvoiceComposite _invoice;
 
-    public IResult LastResult { get; private set; } = DataResult.Success();
+    public IResult LastResult { get; private set; } = Result.Success();
     public EditContext EditContext { get; private set; }
     public DmoInvoiceEditContext RecordEditContext { get; private set; }
     public bool IsNew => _invoice.InvoiceRecord.Record.Id == InvoiceId.Default;
@@ -39,7 +39,7 @@ public sealed class InvoiceEditBroker
     {
         if (!this.RecordEditContext.IsDirty)
         {
-            this.LastResult = DataResult.Failure("The record has not changed and therefore has not been updated.");
+            this.LastResult = Result.Failure("The record has not changed and therefore has not been updated.");
             _toastService.ShowWarning("The record has not changed and therefore has not been updated.");
             return Task.FromResult(this.LastResult);
         }

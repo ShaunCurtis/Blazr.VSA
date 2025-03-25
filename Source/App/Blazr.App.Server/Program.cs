@@ -5,6 +5,7 @@
 /// ============================================================
 using Blazr.App.Infrastructure.Server;
 using Blazr.App.Invoice.Infrastructure.Server;
+using Blazr.App.Weather.EntityFramework;
 
 var builder = WebApplication.CreateBuilder(args);
 

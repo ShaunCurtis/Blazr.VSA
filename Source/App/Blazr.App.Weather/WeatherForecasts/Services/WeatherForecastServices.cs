@@ -3,14 +3,16 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Weather.Core;
+
+using Blazr.App.Core;
 using Blazr.App.Presentation;
 using Blazr.App.UI;
-using Microsoft.Extensions.DependencyInjection;
-using Blazr.App.Core;
+using Blazr.App.Weather.Core;
+using Blazr.App.Weather.Presentation;
 using Blazr.App.Weather.UI;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Blazr.App.Infrastructure;
+namespace Blazr.App.Weather;
 
 public static class WeatherForecastServices
 {
@@ -19,8 +21,8 @@ public static class WeatherForecastServices
         services.AddScoped<IEntityProvider<DmoWeatherForecast, WeatherForecastId>, WeatherForecastEntityProvider>();
         services.AddSingleton<IUIEntityProvider<DmoWeatherForecast>, WeatherForecastUIEntityProvider>();
 
-        services.AddTransient<IGridUIBroker<DmoWeatherForecast>, GridUIBroker<DmoWeatherForecast,WeatherForecastId>>();
+        services.AddTransient<IGridUIBroker<DmoWeatherForecast>, GridUIBroker<DmoWeatherForecast, WeatherForecastId>>();
         services.AddTransient<IEditUIBroker<WeatherForecastEditContext, WeatherForecastId>, EditUIBroker<DmoWeatherForecast, WeatherForecastEditContext, WeatherForecastId>>();
-        services.AddTransient<IReadUIBroker<DmoWeatherForecast, WeatherForecastId>, ReadUIBroker<DmoWeatherForecast,WeatherForecastId>>();
+        services.AddTransient<IReadUIBroker<DmoWeatherForecast, WeatherForecastId>, ReadUIBroker<DmoWeatherForecast, WeatherForecastId>>();
     }
 }

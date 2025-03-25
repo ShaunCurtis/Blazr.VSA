@@ -3,7 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.App.Weather.EntityFramework;
+namespace Blazr.App.Weather.API;
 
 /// <summary>
 /// Mediatr Handler for executing record requests to get a WeatherForecast Entity in an Entity Framework Context

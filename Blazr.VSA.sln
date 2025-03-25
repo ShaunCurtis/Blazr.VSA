@@ -24,7 +24,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
 		Documents\Aggregates.md = Documents\Aggregates.md
+		Documents\App-Design.md = Documents\App-Design.md
 		Documents\Introduction.md = Documents\Introduction.md
+		Documents\MVB.md = Documents\MVB.md
 		Documents\Vertical-Slice-Architecture.md = Documents\Vertical-Slice-Architecture.md
 	EndProjectSection
 EndProject
@@ -51,6 +53,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Weather.EntityFramework", "Source\App\Blazr.App.Weather.EntityFramework\Blazr.App.Weather.EntityFramework.csproj", "{2BA1A997-3B8F-46BE-882B-5A4829EED3E6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Weather.API", "Source\App\Blazr.App.Weather.API\Blazr.App.Weather.API.csproj", "{221233EB-17E3-4886-A8FB-9954DBD5C250}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployments", "Deployments", "{F793F8FF-3812-4FEA-BA2C-8BF2D2D112C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,7 +129,7 @@ Global
 		{5EF98895-3A19-428C-B91F-7EAF2FCD49F4} = {B0C6C72D-97AA-49B3-8392-611DD7BB8133}
 		{AC51BBA3-4182-4F47-81D2-045299CC5819} = {B0C6C72D-97AA-49B3-8392-611DD7BB8133}
 		{8EC81A0B-AF9A-0692-CFEF-564CB2C7C380} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
-		{258B3F80-0F70-3630-4E66-B4BD4407CEB6} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
+		{258B3F80-0F70-3630-4E66-B4BD4407CEB6} = {F793F8FF-3812-4FEA-BA2C-8BF2D2D112C3}
 		{021A123C-5242-4A26-A499-1A867B2A243F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{690A6BB6-C06E-4098-9913-09DB9CEF7553} = {A0770D77-E3E3-4521-8438-9DCBBC707787}
 		{47A9AF2D-159D-4A5C-A047-F4BCE35FCF99} = {A0770D77-E3E3-4521-8438-9DCBBC707787}

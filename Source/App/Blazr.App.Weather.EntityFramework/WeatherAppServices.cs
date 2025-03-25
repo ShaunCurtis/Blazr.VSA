@@ -3,15 +3,13 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Weather.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Blazr.App.Infrastructure.Server;
+namespace Blazr.App.Weather.EntityFramework;
 
-public static class WeatherApplicationServerServices
+public static partial class WeatherApplicationServerServices
 {
-    public static void AddWeatherAppServices(this IServiceCollection services)
+    public static void AddWeatherAppEFServices(this IServiceCollection services)
     {
         // Add the InMemory Database
         services.AddDbContextFactory<InMemoryWeatherTestDbContext>(options

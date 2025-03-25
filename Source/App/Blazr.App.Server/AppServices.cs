@@ -7,7 +7,7 @@ using Blazored.Toast;
 using Blazr.App.Invoice.Core;
 using Blazr.App.Invoice.Infrastructure.Server;
 using Blazr.App.Presentation;
-using Blazr.App.Weather.Core;
+using Blazr.App.Weather.EntityFramework;
 using Blazr.Auth.Core;
 using Blazr.Gallium;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -31,7 +31,7 @@ public static class ApplicationServerServices
         // Add MediatR
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
                 typeof(DmoCustomer).Assembly
-                ,typeof(DmoWeatherForecast).Assembly
+                , typeof(Blazr.App.Weather.EntityFramework.WeatherApplicationServerServices).Assembly
                 ));
 
         // Add the Gallium Message Bus Server services
@@ -52,6 +52,6 @@ public static class ApplicationServerServices
         services.AddQuickGridEntityFrameworkAdapter();
 
         services.AddInvoiceAppServices();
-        services.AddWeatherAppServices();
+        services.AddWeatherAppEFServices();
     }
 }

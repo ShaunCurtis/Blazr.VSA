@@ -7,7 +7,7 @@ using Blazr.App.Core;
 using Blazr.App.Weather.Core;
 using Blazr.EditStateTracker.Core;
 
-namespace Blazr.App.Presentation;
+namespace Blazr.App.Weather.Presentation;
 
 public sealed class WeatherForecastEditContext : BaseRecordEditContext<DmoWeatherForecast, WeatherForecastId>, IRecordEditContext<DmoWeatherForecast>
 {
