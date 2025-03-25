@@ -7,13 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="DataSources\InMemoryWeatherTestDbContext.cs~RF2c5409a.TMP" />
-    <None Remove="DataSources\WeatherTestDataProvider.cs~RF2cac9e6.TMP" />
-    <None Remove="Users\EntityObjects\UserMap.cs~RF2b97929.TMP" />
-    <None Remove="WeatherForecasts\EntityObjects\DmoWeatherForecast.cs~RF2648f7d.TMP" />
-  </ItemGroup>
-
-  <ItemGroup>
 	  <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
 	  <PackageReference Include="MediatR" Version="12.4.1" />
 	  <PackageReference Include="Blazored.Toast" Version="4.2.1" />
@@ -23,17 +16,10 @@
 	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
 	  <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.2" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.2" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\Blazor.Antimony\Blazor.Antimony.csproj" />
-    <ProjectReference Include="..\..\Libraries\Blazr.Antimony.EntityFramework\Blazr.Antimony.EntityFramework.csproj" />
     <ProjectReference Include="..\..\Libraries\Blazr.EditStateTracker\Blazr.EditStateTracker.csproj" />
     <ProjectReference Include="..\..\Libraries\Blazr.FluentValidation\Blazr.FluentValidation.csproj" />
     <ProjectReference Include="..\..\Libraries\Blazr.Gallium\Blazr.Gallium.csproj" />
@@ -41,10 +27,6 @@
     <ProjectReference Include="..\Blazr.App.Shared\Blazr.App.Shared.csproj" />
     <ProjectReference Include="..\Blazr.App\Blazr.App.csproj" />
     <ProjectReference Include="..\Blazr.Auth\Blazr.Auth.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DataSources\Auth\" />
   </ItemGroup>
 
 </Project>

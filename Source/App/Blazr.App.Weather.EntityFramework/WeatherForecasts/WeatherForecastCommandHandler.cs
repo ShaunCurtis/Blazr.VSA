@@ -3,16 +3,10 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.Antimony.Infrastructure.EntityFramework;
-using Blazr.App.Weather.Core;
-using Blazr.App.Weather.Infrastructure;
-using Blazr.Gallium;
-using Microsoft.EntityFrameworkCore;
-
-namespace Blazr.App.Infrastructure.Server;
+namespace Blazr.App.Weather.EntityFramework;
 
 /// <summary>
-/// Mediatr Handler for executing commands against a WeatherForecast Entity
+/// Mediatr Handler for executing commands against a WeatherForecast Entity in an Entity Framework Context
 /// </summary>
 public sealed record WeatherForecastCommandHandler : IRequestHandler<WeatherForecastCommandRequest, Result<WeatherForecastId>>
 {

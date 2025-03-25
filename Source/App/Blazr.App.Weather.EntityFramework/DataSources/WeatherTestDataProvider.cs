@@ -3,11 +3,9 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Weather.Infrastructure;
 using Blazr.Auth.Core;
-using Microsoft.EntityFrameworkCore;
 
-namespace Blazr.App.Infrastructure;
+namespace Blazr.App.Weather.EntityFramework;
 
 public sealed class WeatherTestDataProvider
 {

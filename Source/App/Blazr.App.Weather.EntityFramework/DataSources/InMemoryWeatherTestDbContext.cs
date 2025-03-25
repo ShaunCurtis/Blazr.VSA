@@ -5,7 +5,7 @@
 /// ============================================================
 using Microsoft.EntityFrameworkCore;
 
-namespace Blazr.App.Weather.Infrastructure;
+namespace Blazr.App.Weather.EntityFramework;
 
 public sealed class InMemoryWeatherTestDbContext
     : DbContext
