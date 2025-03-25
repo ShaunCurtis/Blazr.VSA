@@ -3,7 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.Antimony.Core;
+using Blazr.Antimony;
 using static Blazr.App.Invoice.Core.InvoiceActions;
 
 namespace Blazr.App.Invoice.Core;

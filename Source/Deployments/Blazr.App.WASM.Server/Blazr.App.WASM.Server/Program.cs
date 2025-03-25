@@ -1,13 +1,20 @@
-using Blazr.App.WASM.Server.Client.Pages;
+using Blazr.App.WASM.Server;
 using Blazr.App.WASM.Server.Components;
+using Blazr.App.Weather.EntityFramework;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.AddAppServices();
+
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -21,6 +28,10 @@ else
     app.UseHsts();
 }
 
+app.Services.AddWeatherTestData();
+
+app.AddWeatherForecastAPIEndpoints();
+
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -28,6 +39,6 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(Blazr.App.WASM.Server.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(Blazr.App.Weather.Core.Date).Assembly);
 
 app.Run();

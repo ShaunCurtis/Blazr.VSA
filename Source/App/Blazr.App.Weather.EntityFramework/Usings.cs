@@ -1,4 +1,4 @@
-﻿global using Blazr.Antimony.Core;
+﻿global using Blazr.Antimony;
 global using Blazr.Antimony.Infrastructure.EntityFramework;
 global using Blazr.App.Weather.Core;
 global using Blazr.App.Weather.Infrastructure;

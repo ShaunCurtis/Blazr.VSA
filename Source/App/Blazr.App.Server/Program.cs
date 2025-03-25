@@ -19,6 +19,8 @@ builder.Services.AddAppServices();
 
 var app = builder.Build();
 
+app.MapDefaultEndpoints();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -34,8 +36,6 @@ app.Services.AddWeatherTestData();
 //var factory = app.Services.GetService<IDbContextFactory<InMemoryInvoiceTestDbContext>>();
 //if (factory is not null)
 //    InvoiceTestDataProvider.Instance().LoadDbContext<InMemoryInvoiceTestDbContext>(factory);
-
-app.AddWeatherForecastAPIEndpoints();
 
 app.UseHttpsRedirection();
 

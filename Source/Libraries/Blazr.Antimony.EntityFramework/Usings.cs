@@ -1,2 +1,2 @@
-﻿global using Blazr.Antimony.Core;
+﻿global using Blazr.Antimony;
 global using Microsoft.EntityFrameworkCore;

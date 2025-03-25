@@ -4,7 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazored.Toast.Services;
-using Blazr.Antimony.Core;
+using Blazr.Antimony;
 using Blazr.App.Invoice.Core;
 using Microsoft.AspNetCore.Components.Forms;
 

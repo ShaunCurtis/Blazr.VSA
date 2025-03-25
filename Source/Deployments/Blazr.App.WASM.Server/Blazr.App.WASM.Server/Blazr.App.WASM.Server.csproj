@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -7,6 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\App\Blazr.App.Invoice\Blazr.App.Invoice.csproj" />
+    <ProjectReference Include="..\..\..\App\Blazr.App.Weather.EntityFramework\Blazr.App.Weather.EntityFramework.csproj" />
+    <ProjectReference Include="..\..\..\Aspire\Blazr.VSA.ServiceDefaults\Blazr.VSA.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Blazr.App.WASM.Server.Client\Blazr.App.WASM.Server.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.3" />
   </ItemGroup>
