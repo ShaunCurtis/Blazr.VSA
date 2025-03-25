@@ -12,6 +12,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddAppServices();
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();

@@ -33,8 +33,7 @@ public static class ApplicationServerServices
 
         // Add MediatR
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
-                typeof(DmoCustomer).Assembly
-                , typeof(Blazr.App.Weather.EntityFramework.WeatherApplicationServerServices).Assembly
+                typeof(Blazr.App.Weather.EntityFramework.WeatherApplicationServerServices).Assembly
                 ));
 
         // Add the Gallium Message Bus Server services
