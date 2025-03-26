@@ -15,7 +15,7 @@ public static partial class InvoiceActions
     public readonly record struct AddInvoiceItemAction(DmoInvoiceItem Item, bool IsNew = true);
 }
 
-public sealed partial class InvoiceComposite
+public sealed partial class InvoiceEntity
 {
     /// <summary>
     /// Adds an InvoiceItem to the Invoice

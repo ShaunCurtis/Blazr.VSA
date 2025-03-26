@@ -13,7 +13,7 @@ namespace Blazr.App.Invoice.Presentation;
 public sealed class InvoiceItemEditBroker
 {
     private readonly IToastService _toastService;
-    private readonly InvoiceComposite _invoice;
+    private readonly InvoiceEntity _invoice;
     private InvoiceItemId _invoiceItemId = InvoiceItemId.Default;
 
     public IResult LastResult { get; private set; } = Result.Success();

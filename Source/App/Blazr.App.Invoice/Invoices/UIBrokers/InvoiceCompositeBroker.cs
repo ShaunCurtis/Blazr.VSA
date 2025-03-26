@@ -15,16 +15,13 @@ public sealed class InvoiceCompositeBroker
 
     public IResult LastResult { get; private set; } = Result.Success();
 
-    public InvoiceComposite Invoice { get; private set; }
+    public InvoiceEntity Invoice { get; private set; } = default!;
 
     public IQueryable<DmoInvoiceItem> InvoiceItems => this.Invoice.InvoiceItems.Select(item => item.Record).AsQueryable();
 
     public InvoiceCompositeBroker(IMediator mediator)
     {
         _dispatcher = mediator;
-
-        // Get a default Invoice
-        this.Invoice = InvoiceComposite.Default;
     }
 
     public async Task LoadAsync(InvoiceId id)
@@ -39,7 +36,7 @@ public sealed class InvoiceCompositeBroker
 
             LastResult = result;
 
-            if (result.HasSucceeded(out InvoiceComposite? invoice))
+            if (result.HasSucceeded(out InvoiceEntity? invoice))
                 this.Invoice = invoice!;
         }
     }
@@ -47,23 +44,20 @@ public sealed class InvoiceCompositeBroker
     public void Reset()
     {
         this.LastResult = Result.Success();
-        this.Invoice = InvoiceComposite.Default;
+        this.Invoice.ResetInvoice();
     }
 
     public async ValueTask<Result> SaveAsync()
     {
-        var result = await _dispatcher.Send(new InvoiceRequests.InvoiceSaveRequest(this.Invoice));
+        var result = await this.Invoice.PersistInvoiceAsync();
 
         LastResult = result;
 
-        if (result.IsFailure)
-            return result;
-
-        return this.Invoice.Dispatch(new InvoiceActions.SetAsPersistedAction());
+        return result;
     }
 
-    public Result FakePersistenceToAllowExit()
+    public void AllowExit()
     {
-        return this.Invoice.Dispatch(new InvoiceActions.SetAsPersistedAction());
+        this.Invoice.ResetInvoice();
     }
 }

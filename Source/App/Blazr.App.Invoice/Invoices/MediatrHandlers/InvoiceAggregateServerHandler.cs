@@ -16,16 +16,18 @@ namespace Blazr.App.Invoice.Infrastructure.Server;
 /// Mediatr Server Handler that builds an Invoice Aggregate
 /// It uses the Antimony Database Handlers to interface with the database
 /// </summary>
-public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceRequests.InvoiceRequest, Result<InvoiceComposite>>
+public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceRequests.InvoiceRequest, Result<InvoiceEntity>>
 {
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
+    private readonly IMediator _mediator;
 
-    public InvoiceAggregateServerHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory)
+    public InvoiceAggregateServerHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMediator mediator)
     {
         _factory = factory;
+        _mediator = mediator;
     }
 
-    public async Task<Result<InvoiceComposite>> Handle(InvoiceRequests.InvoiceRequest request, CancellationToken cancellationToken)
+    public async Task<Result<InvoiceEntity>> Handle(InvoiceRequests.InvoiceRequest request, CancellationToken cancellationToken)
     {
         var dbContext = _factory.CreateDbContext();
 
@@ -39,7 +41,7 @@ public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceReque
             var result = await dbContext.GetRecordAsync<DvoInvoice>(query);
             
             if (!result.HasSucceeded(out DvoInvoice? record))
-                return result.ConvertFail<InvoiceComposite>();
+                return result.ConvertFail<InvoiceEntity>();
             
             invoice = InvoiceMap.Map(record);
         }
@@ -53,13 +55,13 @@ public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceReque
             var result = await dbContext.GetItemsAsync<DboInvoiceItem>(query);
             
             if (!result.HasSucceeded(out ListItemsProvider<DboInvoiceItem>? records))
-                return result.ConvertFail<InvoiceComposite>();
+                return result.ConvertFail<InvoiceEntity>();
             
             invoiceItems = records.Items.Select(item => InvoiceItemMap.Map(item)).ToList();
         }
 
-        var invoiceComposite = new InvoiceComposite(invoice, invoiceItems);
+        var invoiceComposite = new InvoiceEntity(_mediator, invoice, invoiceItems);
 
-        return Result<InvoiceComposite>.Success(invoiceComposite);
+        return Result<InvoiceEntity>.Success(invoiceComposite);
     }
 }

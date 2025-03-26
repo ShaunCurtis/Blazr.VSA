@@ -4,14 +4,18 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony;
+using MediatR;
 
 namespace Blazr.App.Invoice.Core;
 
-public sealed partial class InvoiceComposite
+public sealed partial class InvoiceEntity
 {
+    private readonly IMediator _mediator;
     private readonly List<InvoiceItem> _items = new List<InvoiceItem>();
     private readonly List<InvoiceItem> _itemsBin = new List<InvoiceItem>();
     private readonly Invoice Invoice;
+    private readonly List<DmoInvoiceItem> _baseItems = new();
+    private readonly DmoInvoice _baseInvoice;
     private bool _processing;
     private IEnumerable<InvoiceItemRecord> _itemRecords => _items.Select(item => item.AsRecord);
 
@@ -29,8 +33,11 @@ public sealed partial class InvoiceComposite
 
     public event EventHandler<InvoiceId>? StateHasChanged;
 
-    public InvoiceComposite(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> items)
+    public InvoiceEntity(IMediator mediator, DmoInvoice invoice, IEnumerable<DmoInvoiceItem> items)
     {
+        _mediator = mediator;
+        _baseInvoice = invoice;
+        _baseItems.AddRange(items);
         // We create new records for the Invoice and InvoiceItems
         this.Invoice = new Invoice(invoice);
 
@@ -46,15 +53,15 @@ public sealed partial class InvoiceComposite
 
     private void ItemUpdated(InvoiceItem item)
     {
-        this.Process();
+        this.ApplyRules();
     }
 
     private void InvoiceUpdated()
     {
-        this.Process();
+        this.ApplyRules();
     }
 
-    private void Process()
+    private void ApplyRules()
     {
         // prevent calling oneself
         if (_processing)
@@ -73,7 +80,4 @@ public sealed partial class InvoiceComposite
 
         _processing = false;
     }
-
-    public static InvoiceComposite Default
-        => new InvoiceComposite(InvoiceEntityProvider.DefaultRecord, Enumerable.Empty<DmoInvoiceItem>());
 }

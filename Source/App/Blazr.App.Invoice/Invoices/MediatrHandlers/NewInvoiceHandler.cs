@@ -12,21 +12,23 @@ namespace Blazr.App.Invoice.Core;
 /// <summary>
 /// Mediatr Handler to return a new Invoice 
 /// </summary>
-public record NewInvoiceHandler : IRequestHandler<InvoiceRequests.InvoiceNewRequest, Result<InvoiceComposite>>
+public record NewInvoiceHandler : IRequestHandler<InvoiceRequests.InvoiceNewRequest, Result<InvoiceEntity>>
 {
     private IEntityProvider<DmoInvoice, InvoiceId> _entityProvider;
+    private IMediator _mediator;
 
-    public NewInvoiceHandler(IEntityProvider<DmoInvoice, InvoiceId> entityProvider)
+    public NewInvoiceHandler(IEntityProvider<DmoInvoice, InvoiceId> entityProvider, IMediator mediator)
     {
+        _mediator = mediator;
         _entityProvider = entityProvider;
     }
 
-    public Task<Result<InvoiceComposite>> Handle(InvoiceRequests.InvoiceNewRequest request, CancellationToken cancellationToken)
+    public Task<Result<InvoiceEntity>> Handle(InvoiceRequests.InvoiceNewRequest request, CancellationToken cancellationToken)
     {
         var invoiceRecord = _entityProvider.NewRecord;
 
-        var invoiceComposite = new InvoiceComposite(invoiceRecord, Enumerable.Empty<DmoInvoiceItem>());
+        var invoiceComposite = new InvoiceEntity(_mediator, invoiceRecord, Enumerable.Empty<DmoInvoiceItem>());
 
-        return Task.FromResult(Result<InvoiceComposite>.Success(invoiceComposite));
+        return Task.FromResult(Result<InvoiceEntity>.Success((InvoiceEntity)invoiceComposite));
     }
 }

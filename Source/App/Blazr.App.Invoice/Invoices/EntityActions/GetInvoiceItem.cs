@@ -11,7 +11,7 @@ public static partial class InvoiceActions
     public readonly record struct GetInvoiceItemAction(InvoiceItemId id);
 }
 
-public sealed partial class InvoiceComposite
+public sealed partial class InvoiceEntity
 {
     /// <summary>
     /// Gets an existing Invoice Item.  If one doesn't exist, returns a new Invoice Item.

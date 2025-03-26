@@ -85,8 +85,8 @@ else
     private string _message
         => _isError ? this.Broker.LastResult.Message ?? "Unspecified Error" : "Invoice changes are not currently saved to the data store!";
 
-    private InvoiceComposite _invoice
-        => this.Broker.Invoice ?? InvoiceComposite.Default;
+    private InvoiceEntity _invoice
+        => this.Broker.Invoice;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -141,7 +141,7 @@ else
         if (result.ResultType != ModalResultType.OK && _invoice.InvoiceRecord.State == CommandState.Add)
         {
             this.ToastService.ShowInfo("You exited creating the new invoice.");
-            this.Broker.FakePersistenceToAllowExit();
+            this.Broker.AllowExit();
             this.NavManager.NavigateTo($"/invoices");
         }
     }
@@ -171,7 +171,7 @@ else
     private Task ExitWithoutSavingAsync()
     {
         // We aren't saving the composite so we can update the state so we can exit
-        this.Broker.FakePersistenceToAllowExit();
+        this.Broker.AllowExit();
 
         this.NavManager.NavigateTo($"/invoices");
         return Task.CompletedTask;

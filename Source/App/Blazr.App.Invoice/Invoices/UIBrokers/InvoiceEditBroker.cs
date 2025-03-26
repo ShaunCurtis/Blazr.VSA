@@ -16,7 +16,7 @@ namespace Blazr.App.Invoice.Presentation;
 public sealed class InvoiceEditBroker
 {
     private readonly IToastService _toastService;
-    private readonly InvoiceComposite _invoice;
+    private readonly InvoiceEntity _invoice;
 
     public IResult LastResult { get; private set; } = Result.Success();
     public EditContext EditContext { get; private set; }

@@ -10,29 +10,30 @@ using Blazr.App.Core;
 namespace Blazr.App.Invoice.Core;
 public static partial class InvoiceActions
 {
-    public readonly record struct UpdateInvoiceItemAction(DmoInvoiceItem Item);
+    public readonly record struct DeleteInvoiceItemAction(InvoiceItemId Id);
 }
 
 /// <summary>
 /// Contains all the actions that can be applied to the Invoice Aggregate
 /// </summary>
-public sealed partial class InvoiceComposite
+public sealed partial class InvoiceEntity
 {
-
     /// <summary>
-    /// Updates an existing InvoiceItem in the Invoice
+    /// Moves an InvoiveItem to the Bin
     /// </summary>
     /// <param name="action"></param>
     /// <returns></returns>
-    public Result Dispatch(UpdateInvoiceItemAction action)
+    public Result Dispatch(DeleteInvoiceItemAction action)
     {
-        var invoiceItem = _items.FirstOrDefault(item => item.Record.Id.Equals(action.Item.Id));
-
+        var invoiceItem = this._items.FirstOrDefault(item => item.Record.Id == action.Id);
         if (invoiceItem is null)
-            return Result.Fail(new ActionException($"No Invoice Item with Id: {action.Item.Id} exists in the Invoice."));
+            return Result.Fail(new ActionException($"No Invoice Item with Id: {action.Id} exists in the Invoice"));
 
-        invoiceItem.State = invoiceItem.State.AsDirty;
-        invoiceItem.Update(action.Item);
+        // we don't set the Command State to delete because the handler needs to know
+        // if the deleted item is New and therefore not in the data store
+        // The fact that the item is in the Bin is enough to delete it.
+        _itemsBin.Add(invoiceItem);
+        _items.Remove(invoiceItem);
         this.Process();
 
         return Result.Success();
