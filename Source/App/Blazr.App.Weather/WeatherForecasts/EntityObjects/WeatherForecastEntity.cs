@@ -3,57 +3,37 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.Antimony;
-using MediatR;
-
 namespace Blazr.App.Weather.Core;
 
 public sealed partial class WeatherForecastEntity
 {
     private readonly IMediator _mediator;
-    private readonly WeatherForecast _weatherForecast ;
-    private readonly DmoWeatherForecast _baseInvoice;
+    private readonly WeatherForecast _item;
+    private readonly DmoWeatherForecast _baseItem;
     private bool _processing;
-    private IEnumerable<InvoiceItemRecord> _itemRecords => _items.Select(item => item.AsRecord);
 
-    public InvoiceRecord InvoiceRecord 
-        => this.Invoice.AsRecord(_itemRecords.ToList());
+    public WeatherForecastId Id => _item.Id;
 
-    public IEnumerable<InvoiceItemRecord> InvoiceItems
-        => _items.Select(item => item.AsRecord).AsEnumerable();
+    public WeatherForecastRecord WeatherForecastRecord
+        => _item.AsRecord();
 
-    public IEnumerable<InvoiceItemRecord> InvoiceItemsBin
-        => _itemsBin.Select(item => item.AsRecord).AsEnumerable();
+    public bool IsDirty => _item.IsDirty;
 
-    public bool IsDirty
-        => this.Invoice.IsDirty ? true : _items.Any(item => item.IsDirty);
+    public event EventHandler<WeatherForecastId>? StateHasChanged;
 
-    public event EventHandler<InvoiceId>? StateHasChanged;
-
-    public InvoiceEntity(IMediator mediator, DmoInvoice invoice, IEnumerable<DmoInvoiceItem> items)
+    public WeatherForecastEntity(IMediator mediator, DmoWeatherForecast item)
     {
         _mediator = mediator;
-        _baseInvoice = invoice;
-        _baseItems.AddRange(items);
+        _baseItem = item;
         // We create new records for the Invoice and InvoiceItems
-        this.Invoice = new Invoice(invoice);
+        _item = new WeatherForecast(item);
 
         // Detect if the Invoice is a new record
-        if (invoice.Id.IsDefault)
-            this.Invoice.State = CommandState.Add;
-
-        foreach (var item in items)
-        {
-            _items.Add(new InvoiceItem(item with { }));
-        }
+        if (item.Id.IsDefault)
+            _item.State = CommandState.Add;
     }
 
-    private void ItemUpdated(InvoiceItem item)
-    {
-        this.ApplyRules();
-    }
-
-    private void InvoiceUpdated()
+    private void Updated()
     {
         this.ApplyRules();
     }
@@ -65,15 +45,10 @@ public sealed partial class WeatherForecastEntity
             return;
 
         _processing = true;
-        decimal total = 0m;
-        foreach (var item in _items)
-            total += item.Amount;
 
-        if (total != this.InvoiceRecord.Record.TotalAmount)
-        {
-            this.Invoice.Update(this.InvoiceRecord.Record with { TotalAmount = total });
-        }
-        this.StateHasChanged?.Invoke(this, this.InvoiceRecord.Record.Id);
+        // apply rules
+
+        this.StateHasChanged?.Invoke(this, this.Id);
 
         _processing = false;
     }

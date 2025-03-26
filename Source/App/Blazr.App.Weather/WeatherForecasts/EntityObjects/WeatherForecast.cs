@@ -14,6 +14,8 @@ internal sealed class WeatherForecast
 
     public bool IsDirty
         => this.State != CommandState.None;
+    public WeatherForecastRecord AsRecord()
+        => new(this.Record, this.State);
 
     public WeatherForecast(DmoWeatherForecast item, bool isNew = false)
     {
