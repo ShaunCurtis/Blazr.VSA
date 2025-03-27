@@ -3,30 +3,27 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using static Blazr.App.Weather.Core.InvoiceActions;
+
 namespace Blazr.App.Weather.Core;
+
+public static partial class InvoiceActions
+{
+    public readonly record struct PersistWeatherForecastAction(DmoWeatherForecast? item = null)
+    {
+        public static PersistWeatherForecastAction Empty => new();
+    }
+}
 
 public sealed partial class WeatherForecastEntity
 {
-    /// <summary>
-    /// Persists the Composite to the data store and sets it as saved.
-    /// i.e. it sets the CommandState on all the internal items as none. 
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async ValueTask<IResult> PersistWeatherForecastAsync(CancellationToken cancellationToken = new())
+    public async ValueTask<IResult> DispatchAsync(PersistWeatherForecastAction action, CancellationToken cancellationToken = new())
     {
-        var result = await _mediator.Send(new WeatherForecastCommandRequest(_item.Record, _item.State), cancellationToken);
-
-        if (result.IsSuccess)
-            _item.State = CommandState.None;
-        
-        return result;
-    }
-
-    public async ValueTask<IResult> PersistWeatherForecastAsync(DmoWeatherForecast item, CancellationToken cancellationToken = new())
-    {
-        _item.Update(item);
-        this.Updated();
+        if (action.item is not null)
+        {
+            _item.Update(action.item);
+            await this.UpdatedAsync();
+        }
 
         var result = await _mediator.Send(new WeatherForecastCommandRequest(_item.Record, _item.State), cancellationToken);
 

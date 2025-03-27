@@ -8,14 +8,15 @@ namespace Blazr.App.Weather.Core;
 public sealed partial class WeatherForecastEntity
 {
     /// <summary>
-    /// Resets the Weather Forecast to the original values
+    /// Resets the Weather Foerecast to the original state
     /// </summary>
     /// <returns></returns>
-    public Result ResetWeatherForecast()
+    public async ValueTask<Result> ResetWeatherForecastAsync()
     {
         _item.Update(_baseItem);
+        _item.State = _baseState;
 
-        this.Updated();
+        await this.UpdatedAsync();
 
         return Result.Success();
     }

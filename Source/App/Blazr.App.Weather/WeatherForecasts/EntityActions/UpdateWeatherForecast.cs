@@ -19,10 +19,10 @@ public sealed partial class WeatherForecastEntity
     /// </summary>
     /// <param name="action"></param>
     /// <returns></returns>
-    public Result Dispatch(UpdateWeatherForecastAction action)
+    public async ValueTask<Result> DispatchAsync(UpdateWeatherForecastAction action)
     {
         _item.Update(action.Item);
-        this.Updated();
+        await this.UpdatedAsync();
         return Result.Success();
     }
 }

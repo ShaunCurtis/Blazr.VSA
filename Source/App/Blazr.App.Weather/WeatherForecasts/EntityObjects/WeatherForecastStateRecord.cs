@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Weather.Core;
 
-public record WeatherForecastRecord(DmoWeatherForecast Record, CommandState State)
+public record WeatherForecastStateRecord(DmoWeatherForecast Record, CommandState State)
 {
     public bool IsDirty
         => this.State != CommandState.None;
