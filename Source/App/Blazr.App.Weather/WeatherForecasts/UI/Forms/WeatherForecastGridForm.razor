@@ -33,7 +33,7 @@
 
         <PropertyColumn Title="Summary" Sortable="true" Property="@(c => c!.Summary)" Align=Align.End />
 
-        <TemplateColumn Class="nowrap-column" Align="Align.End">
+        <TemplateColumn Class="nowrap-column no-max-width" Align="Align.End">
             <UIButtonGroup>
                 <AuthorizeRecordButton Policy=@AppPolicies.IsManagerPolicy AuthFields="this.GetAuthFields(context)" type="button" class="btn btn-sm btn-danger" ClickEvent="() => OnDeleteAsync(context.Id)">Delete</AuthorizeRecordButton>
                 <AuthorizeRecordButton Policy=@AppPolicies.IsEditorPolicy AuthFields="this.GetAuthFields(context)" type="button" class="btn btn-sm btn-primary" ClickEvent="() => OnEditAsync(context.Id)">Edit</AuthorizeRecordButton>

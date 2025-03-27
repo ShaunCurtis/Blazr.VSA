@@ -23,7 +23,7 @@ public sealed partial class InvoiceEntity
             _items.Add(new InvoiceItem(item with { }));
         }
 
-        this.Process();
+        this.ApplyRules();
 
         this.Invoice.Update(_baseInvoice);
 

@@ -34,7 +34,7 @@ public sealed partial class InvoiceEntity
         // The fact that the item is in the Bin is enough to delete it.
         _itemsBin.Add(invoiceItem);
         _items.Remove(invoiceItem);
-        this.Process();
+        this.ApplyRules();
 
         return Result.Success();
     }

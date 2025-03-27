@@ -25,7 +25,6 @@ public sealed partial class WeatherForecastEntity
     {
         _mediator = mediator;
         _baseItem = item;
-        // We create new records for the Invoice and InvoiceItems
         _item = new WeatherForecast(item);
 
         // Detect if the Invoice is a new record

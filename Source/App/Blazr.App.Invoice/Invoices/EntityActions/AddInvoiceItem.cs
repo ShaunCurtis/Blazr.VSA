@@ -30,7 +30,7 @@ public sealed partial class InvoiceEntity
         var invoiceItemRecord = action.Item with { InvoiceId = this.InvoiceRecord.Record.Id };
         var invoiceItem = new InvoiceItem(invoiceItemRecord, action.IsNew);
         _items.Add(invoiceItem);
-        this.Process();
+        this.ApplyRules();
 
         return Result.Success();
     }

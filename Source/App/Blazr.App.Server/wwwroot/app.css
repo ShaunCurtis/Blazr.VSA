@@ -58,3 +58,7 @@ h1:focus {
 .label-small {
     font-size: 0.75rem;
 }
+
+.no-max-width {
+    max-width: none !important;
+}

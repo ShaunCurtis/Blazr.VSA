@@ -33,7 +33,7 @@ public sealed partial class InvoiceEntity
 
         invoiceItem.State = invoiceItem.State.AsDirty;
         invoiceItem.Update(action.Item);
-        this.Process();
+        this.ApplyRules();
 
         return Result.Success();
     }
