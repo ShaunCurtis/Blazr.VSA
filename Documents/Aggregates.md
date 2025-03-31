@@ -6,7 +6,7 @@ Updating an object where the consequences of the change are limited to the objec
  
 An aggregate is a black box.  All changes are submitted to the black box, not the individual objects within it.  The black box applies the changes and runs the logic to ensure consistency of the entities within the box.
 
-Be aware, an aggregate only has purpose in a mutation context: you don't aggregates to list or display data.  
+Be aware, an aggregate only has purpose in a mutation context: you don't need aggregates to list or display data.  
 
 In an invoice, delete a line item, and the aggregate needs to track the deletion of the item, calculate the new total amount and updates the invoice.  Persist the aggregate to the data store, and the aggregate needs to hold the necessary state information to apply the appropriate update/add/delete actions as a *Unit of Work* to the data store.
 

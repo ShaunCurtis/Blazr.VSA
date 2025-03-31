@@ -5,6 +5,10 @@
 /// ============================================================
 namespace Blazr.App.Weather.Core;
 
+/// <summary>
+/// This is an internal entity class that respreseents a DmoWeatherForecast record and its state
+/// The exteenal readonly object is <see cref="WeatherForecastStateRecord"/>
+/// </summary>
 public sealed partial class WeatherForecastEntity
 {
     private sealed class WeatherForecastContext
