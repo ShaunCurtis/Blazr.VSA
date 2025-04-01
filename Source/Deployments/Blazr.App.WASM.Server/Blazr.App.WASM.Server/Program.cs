@@ -41,6 +41,6 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(Blazr.App.Weather.Core.Date).Assembly);
+    .AddAdditionalAssemblies(typeof(Blazr.App.WASM.Server.Client._Imports).Assembly,typeof(Blazr.App.Weather.Core.Date).Assembly);
 
 app.Run();
