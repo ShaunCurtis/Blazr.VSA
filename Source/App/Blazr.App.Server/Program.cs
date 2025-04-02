@@ -34,10 +34,6 @@ if (!app.Environment.IsDevelopment())
 
 app.Services.AddInvoiceTestData();
 app.Services.AddWeatherTestData();
-//// get the DbContext factory and add the test data
-//var factory = app.Services.GetService<IDbContextFactory<InMemoryInvoiceTestDbContext>>();
-//if (factory is not null)
-//    InvoiceTestDataProvider.Instance().LoadDbContext<InMemoryInvoiceTestDbContext>(factory);
 
 app.UseHttpsRedirection();
 
