@@ -17,7 +17,7 @@ public sealed class UserRecordHandler : IRequestHandler<UserRecordRequest, Resul
         _factory = dbContextFactory;
     }
 
-    public async Task<Result<DmoUser>> Handle(UserRecordRequest request, CancellationToken cancellationToken)
+    public async Task<Result<DmoUser>> HandleAsync(UserRecordRequest request, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 

@@ -4,13 +4,13 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony;
-using MediatR;
+using Blazr.Antimony.Mediator;
 
 namespace Blazr.App.Invoice.Core;
 
 public sealed partial class InvoiceEntity
 {
-    private readonly IMediator _mediator;
+    private readonly IMediatorBroker _mediator;
     private readonly List<InvoiceItem> _items = new List<InvoiceItem>();
     private readonly List<InvoiceItem> _itemsBin = new List<InvoiceItem>();
     private readonly Invoice Invoice;
@@ -33,7 +33,7 @@ public sealed partial class InvoiceEntity
 
     public event EventHandler<InvoiceId>? StateHasChanged;
 
-    public InvoiceEntity(IMediator mediator, DmoInvoice invoice, IEnumerable<DmoInvoiceItem> items)
+    public InvoiceEntity(IMediatorBroker mediator, DmoInvoice invoice, IEnumerable<DmoInvoiceItem> items)
     {
         _mediator = mediator;
         _baseInvoice = invoice;

@@ -10,6 +10,8 @@ using Blazr.Gallium;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazr.App.Weather.EntityFramework;
 using Blazored.Toast;
+using Blazr.Antimony.Mediator;
+using System.Reflection;
 
 namespace Blazr.App.WASM.Server;
 
@@ -31,10 +33,10 @@ public static class ApplicationServerServices
             }
         });
 
-        // Add MediatR
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
+        // Add Mediator
+        services.AddMediator(new Assembly[] {
                 typeof(Blazr.App.Weather.EntityFramework.WeatherApplicationServerServices).Assembly
-                ));
+        });
 
         // Add the Gallium Message Bus Server services
         services.AddScoped<IMessageBus, MessageBus>();

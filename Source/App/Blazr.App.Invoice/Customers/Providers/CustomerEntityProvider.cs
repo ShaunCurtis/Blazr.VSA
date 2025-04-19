@@ -6,13 +6,13 @@
 using Blazr.Antimony;
 using Blazr.App.Core;
 using Blazr.App.Presentation;
-using MediatR;
+using Blazr.Antimony.Mediator;
 
 namespace Blazr.App.Invoice.Core;
 
 public class CustomerEntityProvider : IEntityProvider<DmoCustomer, CustomerId>
 {
-    private readonly IMediator _mediator;
+    private readonly IMediatorBroker _mediator;
 
     public Func<CustomerId,  Task<Result<DmoCustomer>>> RecordRequest
         => (id) => _mediator.Send(new CustomerRecordRequest(id));
@@ -29,7 +29,7 @@ public class CustomerEntityProvider : IEntityProvider<DmoCustomer, CustomerId>
             SortDescending = state.SortDescending
         });
 
-    public CustomerEntityProvider(IMediator mediator)   
+    public CustomerEntityProvider(IMediatorBroker mediator)   
     {
         _mediator = mediator;
     }

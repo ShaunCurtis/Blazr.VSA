@@ -24,7 +24,7 @@ public sealed class WeatherForecastAPIListHandler : IRequestHandler<WeatherForec
         _authStateProvider = authenticationStateProvider;
     }
 
-    public async Task<Result<ListItemsProvider<DmoWeatherForecast>>> Handle(WeatherForecastListRequest request, CancellationToken cancellationToken)
+    public async Task<Result<ListItemsProvider<DmoWeatherForecast>>> HandleAsync(WeatherForecastListRequest request, CancellationToken cancellationToken)
     {
         var authState = await _authStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;

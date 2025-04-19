@@ -5,7 +5,7 @@
 /// ============================================================
 using Blazr.Antimony;
 using Blazr.App.Core;
-using MediatR;
+using Blazr.Antimony.Mediator;
 
 namespace Blazr.App.Invoice.Core;
 
@@ -15,15 +15,15 @@ namespace Blazr.App.Invoice.Core;
 public record NewInvoiceHandler : IRequestHandler<InvoiceRequests.InvoiceNewRequest, Result<InvoiceEntity>>
 {
     private IEntityProvider<DmoInvoice, InvoiceId> _entityProvider;
-    private IMediator _mediator;
+    private IMediatorBroker _mediator;
 
-    public NewInvoiceHandler(IEntityProvider<DmoInvoice, InvoiceId> entityProvider, IMediator mediator)
+    public NewInvoiceHandler(IEntityProvider<DmoInvoice, InvoiceId> entityProvider, IMediatorBroker mediator)
     {
         _mediator = mediator;
         _entityProvider = entityProvider;
     }
 
-    public Task<Result<InvoiceEntity>> Handle(InvoiceRequests.InvoiceNewRequest request, CancellationToken cancellationToken)
+    public Task<Result<InvoiceEntity>> HandleAsync(InvoiceRequests.InvoiceNewRequest request, CancellationToken cancellationToken)
     {
         var invoiceRecord = _entityProvider.NewRecord;
 

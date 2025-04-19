@@ -4,7 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony;
-using MediatR;
+using Blazr.Antimony.Mediator;
 
 
 namespace Blazr.App.Invoice.Core;

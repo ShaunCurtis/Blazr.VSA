@@ -17,7 +17,7 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
         _factory = factory;
     }
 
-    public async Task<Result<ListItemsProvider<DmoWeatherForecast>>> Handle(WeatherForecastListRequest request, CancellationToken cancellationToken)
+    public async Task<Result<ListItemsProvider<DmoWeatherForecast>>> HandleAsync(WeatherForecastListRequest request, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 

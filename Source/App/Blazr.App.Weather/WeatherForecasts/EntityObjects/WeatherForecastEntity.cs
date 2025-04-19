@@ -9,7 +9,7 @@ namespace Blazr.App.Weather.Core;
 
 public sealed partial class WeatherForecastEntity
 {
-    private readonly IMediator _mediator;
+    private readonly IMediatorBroker _mediator;
     private readonly WeatherForecastContext _item;
     private readonly DmoWeatherForecast _baseItem;
     private readonly CommandState _baseState;
@@ -24,7 +24,7 @@ public sealed partial class WeatherForecastEntity
 
     public event EventHandler<WeatherForecastId>? StateHasChanged;
 
-    public WeatherForecastEntity(IMediator mediator, DmoWeatherForecast item)
+    public WeatherForecastEntity(IMediatorBroker mediator, DmoWeatherForecast item)
     {
         _item = new WeatherForecastContext(item);
 

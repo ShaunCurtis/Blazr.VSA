@@ -7,11 +7,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="WeatherForecasts\EntityActions\ResetWeatherForecast.cs~RF5397567.TMP" />
-	  <None Remove="WeatherForecasts\EntityActions\UpdateWeatherForecast.cs~RF656ce6a.TMP" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\..\Libraries\Blazor.Antimony\Blazor.Antimony.csproj" />
 		<ProjectReference Include="..\..\Libraries\Blazr.UI\Blazr.UI.csproj" />
 		<ProjectReference Include="..\Blazr.Auth\Blazr.Auth.csproj" />

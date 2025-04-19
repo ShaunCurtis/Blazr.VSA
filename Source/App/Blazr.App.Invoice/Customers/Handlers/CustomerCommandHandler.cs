@@ -4,10 +4,10 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony;
+using Blazr.Antimony.Mediator;
 using Blazr.Antimony.Infrastructure.EntityFramework;
 using Blazr.App.Invoice.Core;
 using Blazr.Gallium;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blazr.App.Invoice.Infrastructure;
@@ -26,7 +26,7 @@ public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandReq
         _messageBus = messageBus;
     }
 
-    public async Task<Result<CustomerId>> Handle(CustomerCommandRequest request, CancellationToken cancellationToken)
+    public async Task<Result<CustomerId>> HandleAsync(CustomerCommandRequest request, CancellationToken cancellationToken)
     {
         var dbContext = _factory.CreateDbContext();
 

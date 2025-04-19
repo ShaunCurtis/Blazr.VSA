@@ -6,7 +6,7 @@
 using Blazr.Antimony;
 using Blazr.Antimony.Infrastructure.EntityFramework;
 using Blazr.App.Invoice.Core;
-using MediatR;
+using Blazr.Antimony.Mediator;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -19,15 +19,15 @@ namespace Blazr.App.Invoice.Infrastructure.Server;
 public sealed class InvoiceAggregateServerHandler : IRequestHandler<InvoiceRequests.InvoiceRequest, Result<InvoiceEntity>>
 {
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
-    private readonly IMediator _mediator;
+    private readonly IMediatorBroker _mediator;
 
-    public InvoiceAggregateServerHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMediator mediator)
+    public InvoiceAggregateServerHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMediatorBroker mediator)
     {
         _factory = factory;
         _mediator = mediator;
     }
 
-    public async Task<Result<InvoiceEntity>> Handle(InvoiceRequests.InvoiceRequest request, CancellationToken cancellationToken)
+    public async Task<Result<InvoiceEntity>> HandleAsync(InvoiceRequests.InvoiceRequest request, CancellationToken cancellationToken)
     {
         var dbContext = _factory.CreateDbContext();
 

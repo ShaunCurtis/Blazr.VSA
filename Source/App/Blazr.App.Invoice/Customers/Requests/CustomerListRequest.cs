@@ -5,7 +5,7 @@
 /// ============================================================
 using Blazr.Antimony;
 using Blazr.App.Core;
-using MediatR;
+using Blazr.Antimony.Mediator;
 
 namespace Blazr.App.Invoice.Core;
 

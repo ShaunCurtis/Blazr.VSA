@@ -5,13 +5,13 @@
 /// ============================================================
 using Blazr.Antimony;
 using Blazr.App.Invoice.Core;
-using MediatR;
+using Blazr.Antimony.Mediator;
 
 namespace Blazr.App.Invoice.Presentation;
 
 public sealed class InvoiceCompositeBroker
 {
-    private readonly IMediator _dispatcher;
+    private readonly IMediatorBroker _dispatcher;
 
     public IResult LastResult { get; private set; } = Result.Success();
 
@@ -19,7 +19,7 @@ public sealed class InvoiceCompositeBroker
 
     public IQueryable<DmoInvoiceItem> InvoiceItems => this.Invoice.InvoiceItems.Select(item => item.Record).AsQueryable();
 
-    public InvoiceCompositeBroker(IMediator mediator)
+    public InvoiceCompositeBroker(IMediatorBroker mediator)
     {
         _dispatcher = mediator;
     }

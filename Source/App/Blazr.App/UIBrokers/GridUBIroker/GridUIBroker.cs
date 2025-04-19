@@ -18,7 +18,7 @@ public class GridUIBroker<TRecord, TKey>
     where TKey : notnull, IEntityId
 {
     // Services
-    protected readonly IMediator _dataBroker;
+    protected readonly IMediatorBroker _dataBroker;
     protected readonly IMessageBus _messageBus;
     private readonly ScopedStateProvider _gridStateStore;
     private readonly IEntityProvider<TRecord, TKey> _entityProvider;
@@ -29,7 +29,7 @@ public class GridUIBroker<TRecord, TKey>
 
     public event EventHandler<EventArgs>? StateChanged;
     
-    public GridUIBroker(IMediator mediator, IMessageBus messageBus, IEntityProvider<TRecord, TKey> entityProvider, ScopedStateProvider scopedStateProvider)
+    public GridUIBroker(IMediatorBroker mediator, IMessageBus messageBus, IEntityProvider<TRecord, TKey> entityProvider, ScopedStateProvider scopedStateProvider)
     {
         _dataBroker = mediator;
         _messageBus = messageBus;

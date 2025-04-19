@@ -9,11 +9,11 @@ public abstract class LookUpUIBroker<TItem>
     : ILookUpUIBroker<TItem>
         where TItem : class, ILookupItem, new()
 {
-    protected IMediator Mediator;
+    protected IMediatorBroker Mediator;
 
     public IEnumerable<TItem> Items { get; protected set; } = Enumerable.Empty<TItem>();
 
-    public LookUpUIBroker(IMediator dataBroker)
+    public LookUpUIBroker(IMediatorBroker dataBroker)
     {
         Mediator = dataBroker;
     }

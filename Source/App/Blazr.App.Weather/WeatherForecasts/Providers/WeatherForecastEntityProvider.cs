@@ -11,7 +11,7 @@ namespace Blazr.App.Weather.Presentation;
 
 public class WeatherForecastEntityProvider : IEntityProvider<DmoWeatherForecast, WeatherForecastId>
 {
-    private readonly IMediator _mediator;
+    private readonly IMediatorBroker _mediator;
     private IdentityId _ownerId = IdentityId.Default;
 
     public Func<WeatherForecastId, Task<Result<DmoWeatherForecast>>> RecordRequest
@@ -29,7 +29,7 @@ public class WeatherForecastEntityProvider : IEntityProvider<DmoWeatherForecast,
             SortDescending = state.SortDescending
         });
 
-    public WeatherForecastEntityProvider(IMediator mediator)
+    public WeatherForecastEntityProvider(IMediatorBroker mediator)
     {
         _mediator = mediator;
     }

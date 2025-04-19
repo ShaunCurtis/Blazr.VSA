@@ -19,7 +19,7 @@ public sealed record WeatherForecastCommandHandler : IRequestHandler<WeatherFore
         _messageBus = messageBus;
     }
 
-    public async Task<Result<WeatherForecastId>> Handle(WeatherForecastCommandRequest request, CancellationToken cancellationToken)
+    public async Task<Result<WeatherForecastId>> HandleAsync(WeatherForecastCommandRequest request, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 

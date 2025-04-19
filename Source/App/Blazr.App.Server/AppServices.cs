@@ -11,6 +11,8 @@ using Blazr.App.Weather.EntityFramework;
 using Blazr.Auth.Core;
 using Blazr.Gallium;
 using Microsoft.AspNetCore.Components.Authorization;
+using Blazr.Antimony.Mediator;
+using System.Reflection;
 
 namespace Blazr.App.Infrastructure.Server;
 
@@ -32,11 +34,11 @@ public static class ApplicationServerServices
             }
         });
 
-        // Add MediatR
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
-                typeof(DmoCustomer).Assembly
-                , typeof(Blazr.App.Weather.EntityFramework.WeatherApplicationServerServices).Assembly
-                ));
+        // Add Mediator
+        services.AddMediator(new Assembly[] {
+                typeof(DmoCustomer).Assembly,
+                typeof(Blazr.App.Weather.EntityFramework.WeatherApplicationServerServices).Assembly
+        });
 
         // Add the Gallium Message Bus Server services
         services.AddScoped<IMessageBus, MessageBus>();

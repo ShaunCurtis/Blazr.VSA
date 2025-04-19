@@ -6,7 +6,7 @@
 using Blazr.Antimony;
 using Blazr.App.Invoice.Core;
 using Blazr.Gallium;
-using MediatR;
+using Blazr.Antimony.Mediator;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blazr.App.Invoice.Infrastructure.Server;
@@ -26,7 +26,7 @@ public sealed class PersistInvoiceServerHandler : IRequestHandler<InvoiceRequest
         _messageBus = messageBus;
     }
 
-    public async Task<Result> Handle(InvoiceRequests.InvoiceSaveRequest request, CancellationToken cancellationToken)
+    public async Task<Result> HandleAsync(InvoiceRequests.InvoiceSaveRequest request, CancellationToken cancellationToken)
     {
         var invoice = request.Invoice;
 

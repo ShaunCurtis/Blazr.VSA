@@ -5,7 +5,6 @@
 /// ============================================================
 
 using Blazr.Auth.Core;
-using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,14 +20,14 @@ public static class WeatherForecastAPIEndPoints
             return Results.Ok("Alive");
         });
 
-        app.MapPost(AppDictionary.WeatherForecast.WeatherForecastListAPIUrl, async ([FromBody] WeatherForecastListRequest request, IMediator mediator, CancellationToken cancellationToken) =>
+        app.MapPost(AppDictionary.WeatherForecast.WeatherForecastListAPIUrl, async ([FromBody] WeatherForecastListRequest request, IMediatorBroker mediator, CancellationToken cancellationToken) =>
         {
             var result = await mediator.Send(request, cancellationToken);
             return Results.Ok(result);
         })
             .RequireAuthorization(@AppPolicies.IsViewerPolicy);
 
-        app.MapPost(AppDictionary.WeatherForecast.WeatherForecastRecordAPIUrl, async ([FromBody] WeatherForecastRecordRequest request, IMediator mediator, CancellationToken cancellationToken) =>
+        app.MapPost(AppDictionary.WeatherForecast.WeatherForecastRecordAPIUrl, async ([FromBody] WeatherForecastRecordRequest request, IMediatorBroker mediator, CancellationToken cancellationToken) =>
         {
             var result = await mediator.Send(request, cancellationToken);
             return Results.Ok(result);
@@ -36,7 +35,7 @@ public static class WeatherForecastAPIEndPoints
             .RequireAuthorization(@AppPolicies.IsViewerPolicy);
 
 
-        app.MapPost(AppDictionary.WeatherForecast.WeatherForecastCommandAPIUrl, async ([FromBody] WeatherForecastCommandRequest request, IMediator mediator, CancellationToken cancellationToken) =>
+        app.MapPost(AppDictionary.WeatherForecast.WeatherForecastCommandAPIUrl, async ([FromBody] WeatherForecastCommandRequest request, IMediatorBroker mediator, CancellationToken cancellationToken) =>
         {
             var result = await mediator.Send(request, cancellationToken);
             return Results.Ok(result);

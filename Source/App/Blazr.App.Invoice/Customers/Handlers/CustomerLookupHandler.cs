@@ -6,7 +6,7 @@
 using Blazr.Antimony;
 using Blazr.Antimony.Infrastructure.EntityFramework;
 using Blazr.App.Invoice.Core;
-using MediatR;
+using Blazr.Antimony.Mediator;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blazr.App.Invoice.Infrastructure;
@@ -23,7 +23,7 @@ public sealed record CustomerLookUpHandler : IRequestHandler<CustomerLookupReque
         _factory = factory;
     }
 
-    public async Task<Result<ListItemsProvider<CustomerLookUpItem>>> Handle(CustomerLookupRequest request, CancellationToken cancellationToken)
+    public async Task<Result<ListItemsProvider<CustomerLookUpItem>>> HandleAsync(CustomerLookupRequest request, CancellationToken cancellationToken)
     {
         var dbContext = _factory.CreateDbContext();
 

@@ -6,14 +6,14 @@
 using Blazr.Antimony;
 using Blazr.App.Core;
 using Blazr.App.Presentation;
-using MediatR;
+using Blazr.Antimony.Mediator;
 using static Blazr.App.Invoice.Core.InvoiceRequests;
 
 namespace Blazr.App.Invoice.Core;
 
 public class InvoiceEntityProvider : IEntityProvider<DmoInvoice, InvoiceId>
 {
-    private readonly IMediator _mediator;
+    private readonly IMediatorBroker _mediator;
 
     public Func<InvoiceId, Task<Result<DmoInvoice>>> RecordRequest
         => (id) => _mediator.Send(new InvoiceRequests.InvoiceRecordRequest(id));
@@ -30,7 +30,7 @@ public class InvoiceEntityProvider : IEntityProvider<DmoInvoice, InvoiceId>
             SortDescending = state.SortDescending
         });
 
-    public InvoiceEntityProvider(IMediator mediator)
+    public InvoiceEntityProvider(IMediatorBroker mediator)
     {
         _mediator = mediator;
     }

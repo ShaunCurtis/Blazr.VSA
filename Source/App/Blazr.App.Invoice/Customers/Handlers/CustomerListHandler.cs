@@ -4,9 +4,9 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Antimony;
+using Blazr.Antimony.Mediator;
 using Blazr.Antimony.Infrastructure.EntityFramework;
 using Blazr.App.Invoice.Core;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -23,8 +23,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
     {
         _factory = factory;
     }
-
-    public async Task<Result<ListItemsProvider<DmoCustomer>>> Handle(CustomerListRequest request, CancellationToken cancellationToken)
+    public async Task<Result<ListItemsProvider<DmoCustomer>>> HandleAsync(CustomerListRequest request, CancellationToken cancellationToken)
     {
         var dbContext = _factory.CreateDbContext();
 

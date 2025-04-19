@@ -6,7 +6,7 @@
 using Blazr.Antimony;
 using Blazr.App.Invoice.Core;
 using Blazr.App.Presentation;
-using MediatR;
+using Blazr.Antimony.Mediator;
 
 namespace Blazr.App.Invoice.Presentation;
 
@@ -16,7 +16,7 @@ namespace Blazr.App.Invoice.Presentation;
 /// </summary>
 public sealed class CustomerLookupBrokerr : LookUpUIBroker<CustomerLookUpItem>
 {
-    public CustomerLookupBrokerr(IMediator dataBroker)
+    public CustomerLookupBrokerr(IMediatorBroker dataBroker)
         : base(dataBroker) { }
 
     public async override ValueTask<Result> LoadAsync()

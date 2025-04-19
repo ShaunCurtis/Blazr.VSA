@@ -6,7 +6,7 @@
 using Blazr.Antimony;
 using Blazr.Antimony.Infrastructure.EntityFramework;
 using Blazr.App.Invoice.Core;
-using MediatR;
+using Blazr.Antimony.Mediator;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -24,7 +24,7 @@ public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceRequests.Invoi
         _factory = factory;
     }
 
-    public async Task<Result<DmoInvoice>> Handle(InvoiceRequests.InvoiceRecordRequest request, CancellationToken cancellationToken)
+    public async Task<Result<DmoInvoice>> HandleAsync(InvoiceRequests.InvoiceRecordRequest request, CancellationToken cancellationToken)
     {
         var dbContext = _factory.CreateDbContext();
 

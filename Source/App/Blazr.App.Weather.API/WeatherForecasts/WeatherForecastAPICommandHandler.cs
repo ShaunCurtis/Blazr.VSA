@@ -26,7 +26,7 @@ public sealed record WeatherForecastAPICommandHandler : IRequestHandler<WeatherF
         _authStateProvider = authenticationStateProvider;
     }
 
-    public async Task<Result<WeatherForecastId>> Handle(WeatherForecastCommandRequest request, CancellationToken cancellationToken)
+    public async Task<Result<WeatherForecastId>> HandleAsync(WeatherForecastCommandRequest request, CancellationToken cancellationToken)
     {
         var authState = await _authStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;

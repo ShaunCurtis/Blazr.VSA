@@ -1,6 +1,4 @@
-﻿using System.Net.Http;
-
-/// ============================================================
+﻿/// ============================================================
 /// Author: Shaun Curtis, Cold Elm Coders
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
@@ -19,7 +17,7 @@ public sealed class UserRecordAPIHandler : IRequestHandler<UserRecordRequest, Re
         _factory = clientFactory;
     }
 
-    public async Task<Result<DmoUser>> Handle(UserRecordRequest request, CancellationToken cancellationToken)
+    public async Task<Result<DmoUser>> HandleAsync(UserRecordRequest request, CancellationToken cancellationToken)
     {
         await Task.Yield();
         throw new NotImplementedException();
