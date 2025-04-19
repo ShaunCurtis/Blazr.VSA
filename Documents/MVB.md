@@ -2,15 +2,34 @@
 
 **MVB** is my Blazor centric version of the **MVx** patterns.  It's specific focus in on Blazor, and how to structure a Blazor Applicatiion.
 
-It fits within multi-project Clean Design solutions or single project Vertical Slice solutions.  The demo solution has a *Vertical Slice* structure with namespace segregation of the clean design domains.
+It fits within multi-project Clean Design solutions or single project Vertical Slice solutions.  The demo solution uses a *Vertical Slice* structure with namespace segregation of the clean design domains.
 
 ## TL;DR
 
-In a nutshell, the older design patterns were products of their time and the architectures they were used in.  Blazor is a little different, so the relationship between the model and the glue (the Cointroller/Presenter/ViewModel) has changed, and requires a different division of labour.  There's nothing wrong with applying the older models, but you will find yourself breaking some of their rules to implement a good solution.
+In a nutshell, the older design patterns don't sit well with Blazor.  They were the products of the architectures of their time.  The relationship between the model and the glue (the Cointroller/Presenter/ViewModel) has changed: it requires a different operational context and division of labour.  You can continue applying the older models, but what you will find is you start breaking some of their fundimentsl rules to implement sound solutions.
 
+## The Context
+
+The primary three view contexts you need to consider are:
+
+1. Page Context - the `@Body` content in the layout.
+2. Form Context - a dialog or inline form  within the page context.
+3. Layout Context - the who displayed browser window.
+
+Each of these contexts has a different lifespan, none of which conform exactly to the `Scoped` concept of Dependancy Injection.  This creates a dilemna in how do you configure the services that contexts use.
+
+Consider the simple Customer Display Page.  It's broker needs to interface with the core domain to get it's data, so it must use DI to access these services.  However, it also needs the Id of the record it needs to retrieve.  This can only be provided by the page context.
+
+If you implement the Customer Dispay UI Broker as a scoped service you need a two stage process:
+
+1. Inject the broker from DI into the page context.
+2. Call a load method on the service to load the necessary record.
+
+
+ 
 ## CQS, Mediator, Flux and the Readonly World
 
-C# now provides built-in immutable objects, so we can apply some functional programming paradigms.  I use records and readonlky structs extensively.
+C# now provides built-in immutable objects, so we can apply some functional programming paradigms.  I use records and readonly structs extensively.
 
 The data pipeline is read only and base on CQS.  There are three standard operations:
 
