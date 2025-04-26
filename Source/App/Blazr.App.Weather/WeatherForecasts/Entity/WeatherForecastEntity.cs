@@ -3,7 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using static Blazr.App.Weather.Core.InvoiceActions;
+using static Blazr.App.Weather.Core.WeatherForecastActions;
 
 namespace Blazr.App.Weather.Core;
 

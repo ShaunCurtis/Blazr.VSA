@@ -4,11 +4,11 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using System.Diagnostics.CodeAnalysis;
-using static Blazr.App.Weather.Core.InvoiceActions;
+using static Blazr.App.Weather.Core.WeatherForecastActions;
 
 namespace Blazr.App.Weather.Core;
 
-public static partial class InvoiceActions
+public static partial class WeatherForecastActions
 {
     public readonly record struct ApplyRulesAction(object? sender = null)
     {
