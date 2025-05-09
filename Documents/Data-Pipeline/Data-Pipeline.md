@@ -33,3 +33,18 @@ And the result object:
 public record ListItemsProvider<TRecord>(IEnumerable<TRecord> Items, int TotalCount);
 ```
 
+The `WeatherForecastRequest` can then be defined like this:
+
+```csharp
+public record WeatherForecastListRequest
+    : BaseListRequest, IRequest<Result<ListItemsProvider<DmoWeatherForecast>>>
+{
+    public string? Summary { get; init; }
+}
+```
+
+It defines an additional `Summary` property for filtering results.
+
+Note the `IRequest` implementation for mapping the request to the correct handler.
+
+
