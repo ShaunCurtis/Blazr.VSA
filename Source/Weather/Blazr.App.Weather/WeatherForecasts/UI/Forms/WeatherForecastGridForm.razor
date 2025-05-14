@@ -1,0 +1,57 @@
+﻿@namespace Blazr.App.Weather.UI
+@inherits GridFormBase<DmoWeatherForecast,WeatherForecastId>
+
+<div class="d-flex flex-row mb-1 pt-1 border-bottom">
+    <div class="flex-fill justify-content-start h4">
+        @this.formTitle
+    </div>
+    <div class="justify-content-end">
+        <AuthorizeButton Policy=@AppPolicies.IsVisitor class="btn btn-sm btn-primary" @onclick="() => OnAddAsync()">Add New Weather Forecast</AuthorizeButton>
+    </div>
+</div>
+
+<BlazrPaginator State="Pagination" />
+
+<div class="@this.GridCss" tabindex="-1">
+    <QuickGrid Theme="None" TGridItem="DmoWeatherForecast" ItemsProvider="this.GetItemsAsync" Pagination="Pagination" @ref="this.quickGrid" Class="@this.TableCss">
+
+        <SortedPropertyColumn SortField="Id" Class="nowrap-column" Sortable="true" Title="ID">
+            @context.Id.Value.ToDisplayId()
+        </SortedPropertyColumn>
+
+        <PropertyColumn Title="Date" Property="@(c => c!.Date.Value)" Format="dd-MMM-yy" Sortable="true" IsDefaultSortColumn InitialSortDirection="SortDirection.Ascending" Align=Align.Start />
+
+        <SortedPropertyColumn SortField="Temperature" Class="nowrap-column" Sortable="true" Align="Align.End" Title="Temp &deg;C">
+            @context.Temperature.TemperatureC.ToString("F0")
+        </SortedPropertyColumn>
+
+        <SortedPropertyColumn SortField="Temperature" Class="nowrap-column" Sortable="true" Align="Align.End" Title="Temp &deg;F">
+            @context.Temperature.TemperatureF.ToString("F0")
+        </SortedPropertyColumn>
+
+        <PropertyColumn Title="Owner" Sortable="true" Property="@(c => c!.Owner)" Align=Align.End />
+
+        <PropertyColumn Title="Summary" Sortable="true" Property="@(c => c!.Summary)" Align=Align.End />
+
+        <TemplateColumn Class="nowrap-column no-max-width" Align="Align.End">
+            <UIButtonGroup>
+                <AuthorizeRecordButton Policy=@AppPolicies.IsManagerPolicy AuthFields="this.GetAuthFields(context)" type="button" class="btn btn-sm btn-danger" ClickEvent="() => OnDeleteAsync(context.Id)">Delete</AuthorizeRecordButton>
+                <AuthorizeRecordButton Policy=@AppPolicies.IsEditorPolicy AuthFields="this.GetAuthFields(context)" type="button" class="btn btn-sm btn-primary" ClickEvent="() => OnEditAsync(context.Id)">Edit</AuthorizeRecordButton>
+                <AuthorizeRecordButton Policy=@AppPolicies.IsViewerPolicy AuthFields="this.GetAuthFields(context)" type="button" class="btn btn-sm btn-secondary" ClickEvent="() => OnViewAsync(context.Id)">View</AuthorizeRecordButton>
+            </UIButtonGroup>
+        </TemplateColumn>
+
+    </QuickGrid>
+</div>
+
+<BsModalDialog @ref=modalDialog />
+
+@code {
+    private AppAuthFields GetAuthFields(DmoWeatherForecast record)
+        => new AppAuthFields { OwnerId = record.OwnerId.Value };
+
+    private Task OnDeleteAsync(WeatherForecastId id)
+    {
+        return Task.CompletedTask;
+    }
+}

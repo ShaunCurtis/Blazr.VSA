@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.4" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Libraries\Blazor.Antimony\Blazor.Antimony.csproj" />
+		<ProjectReference Include="..\..\Libraries\Blazr.App\Blazr.App.csproj" />
+		<ProjectReference Include="..\..\Libraries\Blazr.UI\Blazr.UI.csproj" />
+		<ProjectReference Include="..\..\Libraries\Blazr.FluentValidation\Blazr.FluentValidation.csproj" />
+		<ProjectReference Include="..\..\Libraries\Blazr.EditStateTracker\Blazr.EditStateTracker.csproj" />
+		<ProjectReference Include="..\..\Libraries\Blazr.Gallium\Blazr.Gallium.csproj" />
+	</ItemGroup>
+
+</Project>

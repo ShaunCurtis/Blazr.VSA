@@ -6,11 +6,13 @@
 
 namespace Blazr.App.Core;
 
-public class InvalidKeyProviderException : Exception
+/// <summary>
+/// IFkItem defines the common interface for all Foreign key objects
+/// These are normally used in UI select controls.  Choose a Name and the
+/// GUID is the foreign key.
+/// </summary>
+public interface ILookupItem
 {
-    public InvalidKeyProviderException()
-        : base($"The provided key object is not the right type.") { }
-
-    public InvalidKeyProviderException(string message)
-        : base(message) { }
+    public Guid Id { get; }
+    public string Name { get; }
 }

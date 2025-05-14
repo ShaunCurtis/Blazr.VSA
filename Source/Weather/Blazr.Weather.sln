@@ -1,0 +1,106 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35806.99
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App", "App", "{AB84F028-E1E7-4DF5-9D16-3F7DE4D95685}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4A262DD0-39B2-44D7-A80A-4CABF3C3D6CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.Antimony", "..\Libraries\Blazor.Antimony\Blazor.Antimony.csproj", "{69EEC795-FE21-2904-F16A-4FB579333C58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.Antimony.EntityFramework", "..\Libraries\Blazr.Antimony.EntityFramework\Blazr.Antimony.EntityFramework.csproj", "{A0F51AB8-A8AF-719C-3F30-49EB6128A4AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.EditStateTracker", "..\Libraries\Blazr.EditStateTracker\Blazr.EditStateTracker.csproj", "{11DE6AF7-59D1-A739-B366-85BB13DE4601}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.FluentValidation", "..\Libraries\Blazr.FluentValidation\Blazr.FluentValidation.csproj", "{5F355138-483C-BB27-2C33-E38D7CED40DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.Gallium", "..\Libraries\Blazr.Gallium\Blazr.Gallium.csproj", "{9A408DE5-93BE-05AF-8161-DE4026870DE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.UI", "..\Libraries\Blazr.UI\Blazr.UI.csproj", "{F2F64975-AA45-7DE7-8FC5-ED5221B077D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App", "..\Libraries\Blazr.App\Blazr.App.csproj", "{589042BE-D59C-74F3-F6D5-0B342E777BC6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployments", "Deployments", "{F80FB346-CCD4-4A90-B033-040EDF7288B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Weather", "Blazr.App.Weather\Blazr.App.Weather.csproj", "{13076BC9-12E7-E5B5-58B2-AB2E66938842}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Weather.EntityFramework", "Blazr.App.Weather.EntityFramework\Blazr.App.Weather.EntityFramework.csproj", "{1CA64AEE-709A-B2DA-7451-C17B8549810A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Weather.API", "Blazr.App.Weather.API\Blazr.App.Weather.API.csproj", "{E47DC22A-7B7C-1EA1-8B2D-B866A53B0D53}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{5A458799-1297-4C7E-B0D7-272D36D82A89}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Introduction-To-Antimony.md = Docs\Introduction-To-Antimony.md
+		Docs\Introduction.md = Docs\Introduction.md
+		Docs\The-Aggregate-Entity.md = Docs\The-Aggregate-Entity.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69EEC795-FE21-2904-F16A-4FB579333C58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69EEC795-FE21-2904-F16A-4FB579333C58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69EEC795-FE21-2904-F16A-4FB579333C58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69EEC795-FE21-2904-F16A-4FB579333C58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0F51AB8-A8AF-719C-3F30-49EB6128A4AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0F51AB8-A8AF-719C-3F30-49EB6128A4AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0F51AB8-A8AF-719C-3F30-49EB6128A4AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0F51AB8-A8AF-719C-3F30-49EB6128A4AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11DE6AF7-59D1-A739-B366-85BB13DE4601}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11DE6AF7-59D1-A739-B366-85BB13DE4601}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11DE6AF7-59D1-A739-B366-85BB13DE4601}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11DE6AF7-59D1-A739-B366-85BB13DE4601}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F355138-483C-BB27-2C33-E38D7CED40DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F355138-483C-BB27-2C33-E38D7CED40DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F355138-483C-BB27-2C33-E38D7CED40DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F355138-483C-BB27-2C33-E38D7CED40DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A408DE5-93BE-05AF-8161-DE4026870DE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A408DE5-93BE-05AF-8161-DE4026870DE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A408DE5-93BE-05AF-8161-DE4026870DE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A408DE5-93BE-05AF-8161-DE4026870DE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2F64975-AA45-7DE7-8FC5-ED5221B077D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2F64975-AA45-7DE7-8FC5-ED5221B077D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2F64975-AA45-7DE7-8FC5-ED5221B077D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2F64975-AA45-7DE7-8FC5-ED5221B077D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{589042BE-D59C-74F3-F6D5-0B342E777BC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{589042BE-D59C-74F3-F6D5-0B342E777BC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{589042BE-D59C-74F3-F6D5-0B342E777BC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{589042BE-D59C-74F3-F6D5-0B342E777BC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13076BC9-12E7-E5B5-58B2-AB2E66938842}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13076BC9-12E7-E5B5-58B2-AB2E66938842}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13076BC9-12E7-E5B5-58B2-AB2E66938842}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13076BC9-12E7-E5B5-58B2-AB2E66938842}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CA64AEE-709A-B2DA-7451-C17B8549810A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CA64AEE-709A-B2DA-7451-C17B8549810A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CA64AEE-709A-B2DA-7451-C17B8549810A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CA64AEE-709A-B2DA-7451-C17B8549810A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E47DC22A-7B7C-1EA1-8B2D-B866A53B0D53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E47DC22A-7B7C-1EA1-8B2D-B866A53B0D53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E47DC22A-7B7C-1EA1-8B2D-B866A53B0D53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E47DC22A-7B7C-1EA1-8B2D-B866A53B0D53}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{69EEC795-FE21-2904-F16A-4FB579333C58} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{A0F51AB8-A8AF-719C-3F30-49EB6128A4AD} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{11DE6AF7-59D1-A739-B366-85BB13DE4601} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{5F355138-483C-BB27-2C33-E38D7CED40DA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{9A408DE5-93BE-05AF-8161-DE4026870DE6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{F2F64975-AA45-7DE7-8FC5-ED5221B077D1} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{589042BE-D59C-74F3-F6D5-0B342E777BC6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{13076BC9-12E7-E5B5-58B2-AB2E66938842} = {AB84F028-E1E7-4DF5-9D16-3F7DE4D95685}
+		{1CA64AEE-709A-B2DA-7451-C17B8549810A} = {AB84F028-E1E7-4DF5-9D16-3F7DE4D95685}
+		{E47DC22A-7B7C-1EA1-8B2D-B866A53B0D53} = {AB84F028-E1E7-4DF5-9D16-3F7DE4D95685}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {75DC3C75-913C-44B4-9C13-B36CB540C2E6}
+	EndGlobalSection
+EndGlobal

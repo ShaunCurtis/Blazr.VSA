@@ -22,27 +22,26 @@ The **View** is the UI or Presentation layer of any *Clean Design* organised pro
 
 It's only the glue - the **Controller**, **Presenter** or **View Model** - that's different.
 
-An interesting take on the **MVx**, is that they are products of their time.  The functionality and role of the glue was dictated by the functionality of the UI structure.
+The *x* in **MVx** is soution of its time.  The functionality and role of the glue was dictated by the UI structure.
 
-The problems with trying to apply them to Blazor are:
+The problems with trying to apply any of them to Blazor are:
 
 1. The Blazor UI, components. have a very different design and functionality to what came before.
 2. We now have built-in immutability.  We can build read-only data pipeines, and apply much stricter control over object mutation.
 
 ## Mediator and Flux
 
-When I first met the Mediator pattern and Mediatr, I wasn't sure.  I was into building generic repositories, so didn't see it's application in the data pipeline.
+When I first met the Mediator pattern and Mediatr, I wasn't convinced.  I was into building generic repositories, so didn't see it's application in the data pipeline.
 
-Flux was a little different, I saw the advantages in controling mutation, but didn't really like the implementations, so wrote my own.
+Flux was a little different, I saw the advantages in controlling mutation, but didn't really like the implementations, so wrote my own.
 
-After I dumped repositories and moved to CQS, Mediator jumped out as the obvious pattern to couple with it.  And once yo have a compelling reason to use it, it starts to creep out into other areas of your code.
+After I dumped repositories and moved to CQS, Mediator jumped out as the obvious pattern to couple with it.  Once I had a compelling reason to use it, it starting creeping out into other areas of my code.
 
-With Flux I moved in the opposite direction.  My main applications were in component state, specifically preserving grid state in views and in managing state in *Aggregate* entities.  I now have a state service for UI state, and build the Flux concept into my aggregate objects.
+With Flux I moved in the opposite direction.  My main applications were in component state, specifically preserving grid state in views and in managing state in *Aggregate* entities.  As my entity state management has evolved, I moved to building the Flux concept directly into the entity.  With only simple UI state to manage, I've move to a basic state service.
 
 ## MVB and Vertical Slice Architecture
 
-**Model, View, Broker** is my name for the different glue. It doesn't matter what its called.  The **Broker** provides the Blazor centric connectivity between the application Core - the 
-Domain and Business logic code - and the UI - components.
+**Model, View, Broker** is my name for the different glue. It doesn't matter what its called.  The **Broker** provides the Blazor centric connectivity between the application Core - the Domain and Business logic code - and the UI - components.
 
 ## Vertical Slice Architecture
 

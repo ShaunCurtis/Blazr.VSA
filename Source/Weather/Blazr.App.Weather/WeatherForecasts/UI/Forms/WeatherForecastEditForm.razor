@@ -1,0 +1,78 @@
+﻿@namespace Blazr.App.Weather.UI
+
+@inherits EditorModalFormBase<DmoWeatherForecast, WeatherForecastId, WeatherForecastEditContext, WeatherForecastUIEntityProvider>
+
+<PageTitle>@this.FormTitle</PageTitle>
+
+<div class="modal-header">
+    <div class="h4">
+        @this.FormTitle
+    </div>
+</div>
+
+<EditForm EditContext=this.UIBroker.EditContext OnValidSubmit=this.OnSave>
+
+    <div class="modal-body px-3">
+
+        <Blazr.FluentValidation.BlazrFluentValidator TRecord="WeatherForecastEditContext" TValidator="WeatherForecastEditContextValidator" />
+        <BlazrEditStateTracker LockNavigation=this.LockNavigation />
+
+        <div class="row">
+
+            <div class="col-12 col-md-8 col-xl-4 mb-2">
+                <BlazrTextViewControl Label="Id" Value="@this.UIBroker.EditMutator.BaseRecord.Id.Value.ToDisplayId()" />
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <BlazrDateControl class="form-control mb-2"
+                              ColumnCss="col-12 col-md-8 col-xl-4 mb-2"
+                              Label="Date"
+                              @bind-Value="this.UIBroker.EditMutator.Date" />
+
+        </div>
+
+        <div class="row">
+
+            <BlazrNumberControl UpdateOnInput
+                                class="form-control mb-2"
+                                ColumnCss="col-12 col-md-8 col-xl-4 mb-2"
+                                Label="Temperature &deg;C"
+                                @bind-Value="this.UIBroker.EditMutator.Temperature" />
+
+        </div>
+
+
+        <div class="row">
+
+            <BlazrSelectControl class="form-control mb-2"
+                                ColumnCss="col-12 col-md-8 col-xl-4 mb-2"
+                                Label="Summary"
+                                TValue="string"
+                                TListItem="string"
+                                DisplayOptionsItems="SummaryOptions.Summaries"
+                                OptionTextDelegate="(item) => item"
+                                OptionValueDelegate="(item) => item"
+                                PlaceholderText="Select a Summary"
+                                @bind-Value="this.UIBroker.EditMutator.Summary" />
+
+        </div>
+
+    </div>
+
+    <div class="modal-footer bg-light">
+
+        <EditFormButtons SaveOnSubmit
+                         ColumnCss="col-12 text-end"
+                         Options=this.editFormButtonsOptions
+                         DirtyExit=this.OnExit
+                         Exit=this.OnExit
+                         IsNewRecord=this.IsNewRecord
+                         Reset=this.OnReset />
+
+    </div>
+
+</EditForm>
+

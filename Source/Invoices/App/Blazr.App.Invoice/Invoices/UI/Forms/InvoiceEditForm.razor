@@ -1,0 +1,145 @@
+﻿@namespace Blazr.App.Invoice.UI
+
+@inject IToastService ToastService
+@inject ILookupUIBrokerFactory LookupUIBrokerFactory
+@inject InvoiceEditBroker UIBroker
+@inject NavigationManager NavManager
+@inject IUIEntityProvider<DmoInvoice> UIEntityService
+
+<PageTitle>@_formTitle</PageTitle>
+
+<div class="modal-header">
+    <div class="h4">
+        @_formTitle
+    </div>
+</div>
+
+<EditForm EditContext=this.UIBroker.EditContext OnValidSubmit="this.OnSaveAsync">
+
+    <div class="modal-body px-3">
+
+        <Blazr.FluentValidation.BlazrFluentValidator TRecord="DmoInvoiceEditContext" TValidator="DmoInvoiceEditContextValidator" />
+        <BlazrEditStateTracker LockNavigation=true />
+
+        <div class="row">
+
+            <BlazrDateControl class="form-control mb-2"
+                              ColumnCss="col-12 col-md-4 mb-2"
+                              Label="Date"
+                              @bind-Value="this.UIBroker.RecordEditContext.Date" />
+
+            <BlazrSelectControl class="form-control mb-2"
+                                ColumnCss="col-12 col-md-6 mb-2"
+                                Label="Group"
+                                TValue="Guid"
+                                TListItem="CustomerLookUpItem"
+                                @bind-Value=this.UIBroker.RecordEditContext.CustomerId
+                                @bind-Value:after="this.OnCustomerUpdate"
+                                DisplayOptionsItems=_customerList
+                                OptionValueDelegate="(item) => item.Id.ToString()"
+                                OptionTextDelegate="(item) => item.Name"
+                                PlaceholderText="Choose a Customer" />
+
+        </div>
+    </div>
+
+    <div class="modal-footer bg-light">
+
+        <EditFormButtons SaveOnSubmit
+                         ColumnCss="col-12 mb-3 text-end"
+                         Options=_editFormButtonsOptions
+                         DirtyExit=this.OnExit
+                         Exit=this.OnExit
+                         Save=this.OnSaveAsync
+                         IsNewRecord=_isNewRecord />
+
+    </div>
+
+</EditForm>
+
+@code {
+    [CascadingParameter] private IModalDialog? ModalDialog { get; set; }
+
+    private string _formTitle => $"{this.UIEntityService.SingleDisplayName} Editor";
+    private EditFormButtonsOptions _editFormButtonsOptions = new();
+    private List<CustomerLookUpItem> _customerList = new();
+
+    private bool _isNewRecord => this.UIBroker.IsNew;
+
+    private ILookUpUIBroker<CustomerLookUpItem> CustomerLookupUIBroker = default!;
+    private string _exitUrl = "/";
+
+    private bool _isDirty;
+    private bool _isClean => !_isDirty;
+    private bool _stateStoreAttached;
+    private BlazrEditStateStore? _store;
+
+    protected async override Task OnInitializedAsync()
+    {
+        // Get the customer lookup list
+        this.CustomerLookupUIBroker = await this.LookupUIBrokerFactory.GetAsync<CustomerLookUpItem, CustomerLookupBrokerr>();
+        _customerList = this.CustomerLookupUIBroker.Items.ToList();
+
+        // validate the incoming data
+        if (!this.UIBroker.IsNew)
+            this.UIBroker.EditContext.Validate();
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Update the edit state on any changes
+        _isDirty = this.UIBroker.EditContext.GetEditState();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // The EditContext is only created after the first render.
+        // We need to make sure the StateStore has been attached to the EditContext
+        // before we try and get it.
+        // The only place we can do this is in the second OnAfterRender UI event
+        _store = _store ?? this.UIBroker.EditContext.GetStateStore();
+        if (_store is not null && !_stateStoreAttached)
+        {
+            _store.StoreUpdated += OnEditStateMayHaveChanged;
+            _stateStoreAttached = true;
+        }
+    }
+
+    private void OnCustomerUpdate()
+    {
+        this.UIBroker.RecordEditContext.CustomerName = _customerList.FirstOrDefault(c => c.Id == this.UIBroker.RecordEditContext.CustomerId)?.Name ?? "[Not Set]";
+    }
+
+    private void OnEditStateMayHaveChanged(object? sender, EventArgs e)
+    {
+        this.StateHasChanged();
+    }
+
+    private async Task OnSaveAsync()
+    {
+        if (!this.UIBroker.EditContext.Validate())
+        {
+            this.ToastService.ShowError("The record data is not valid.  Fix the highlighted errors.");
+            return;
+        }
+
+        await this.UIBroker.SaveItemToAggregateAsync();
+
+        if (this.UIBroker.LastResult.IsSuccess)
+            ModalDialog?.Close(ModalResult.OK());
+    }
+
+    private Task OnExit()
+    {
+        if (this.ModalDialog is null)
+            this.NavManager.NavigateTo(_exitUrl);
+
+        ModalDialog?.Close(ModalResult.Exit());
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        this.UIBroker.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
+    }
+}

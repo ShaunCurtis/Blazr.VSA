@@ -25,6 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{02EA681E-C
 	ProjectSection(SolutionItems) = preProject
 		Documents\Aggregates.md = Documents\Aggregates.md
 		Documents\App-Design.md = Documents\App-Design.md
+		Documents\Introduction-To-Antimony.md = Documents\Introduction-To-Antimony.md
 		Documents\Introduction.md = Documents\Introduction.md
 		Documents\MVB.md = Documents\MVB.md
 		Documents\Vertical-Slice-Architecture.md = Documents\Vertical-Slice-Architecture.md

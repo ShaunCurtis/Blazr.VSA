@@ -3,14 +3,12 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Blazr.Antimony;
 
-namespace Blazr.App.Core;
+namespace Blazr.App.Invoice.Core;
 
-public class NoKeyProviderException : Exception
+public record DsrInvoice(DmoInvoice Record, IEnumerable<DsrInvoiceItem> Items, CommandState State)
 {
-    public NoKeyProviderException()
-        : base($"There's no Key Provider SI Service registered.") { }
-
-    public NoKeyProviderException(string message)
-        : base(message) { }
+    public bool IsDirty
+        => this.State != CommandState.None;
 }
