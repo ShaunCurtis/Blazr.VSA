@@ -21,6 +21,6 @@ public class MediatorBroker : IMediatorBroker
             throw new InvalidOperationException($"Handler for {request.GetType().Name} not found.");
         }
 
-        return handler((dynamic)request, cancellationToken);
+        return handler.HandleAsync((dynamic)request, cancellationToken);
     }
 }

@@ -44,7 +44,7 @@ public sealed class InvoiceCompositeBroker
     public void Reset()
     {
         this.LastResult = Result.Success();
-        this.Invoice.ResetInvoice();
+        this.Invoice.Dispatch(new InvoiceActions.ResetInvoiceAction());
     }
 
     public async ValueTask<Result> SaveAsync()
@@ -58,6 +58,6 @@ public sealed class InvoiceCompositeBroker
 
     public void AllowExit()
     {
-        this.Invoice.ResetInvoice();
+        this.Invoice.Dispatch(new InvoiceActions.ResetInvoiceAction());
     }
 }

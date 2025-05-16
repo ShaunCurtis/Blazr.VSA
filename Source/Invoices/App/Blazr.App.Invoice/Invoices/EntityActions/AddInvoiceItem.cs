@@ -28,7 +28,7 @@ public sealed partial class InvoiceEntity
             return Result.Fail(new ActionException($"The Invoice Item with Id: {action.Item.Id} already exists in the Invoice."));
 
         var invoiceItemRecord = action.Item with { InvoiceId = this.InvoiceRecord.Record.Id };
-        var invoiceItem = new InvoiceItem(invoiceItemRecord, action.IsNew);
+        var invoiceItem = new InvoiceItemContext(invoiceItemRecord, action.IsNew);
         _items.Add(invoiceItem);
         this.ApplyRules();
 

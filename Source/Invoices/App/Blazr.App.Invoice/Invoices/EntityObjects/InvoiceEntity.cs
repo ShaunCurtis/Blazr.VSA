@@ -11,9 +11,9 @@ namespace Blazr.App.Invoice.Core;
 public sealed partial class InvoiceEntity
 {
     private readonly IMediatorBroker _mediator;
-    private readonly List<InvoiceItem> _items = new List<InvoiceItem>();
-    private readonly List<InvoiceItem> _itemsBin = new List<InvoiceItem>();
-    private readonly Invoice Invoice;
+    private readonly List<InvoiceItemContext> _items = new List<InvoiceItemContext>();
+    private readonly List<InvoiceItemContext> _itemsBin = new List<InvoiceItemContext>();
+    private readonly InvoiceContext Invoice;
     private readonly List<DmoInvoiceItem> _baseItems = new();
     private readonly DmoInvoice _baseInvoice;
     private bool _processing;
@@ -38,20 +38,22 @@ public sealed partial class InvoiceEntity
         _mediator = mediator;
         _baseInvoice = invoice;
         _baseItems.AddRange(items);
-        // We create new records for the Invoice and InvoiceItems
-        this.Invoice = new Invoice(invoice);
+
+        // Create new InvoiceContext for the Invoice
+        this.Invoice = new InvoiceContext(invoice);
 
         // Detect if the Invoice is a new record
         if (invoice.Id.IsDefault)
             this.Invoice.State = CommandState.Add;
 
+        // Create new InvoiceItemContexts for the InvoiceItems
         foreach (var item in items)
         {
-            _items.Add(new InvoiceItem(item with { }));
+            _items.Add(new InvoiceItemContext(item with { }));
         }
     }
 
-    private void ItemUpdated(InvoiceItem item)
+    private void ItemUpdated(InvoiceItemContext item)
     {
         this.ApplyRules();
     }

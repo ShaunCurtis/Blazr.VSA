@@ -9,7 +9,7 @@ namespace Blazr.App.Invoice.Core;
 
 public sealed partial class InvoiceEntity
 {
-    private sealed class Invoice
+    private sealed class InvoiceContext
     {
         public CommandState State { get; set; }
             = CommandState.None;
@@ -22,7 +22,7 @@ public sealed partial class InvoiceEntity
         public DsrInvoice AsRecord(List<DsrInvoiceItem> items)
             => new(this.Record, items, this.State);
 
-        public Invoice(DmoInvoice item, bool isNew = false)
+        public InvoiceContext(DmoInvoice item, bool isNew = false)
         {
             this.Record = item;
 

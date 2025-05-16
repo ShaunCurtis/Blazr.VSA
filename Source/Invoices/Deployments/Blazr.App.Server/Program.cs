@@ -5,7 +5,6 @@
 /// ============================================================
 using Blazr.App.Infrastructure.Server;
 using Blazr.App.Invoice.Infrastructure.Server;
-using Blazr.App.Weather.EntityFramework;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +20,6 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-app.MapDefaultEndpoints();
-
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -33,7 +30,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.Services.AddInvoiceTestData();
-app.Services.AddWeatherTestData();
 
 app.UseHttpsRedirection();
 
@@ -42,6 +38,6 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<Blazr.App.Server.Components.ServerApp>()
     .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(Blazr.App.Invoice.UI.InvoiceDashboard).Assembly, typeof(Blazr.App.Weather.Core.Date).Assembly);
+    .AddAdditionalAssemblies(typeof(Blazr.App.Invoice.UI.InvoiceDashboard).Assembly);
 
 app.Run();

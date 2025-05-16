@@ -15,12 +15,12 @@ namespace Blazr.App.Invoice.Infrastructure.Server;
 /// Mediatr Server Handler that saves an Invoice Aggregate
 /// It uses the custom Invoice Database Handler to interface with the database
 /// </summary>
-public sealed class PersistInvoiceServerHandler : IRequestHandler<InvoiceRequests.InvoiceSaveRequest, Result>
+public sealed class PersistInvoiceEntityServerHandler : IRequestHandler<InvoiceRequests.InvoiceSaveRequest, Result>
 {
     private readonly IMessageBus _messageBus;
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public PersistInvoiceServerHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus)
+    public PersistInvoiceEntityServerHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus)
     {
         _factory = factory;
         _messageBus = messageBus;

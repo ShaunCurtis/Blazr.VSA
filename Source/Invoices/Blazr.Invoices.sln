@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Invoice", "App\Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Server", "Deployments\Blazr.App.Server\Blazr.App.Server.csproj", "{CAD145C8-03C5-B69A-E9A2-C822B3C7735D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.Antimony.Tests", "Tests\Blazr.Antimony.Tests\Blazr.Antimony.Tests.csproj", "{C5A3006A-BB98-4779-A0B9-1A3C6ED898F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{CAD145C8-03C5-B69A-E9A2-C822B3C7735D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAD145C8-03C5-B69A-E9A2-C822B3C7735D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAD145C8-03C5-B69A-E9A2-C822B3C7735D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5A3006A-BB98-4779-A0B9-1A3C6ED898F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5A3006A-BB98-4779-A0B9-1A3C6ED898F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5A3006A-BB98-4779-A0B9-1A3C6ED898F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5A3006A-BB98-4779-A0B9-1A3C6ED898F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,6 +93,7 @@ Global
 		{589042BE-D59C-74F3-F6D5-0B342E777BC6} = {CED99341-1396-4AD8-9DA0-8BC30841E69A}
 		{8C4CF6A4-45E3-9795-5E6A-0BF5D174C0E9} = {DCAE458F-B93D-44B5-A827-3FE1B0C1DEEE}
 		{CAD145C8-03C5-B69A-E9A2-C822B3C7735D} = {C2894B9B-D97E-4608-8975-6E247C0B6E1C}
+		{C5A3006A-BB98-4779-A0B9-1A3C6ED898F5} = {45E77520-1F4B-4C1F-8D2C-EF5919DAA6ED}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D9BEAA4B-7285-4AA7-9BA7-B468002AF448}

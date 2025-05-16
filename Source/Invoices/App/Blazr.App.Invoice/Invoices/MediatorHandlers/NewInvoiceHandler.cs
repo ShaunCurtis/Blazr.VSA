@@ -27,8 +27,8 @@ public record NewInvoiceHandler : IRequestHandler<InvoiceRequests.InvoiceNewRequ
     {
         var invoiceRecord = _entityProvider.NewRecord;
 
-        var invoiceComposite = new InvoiceEntity(_mediator, invoiceRecord, Enumerable.Empty<DmoInvoiceItem>());
+        var invoiceEntity = new InvoiceEntity(_mediator, invoiceRecord, Enumerable.Empty<DmoInvoiceItem>());
 
-        return Task.FromResult(Result<InvoiceEntity>.Success((InvoiceEntity)invoiceComposite));
+        return Task.FromResult(Result<InvoiceEntity>.Success((InvoiceEntity)invoiceEntity));
     }
 }

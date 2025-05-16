@@ -4,14 +4,11 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazored.Toast;
+using Blazr.Antimony.Mediator;
 using Blazr.App.Invoice.Core;
 using Blazr.App.Invoice.Infrastructure.Server;
 using Blazr.App.Presentation;
-using Blazr.App.Weather.EntityFramework;
-using Blazr.Auth.Core;
 using Blazr.Gallium;
-using Microsoft.AspNetCore.Components.Authorization;
-using Blazr.Antimony.Mediator;
 using System.Reflection;
 
 namespace Blazr.App.Infrastructure.Server;
@@ -20,24 +17,9 @@ public static class ApplicationServerServices
 {
     public static void AddAppServices(this IServiceCollection services)
     {
-        services.AddScoped<AuthenticationStateProvider, VerySimpleAuthenticationStateProvider>();
-        services.AddAppPolicyServices();
-
-        services.AddAuthentication( options => options.DefaultScheme = TestIdentities.Provider)
-            .AddScheme<VerySimpleAuthSchemeOptions, VerySimpleAuthenticationHandler>(TestIdentities.Provider, options => { });
-
-        services.AddAuthorization(config =>
-        {
-            foreach (var policy in AppPolicies.Policies)
-            {
-                config.AddPolicy(policy.Key, policy.Value);
-            }
-        });
-
-        // Add Mediator
+        // Add Blazor Mediator Service
         services.AddMediator(new Assembly[] {
-                typeof(DmoCustomer).Assembly,
-                typeof(Blazr.App.Weather.EntityFramework.WeatherApplicationServerServices).Assembly
+                typeof(DmoCustomer).Assembly
         });
 
         // Add the Gallium Message Bus Server services
@@ -58,6 +40,5 @@ public static class ApplicationServerServices
         services.AddQuickGridEntityFrameworkAdapter();
 
         services.AddInvoiceAppServices();
-        services.AddWeatherAppEFServices();
     }
 }
