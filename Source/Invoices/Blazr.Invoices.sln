@@ -33,6 +33,26 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Server", "Deploym
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.Antimony.Tests", "Tests\Blazr.Antimony.Tests\Blazr.Antimony.Tests.csproj", "{C5A3006A-BB98-4779-A0B9-1A3C6ED898F5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{E17EC7AD-694C-4ABE-A723-E52E11F24EC2}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Documents\Aggregates.md = ..\..\Documents\Aggregates.md
+		..\..\Documents\App-Design.md = ..\..\Documents\App-Design.md
+		..\..\Documents\Entities.md = ..\..\Documents\Entities.md
+		..\..\Documents\Introduction-To-Antimony.md = ..\..\Documents\Introduction-To-Antimony.md
+		..\..\Documents\MVB.md = ..\..\Documents\MVB.md
+		..\..\Documents\Vertical-Slice-Architecture.md = ..\..\Documents\Vertical-Slice-Architecture.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data-Pipeline", "Data-Pipeline", "{5F4C6E39-C064-4389-9E11-4E21F4781F59}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Documents\Data-Pipeline\Commands.md = ..\..\Documents\Data-Pipeline\Commands.md
+		..\..\Documents\Data-Pipeline\Data-Objects.md = ..\..\Documents\Data-Pipeline\Data-Objects.md
+		..\..\Documents\Data-Pipeline\Data-Pipeline.md = ..\..\Documents\Data-Pipeline\Data-Pipeline.md
+		..\..\Documents\Data-Pipeline\List-Requests.md = ..\..\Documents\Data-Pipeline\List-Requests.md
+		..\..\Documents\Data-Pipeline\Record-Requests.md = ..\..\Documents\Data-Pipeline\Record-Requests.md
+		..\..\Documents\Data-Pipeline\Results.md = ..\..\Documents\Data-Pipeline\Results.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -94,6 +114,7 @@ Global
 		{8C4CF6A4-45E3-9795-5E6A-0BF5D174C0E9} = {DCAE458F-B93D-44B5-A827-3FE1B0C1DEEE}
 		{CAD145C8-03C5-B69A-E9A2-C822B3C7735D} = {C2894B9B-D97E-4608-8975-6E247C0B6E1C}
 		{C5A3006A-BB98-4779-A0B9-1A3C6ED898F5} = {45E77520-1F4B-4C1F-8D2C-EF5919DAA6ED}
+		{5F4C6E39-C064-4389-9E11-4E21F4781F59} = {E17EC7AD-694C-4ABE-A723-E52E11F24EC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D9BEAA4B-7285-4AA7-9BA7-B468002AF448}

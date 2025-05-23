@@ -12,7 +12,7 @@ Commands have one of three actions:
 2. Delete - delete the record from the data store.
 3. Add - Add the record to the data store.
  
-Command functionality is defined in a `CommandState` readonly struct.  An enum is not used because the action state can cross domain boundaries and API interfaces.  Search "c# why you shouldn't use emums" for more information on the topic.
+Command functionality is defined in a `CommandState` readonly struct.  using an `enum` is problematic when you cross domain boundaries and API interfaces.  Search "c# why you shouldn't use emums" for more information on the topic.
 
 ```csharp
 public readonly record struct CommandState

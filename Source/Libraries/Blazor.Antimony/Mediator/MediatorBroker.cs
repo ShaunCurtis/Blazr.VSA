@@ -8,11 +8,16 @@ namespace Blazr.Antimony.Mediator;
 public class MediatorBroker : IMediatorBroker
 {
     private readonly IServiceProvider _serviceProvider;
+    
     public MediatorBroker(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
+
     public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        => DispatchAsync(request, cancellationToken);
+    
+    public Task<TResponse> DispatchAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
         var handlerType = typeof(IRequestHandler<,>).MakeGenericType(request.GetType(), typeof(TResponse));
         dynamic? handler = _serviceProvider.GetService(handlerType);

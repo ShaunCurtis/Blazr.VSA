@@ -21,7 +21,7 @@ public sealed class CustomerLookupBrokerr : LookUpUIBroker<CustomerLookUpItem>
 
     public async override ValueTask<Result> LoadAsync()
     {
-        var result = await this.Mediator.Send(new CustomerLookupRequest());
+        var result = await this.Mediator.DispatchAsync(new CustomerLookupRequest());
         if (result.HasSucceeded(out ListItemsProvider<CustomerLookUpItem>? listResult))
             this.Items = listResult.Items;
 

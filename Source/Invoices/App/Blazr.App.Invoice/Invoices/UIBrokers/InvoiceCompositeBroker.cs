@@ -32,7 +32,7 @@ public sealed class InvoiceCompositeBroker
         if (id.Value != Guid.Empty)
         {
             var request = new InvoiceRequests.InvoiceRequest(id);
-            var result = await _dispatcher.Send(request);
+            var result = await _dispatcher.DispatchAsync(request);
 
             LastResult = result;
 
@@ -49,7 +49,7 @@ public sealed class InvoiceCompositeBroker
 
     public async ValueTask<Result> SaveAsync()
     {
-        var result = await this.Invoice.PersistInvoiceAsync();
+        var result = await this.Invoice.DispatchAsync(new InvoiceActions.PersistInvoiceAction());
 
         LastResult = result;
 

@@ -15,13 +15,13 @@ public class CustomerEntityProvider : IEntityProvider<DmoCustomer, CustomerId>
     private readonly IMediatorBroker _mediator;
 
     public Func<CustomerId,  Task<Result<DmoCustomer>>> RecordRequest
-        => (id) => _mediator.Send(new CustomerRecordRequest(id));
+        => (id) => _mediator.DispatchAsync(new CustomerRecordRequest(id));
 
     public Func<DmoCustomer, CommandState,  Task<Result<CustomerId>>> RecordCommand
-        => (record, state) => _mediator.Send(new CustomerCommandRequest(record, state));
+        => (record, state) => _mediator.DispatchAsync(new CustomerCommandRequest(record, state));
 
     public Func<GridState<DmoCustomer>, Task<Result<ListItemsProvider<DmoCustomer>>>> ListRequest
-        => (state) => _mediator.Send(new CustomerListRequest()
+        => (state) => _mediator.DispatchAsync(new CustomerListRequest()
         {
             PageSize = state.PageSize,
             StartIndex = state.StartIndex,

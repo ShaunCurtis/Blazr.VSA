@@ -54,7 +54,7 @@ public class MediatorTests
         );
         UserDto? resultUser = null;
 
-        var result = await mediatorBroker.Send(new GetUserQuery(id));
+        var result = await mediatorBroker.DispatchAsync(new GetUserQuery(id));
 
         Assert.True(result.HasSucceeded(out resultUser));
 

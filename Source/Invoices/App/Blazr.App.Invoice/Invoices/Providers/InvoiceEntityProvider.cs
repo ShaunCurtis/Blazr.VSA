@@ -16,13 +16,13 @@ public class InvoiceEntityProvider : IEntityProvider<DmoInvoice, InvoiceId>
     private readonly IMediatorBroker _mediator;
 
     public Func<InvoiceId, Task<Result<DmoInvoice>>> RecordRequest
-        => (id) => _mediator.Send(new InvoiceRequests.InvoiceRecordRequest(id));
+        => (id) => _mediator.DispatchAsync(new InvoiceRequests.InvoiceRecordRequest(id));
 
     public Func<DmoInvoice, CommandState, Task<Result<InvoiceId>>> RecordCommand
         => (record, state) => Task.FromResult(Result<InvoiceId>.Fail(new Exception("You can't Update an Invoice this way")));
 
     public Func<GridState<DmoInvoice>, Task<Result<ListItemsProvider<DmoInvoice>>>> ListRequest
-        => (state) => _mediator.Send(new InvoiceListRequest()
+        => (state) => _mediator.DispatchAsync(new InvoiceListRequest()
         {
             PageSize = state.PageSize,
             StartIndex = state.StartIndex,

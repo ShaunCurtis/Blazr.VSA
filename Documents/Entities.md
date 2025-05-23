@@ -34,9 +34,9 @@ Consider:
 
 5. What's to stop us inadvertently modifying a `WeatherForecast` object when we didn't mean to?
 
-Our object screams database design, not domain/business layer design.  We shy away from have multiple objects to keep things simple, and in the process create an application like a sieve, riddled with holes.
+Our object screams database design, not domain/business layer design.  In our desire to keep things simple, we shy away from defining multiple objects and instead create a complex object, that is like a sieve: riddled with holes.
 
-Very few of us consider this when we create an object:  How many ways can I misuse, abuse this object?
+Very few consider how many ways an object they create can be misused and abused?
 
 Lets reconsider our object [the owner properties are part of the Authentication/Authorization demo]:
 
@@ -52,7 +52,7 @@ public sealed record DmoWeatherForecast
 }
 ```
 
-We now have a strongly typed Id which has a default value:
+We now have a strongly typed Id value object with a default value:
 
 
 ```csharp
@@ -135,4 +135,15 @@ public readonly record struct Temperature
 }
 ```
 
-Note that they are all have value semantics and are immutable: declared as `readonly record struct`.  They also carry out basic validation and a validity flag.
+Note that they are all have value semantics and are immutable: declared as `readonly record struct`.  They also carry out basic validation and have a validity flag where appropriate.
+
+## Dmo, Dsr, Dvo and Dbo Objects
+
+*Dmo* objects are **Domain Objects**.
+
+*Dsr* are **Data State Records** that consist of a *Dmo* wuth it's current state.  *Drs* objects are used in Aggregate Composite objects to track individual record state.
+
+*Dvo* objects are **Data View Objects** used in the infrastructure layer to retrieve data from the data store.
+
+*Dbo* objects are **DataBase Objects** used to apply commands to the data store.
+ 

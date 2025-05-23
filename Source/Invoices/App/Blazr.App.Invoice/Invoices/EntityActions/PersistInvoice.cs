@@ -34,7 +34,7 @@ public sealed partial class InvoiceEntity
     /// <returns></returns>
     public async ValueTask<Result> PersistInvoiceAsync(CancellationToken cancellationToken = new())
     {
-        var result = await _mediator.Send(new InvoiceRequests.InvoiceSaveRequest(this), cancellationToken);
+        var result = await _mediator.DispatchAsync(new InvoiceRequests.InvoiceSaveRequest(this), cancellationToken);
 
         if (result.IsFailure)
             return result;

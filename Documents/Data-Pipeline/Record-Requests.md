@@ -6,26 +6,46 @@ Generically we can define a request for a single item like this:
 ItemResult GetItemAsync(ItemRequest request);
 ```
 
-## The CQS Request
+## The CQS Handler
 
-We can define a generic request object:
+We can define a generic CQS handler like this:
 
 ```
-public readonly record struct RecordQueryRequest<TRecord>
+public static async ValueTask<Result<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
+    where TRecord : class
 {
-    public Expression<Func<TRecord, bool>> FindExpression { get; private init; }
-    public CancellationToken Cancellation { get; private init; }
+    dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
-    public RecordQueryRequest(Expression<Func<TRecord, bool>> expression, CancellationToken? cancellation = null)
-    {
-        this.FindExpression = expression;
-        this.Cancellation = cancellation ?? new(); 
-    }
+    var record = await dbContext.Set<TRecord>()
+        .FirstOrDefaultAsync(request.FindExpression)
+        .ConfigureAwait(ConfigureAwaitOptions.None);
 
-    public static RecordQueryRequest<TRecord> Create(Expression<Func<TRecord, bool>> expression, CancellationToken? cancellation = null)
-        => new RecordQueryRequest<TRecord>(expression, cancellation ?? new());
+    if (record is null)
+        return Result<TRecord>.Fail(new RecordQueryException($"No record retrieved with the Key provided"));
+
+    return Result<TRecord>.Success(record);
 }
 ```
+
+And attach it to the DBContext as an extension method:
+
+```csharp
+    public static async ValueTask<Result<TRecord>> GetRecordAsync<TRecord>(this DbContext dbContext, RecordQueryRequest<TRecord> request)
+        where TRecord : class
+    {
+        return await CQSEFBroker<DbContext>.GetRecordAsync(dbContext, request);
+    }
+```
+
+The CQS request:
+
+```csharp
+public record RecordQueryRequest<TRecord>(
+    Expression<Func<TRecord, bool>> FindExpression,
+    CancellationToken? Cancellation = null
+);
+```
+
 ## The Mediator Request
 
 All we need is the record Id.  Here's the Customer Record Request:
@@ -34,106 +54,26 @@ All we need is the record Id.  Here's the Customer Record Request:
 public readonly record struct CustomerRecordRequest(CustomerId Id) : IRequest<Result<DmoCustomer>>;
 ```
 
-## The Mediator Handler
+Which is used by the delegate defined in the CustomerEntityProvider:
 
 ```csharp
-public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordRequest, Result<DmoCustomer>>
-{
-    private IRecordRequestBroker _broker;
-
-    public CustomerRecordHandler(IRecordRequestBroker broker)
-    {
-        _broker = broker;
-    }
-
-    public async Task<Result<DmoCustomer>> Handle(CustomerRecordRequest request, CancellationToken cancellationToken)
-    {
-        Expression<Func<DboCustomer, bool>> findExpression = (item) =>
-            item.CustomerID == request.Id.Value;
-
-        var query = new RecordQueryRequest<DboCustomer>(findExpression);
-
-        var result = await _broker.ExecuteAsync<DboCustomer>(query);
-
-        if (!result.HasSucceeded(out DboCustomer? record))
-            return result.ConvertFail<DmoCustomer>();
-
-        var returnItem = DboCustomerMap.Map(record);
-
-        return Result<DmoCustomer>.Success(returnItem);
-    }
-}
+public Func<CustomerId,  Task<Result<DmoCustomer>>> RecordRequest
+    => (id) => _mediator.DispatchAsync(new CustomerRecordRequest(id));
 ```
 
-## The CQS Broker
+And invoked from the generic `ReadUIBroker`:   
 
 ```csharp
-public sealed class RecordRequestServerBroker<TDbContext>
-    : IRecordRequestBroker
-    where TDbContext : DbContext
+private async ValueTask GetRecordItemAsync(TKey id)
 {
-    private readonly IDbContextFactory<TDbContext> _factory;
+    _key = id;
 
-    public RecordRequestServerBroker(IDbContextFactory<TDbContext> factory)
-    {
-        _factory = factory;
-    }
+    // Call the RecordRequest on the record specific EntityProvider to get the record
+    var result = await _entityProvider.RecordRequest.Invoke(id);
 
-    public async ValueTask<Result<TRecord>> ExecuteAsync<TRecord>(RecordQueryRequest<TRecord> request)
-        where TRecord : class
-    {
-        return await this.GetItemAsync<TRecord>(request);
-    }
+    LastResult = result;
 
-    private async ValueTask<Result<TRecord>> GetItemAsync<TRecord>(RecordQueryRequest<TRecord> request)
-        where TRecord : class
-    {
-        using var dbContext = _factory.CreateDbContext();
-        dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
-        var record = await dbContext.Set<TRecord>()
-            .FirstOrDefaultAsync(request.FindExpression)
-            .ConfigureAwait(false);
-
-        if (record is null)
-            return Result<TRecord>.Fail(new ItemQueryException($"No record retrieved with the Key provided"));
-
-        return Result<TRecord>.Success(record);
-    }
+    if (result.HasSucceeded(out TRecord? record))
+        this.Item = record ?? _entityProvider.NewRecord;
 }
 ```
-
-## The Result
-
-All requests return data and status information.  We should never return a `null` without explaining why!
-
-We can define an interface so we handle the status information regardless of the type of data: we may want to display or log errors.
-
-```csharp
-public interface IDataResult
-{
-    public bool Successful { get; }
-    public string Message { get; }
-}
-```
-
-And then the result using generics.
-
-```csharp
-public sealed record ItemQueryResult<TRecord> : IDataResult
-{
-    public TRecord? Item { get; init;} 
-    public bool Successful { get; init; }
-    public string Message { get; init; } = string.Empty;
-
-    private ItemQueryResult() { }
-
-    public static ItemQueryResult<TRecord> Success(TRecord Item, string? message = null)
-        => new ItemQueryResult<TRecord> { Successful=true, Item= Item, Message= message ?? string.Empty };
-
-    public static ItemQueryResult<TRecord> Failure(string message)
-        => new ItemQueryResult<TRecord> { Message = message};
-}
-```
-
-There are two static constructors to control how a result is constructed: it either succeeded or failed.

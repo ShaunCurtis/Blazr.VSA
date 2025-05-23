@@ -23,6 +23,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
     {
         _factory = factory;
     }
+
     public async Task<Result<ListItemsProvider<DmoCustomer>>> HandleAsync(CustomerListRequest request, CancellationToken cancellationToken)
     {
         var dbContext = _factory.CreateDbContext();
