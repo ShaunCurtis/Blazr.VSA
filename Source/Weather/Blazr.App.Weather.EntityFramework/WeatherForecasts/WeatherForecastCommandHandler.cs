@@ -6,7 +6,7 @@
 namespace Blazr.App.Weather.EntityFramework;
 
 /// <summary>
-/// Mediatr Handler for executing commands against a WeatherForecast Entity in an Entity Framework Context
+/// Mediator Handler for executing commands against a WeatherForecast Entity in an Entity Framework Context
 /// </summary>
 public sealed record WeatherForecastCommandHandler : IRequestHandler<WeatherForecastCommandRequest, Result<WeatherForecastId>>
 {
