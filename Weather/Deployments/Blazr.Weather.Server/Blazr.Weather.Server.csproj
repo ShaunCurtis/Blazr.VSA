@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="9.0.6" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="9.0.6" />
+
+		<ProjectReference Include="..\..\Application\Blazr.App.EntityFramework\Blazr.App.EntityFramework.csproj" />
+		<ProjectReference Include="..\..\Application\Blazr.App\Blazr.App.csproj" />
+		<ProjectReference Include="..\..\..\Libraries\Blazr.Diode.EntityFramework\Blazr.Diode.EntityFramework.csproj" />
+		<ProjectReference Include="..\..\..\Libraries\Blazr.Diode\Blazr.Diode.csproj" />
+	</ItemGroup>
+
+</Project>

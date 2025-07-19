@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="MediatR" Version="12.4.1" />
+	  <ProjectReference Include="..\Blazr.App.Core\Blazr.App.csproj" />
+  </ItemGroup>
+
+</Project>

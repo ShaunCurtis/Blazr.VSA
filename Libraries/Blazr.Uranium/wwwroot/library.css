@@ -1,0 +1,38 @@
+.grid td {
+    vertical-align: middle;
+}
+
+.grid .max-column {
+    width: 100%;
+    min-width: 15%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.grid .nowrap-column {
+    min-width: 10%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.grid .wrap-column {
+    min-width: 10%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.grid .nowrap-narrow-column {
+    min-width: 5%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.grid .nowrap-wide-column {
+    min-width: 20%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

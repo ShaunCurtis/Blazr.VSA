@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="Blazr.BaseComponents" Version="1.0.1" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="9.0.6" />
+
+	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Blazr.Diode\Blazr.Diode.csproj" />
+    <ProjectReference Include="..\Blazr.Diode\Blazr.Diode.csproj" />
+    <ProjectReference Include="..\Blazr.Gallium\Blazr.Gallium.csproj" />
+    <ProjectReference Include="..\Blazr.Manganese\Blazr.Manganese.csproj" />
+    <ProjectReference Include="..\Blazr.Uranium\Blazr.Uranium.csproj" />
+  </ItemGroup>
+
+</Project>
