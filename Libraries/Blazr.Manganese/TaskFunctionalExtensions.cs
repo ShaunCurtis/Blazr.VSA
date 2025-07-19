@@ -32,60 +32,55 @@ public static class TaskFunctionalExtensions
     public static async Task<Result<T>> MapTaskToResultAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> isTrue, Func<T, Task<Result<T>>> isFalse)
     {
         var result = await task.HandleTaskCompletionAsync();
-
         return await result.MapToResultAsync<T>(test, isTrue, isFalse);
     }
 
     public static async Task<Result<T>> MapTaskToResultAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> isTrue)
     {
         var result = await task.HandleTaskCompletionAsync();
-
         return await result.MapToResultAsync(test, isTrue);
     }
 
     public static async Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result>> isTrue)
     {
         var result = await task.HandleTaskCompletionAsync();
-
         return await result.MapToResultAsync(test, isTrue);
     }
 
-    public static async Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> mapping)
+    public async static Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> mapping)
     {
         var result = await task.HandleTaskCompletionAsync();
-
         return await result.MapToResultAsync(mapping);
     }
 
-    public static async Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task, Func<T, Result> mapping)
-    {
-        var result = await task.HandleTaskCompletionAsync();
-
-        return result.MapToResult(mapping);
-    }
+    public static Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task, Func<T, Result> mapping)
+        => task.HandleTaskCompletionAsync()
+            .ContinueWith((t) => t.Result.MapToResult(mapping));
 
     public static Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task)
-        => task.HandleTaskCompletionAsync().ContinueWith((t) => t.Result.MapToResult());
+        => task.HandleTaskCompletionAsync()
+            .ContinueWith((t) => t.Result.MapToResult());
 
     public static Task<Result<T>> TaskSideEffectAsync<T>(this Task<Result<T>> task, Action<T>? success = null, Action<Exception>? failure = null)
-        => task.HandleTaskCompletionAsync().ContinueWith((t) => t.Result.ExecuteSideEffect(success, failure));
+        => task.HandleTaskCompletionAsync()
+            .ContinueWith((t) => t.Result.ExecuteSideEffect(success, failure));
 
     public static Task<Result<T>> TaskSideEffectAsync<T>(this Task<Result<T>> task, bool test, Action<T> isTrue)
-        => task.HandleTaskCompletionAsync().ContinueWith((t) => t.Result.ExecuteSideEffect(test, isTrue));
+        => task.HandleTaskCompletionAsync()
+            .ContinueWith((t) => t.Result.ExecuteSideEffect(test, isTrue));
 
     public static Task<Result> TaskSideEffectAsync(this Task<Result> task, Action? success = null, Action<Exception>? failure = null)
-        => task.HandleTaskCompletionAsync().ContinueWith((t) => t.Result.SideEffect(success, failure));
+        => task.HandleTaskCompletionAsync()
+            .ContinueWith((t) => t.Result.SideEffect(success, failure));
 
     private static Task<Result<T>> HandleTaskCompletionAsync<T>(this Task<Result<T>> task)
     {
         // Function to check for task completion and wrap any exceptions into the Result
-        Func<Task<Result<T>>, Result<T>> CheckForTaskException = (t) =>
-        {
-            return t.IsCompletedSuccessfully.Map<T>(
-                isTrue: () => t.Result,
-                isFalse: () => Result<T>.Failure(t.Exception
-                    ?? new Exception("The Task failed to complete successfully")));
-        };
+        Func<Task<Result<T>>, Result<T>> CheckForTaskException = (t)
+            => t.IsCompletedSuccessfully
+                ? t.Result
+                : Result<T>.Failure(t.Exception
+                    ?? new Exception("The Task failed to complete successfully"));
 
         return task
             .ContinueWith(CheckForTaskException);
@@ -94,13 +89,11 @@ public static class TaskFunctionalExtensions
     private static Task<Result> HandleTaskCompletionAsync(this Task<Result> task)
     {
         // Function to check for task completion and wrap any exceptions into the Result
-        Func<Task<Result>, Result> CheckForTaskException = (t) =>
-        {
-            return t.IsCompletedSuccessfully.Map(
-                isTrue: () => t.Result,
-                isFalse: () => Result.Failure(t.Exception
-                    ?? new Exception("The Task failed to complete successfully")));
-        };
+        Func<Task<Result>, Result> CheckForTaskException = (t)
+            => t.IsCompletedSuccessfully
+                ? t.Result
+                : Result.Failure(t.Exception
+                    ?? new Exception("The Task failed to complete successfully"));
 
         return task
             .ContinueWith(CheckForTaskException);

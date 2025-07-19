@@ -110,9 +110,12 @@ public partial record Result
     }
 
     public void Output(Action? success = null, Action<Exception>? failure = null)
-        => (_exception is null).SideEffect(
-            isTrue: () => success?.Invoke(),
-            isFalse: () => failure?.Invoke(_exception!));
+    {
+        if (_exception is null)
+            success?.Invoke();
+        else
+            failure?.Invoke(_exception);
+    }
 
     public ValueTask<Result> CompletedValueTask
         => ValueTask.FromResult(this);
