@@ -3,7 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.App.Shared;
+namespace Blazr.App.Core;
 
 public static class AppDictionary
 {
@@ -11,7 +11,7 @@ public static class AppDictionary
     {
         public const string CustomerId = "Id";
         public const string CustomerID = "CustomerID";
-        public const string CustomerName = "CustomerName";
+        public const string CustomerName = "Name";
     }
 
     public static class Invoice

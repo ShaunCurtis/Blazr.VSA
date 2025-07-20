@@ -11,12 +11,12 @@ namespace Blazr.App.Invoice.Infrastructure.Server;
 public sealed class InvoiceTestDataProvider
 {
     public IEnumerable<DboCustomer> Customers => _customers.AsEnumerable();
-    public IEnumerable<DboInvoice> Invoices => _invoices.AsEnumerable();
-    public IEnumerable<DboInvoiceItem> InvoiceItems => _invoiceItems.AsEnumerable();
+    //public IEnumerable<DboInvoice> Invoices => _invoices.AsEnumerable();
+    //public IEnumerable<DboInvoiceItem> InvoiceItems => _invoiceItems.AsEnumerable();
 
     private List<DboCustomer> _customers = new List<DboCustomer>();
-    private List<DboInvoice> _invoices = new List<DboInvoice>();
-    private List<DboInvoiceItem> _invoiceItems = new List<DboInvoiceItem>();
+    //private List<DboInvoice> _invoices = new List<DboInvoice>();
+    //private List<DboInvoiceItem> _invoiceItems = new List<DboInvoiceItem>();
 
     public InvoiceTestDataProvider()
     {
@@ -35,30 +35,30 @@ public sealed class InvoiceTestDataProvider
         };
         _customers.Add(customer);
 
-        {
-            var _id = Guid.CreateVersion7();
-            _invoices.Add(new()
-            {
-                InvoiceID = _id,
-                CustomerID = id,
-                Date = DateTime.Now.AddDays(-3),
-                TotalAmount = 50
-            });
-            _invoiceItems.Add(new()
-            {
-                InvoiceItemID = Guid.CreateVersion7(),
-                InvoiceID = _id,
-                Description = "Airbus A321",
-                Amount = 15
-            });
-            _invoiceItems.Add(new()
-            {
-                InvoiceItemID = Guid.CreateVersion7(),
-                InvoiceID = _id,
-                Description = "Airbus A350",
-                Amount = 35
-            });
-        }
+        //{
+        //    var _id = Guid.CreateVersion7();
+        //    _invoices.Add(new()
+        //    {
+        //        InvoiceID = _id,
+        //        CustomerID = id,
+        //        Date = DateTime.Now.AddDays(-3),
+        //        TotalAmount = 50
+        //    });
+        //    _invoiceItems.Add(new()
+        //    {
+        //        InvoiceItemID = Guid.CreateVersion7(),
+        //        InvoiceID = _id,
+        //        Description = "Airbus A321",
+        //        Amount = 15
+        //    });
+        //    _invoiceItems.Add(new()
+        //    {
+        //        InvoiceItemID = Guid.CreateVersion7(),
+        //        InvoiceID = _id,
+        //        Description = "Airbus A350",
+        //        Amount = 35
+        //    });
+        //}
 
         id = Guid.CreateVersion7();
         customer = new()
@@ -68,30 +68,30 @@ public sealed class InvoiceTestDataProvider
         };
         _customers.Add(customer);
 
-        {
-            var _id = Guid.CreateVersion7();
-            _invoices.Add(new()
-            {
-                InvoiceID = _id,
-                CustomerID = id,
-                Date = DateTime.Now.AddDays(-2),
-                TotalAmount = 27
-            });
-            _invoiceItems.Add(new()
-            {
-                InvoiceItemID = Guid.CreateVersion7(),
-                InvoiceID = _id,
-                Description = "Airbus A319",
-                Amount = 12
-            });
-            _invoiceItems.Add(new()
-            {
-                InvoiceItemID = Guid.CreateVersion7(),
-                InvoiceID = _id,
-                Description = "Airbus A321",
-                Amount = 15
-            });
-        }
+        //{
+        //    var _id = Guid.CreateVersion7();
+        //    _invoices.Add(new()
+        //    {
+        //        InvoiceID = _id,
+        //        CustomerID = id,
+        //        Date = DateTime.Now.AddDays(-2),
+        //        TotalAmount = 27
+        //    });
+        //    _invoiceItems.Add(new()
+        //    {
+        //        InvoiceItemID = Guid.CreateVersion7(),
+        //        InvoiceID = _id,
+        //        Description = "Airbus A319",
+        //        Amount = 12
+        //    });
+        //    _invoiceItems.Add(new()
+        //    {
+        //        InvoiceItemID = Guid.CreateVersion7(),
+        //        InvoiceID = _id,
+        //        Description = "Airbus A321",
+        //        Amount = 15
+        //    });
+        //}
 
         id = Guid.CreateVersion7();
         customer = new()
@@ -101,30 +101,31 @@ public sealed class InvoiceTestDataProvider
         };
         _customers.Add(customer);
 
-        {
-            var _id = Guid.CreateVersion7();
-            _invoices.Add(new()
-            {
-                InvoiceID = _id,
-                CustomerID = id,
-                Date = DateTime.Now.AddDays(-1),
-                TotalAmount = 60
-            });
-            _invoiceItems.Add(new()
-            {
-                InvoiceItemID = Guid.CreateVersion7(),
-                InvoiceID = _id,
-                Description = "Airbus A330",
-                Amount = 25
-            });
-            _invoiceItems.Add(new()
-            {
-                InvoiceItemID = Guid.CreateVersion7(),
-                InvoiceID = _id,
-                Description = "Airbus A350",
-                Amount = 35
-            });
-        }
+        //{
+        //    var _id = Guid.CreateVersion7();
+        //    _invoices.Add(new()
+        //    {
+        //        InvoiceID = _id,
+        //        CustomerID = id,
+        //        Date = DateTime.Now.AddDays(-1),
+        //        TotalAmount = 60
+        //    });
+        //    _invoiceItems.Add(new()
+        //    {
+        //        InvoiceItemID = Guid.CreateVersion7(),
+        //        InvoiceID = _id,
+        //        Description = "Airbus A330",
+        //        Amount = 25
+        //    });
+        //    _invoiceItems.Add(new()
+        //    {
+        //        InvoiceItemID = Guid.CreateVersion7(),
+        //        InvoiceID = _id,
+        //        Description = "Airbus A350",
+        //        Amount = 35
+        //    });
+        //}
+
         _customers.Add(new() { CustomerID = Guid.CreateVersion7(), CustomerName = "TAP" });
         _customers.Add(new() { CustomerID = Guid.CreateVersion7(), CustomerName = "American Airlines" });
         _customers.Add(new() { CustomerID = Guid.CreateVersion7(), CustomerName = "Quantas" });
@@ -150,19 +151,19 @@ public sealed class InvoiceTestDataProvider
         using var dbContext = factory.CreateDbContext();
 
         var dboCustomers = dbContext.Set<DboCustomer>();
-        var dboInvoices = dbContext.Set<DboInvoice>();
-        var dboInvoiceItems = dbContext.Set<DboInvoiceItem>();
+        //var dboInvoices = dbContext.Set<DboInvoice>();
+        //var dboInvoiceItems = dbContext.Set<DboInvoiceItem>();
 
         // Check if we already have a full data set
         // If not clear down any existing data and start again
         if (dboCustomers.Count() == 0)
             dbContext.AddRange(_customers);
 
-        if (dboInvoices.Count() == 0)
-            dbContext.AddRange(_invoices);
+        //if (dboInvoices.Count() == 0)
+        //    dbContext.AddRange(_invoices);
 
-        if (dboInvoiceItems.Count() == 0)
-            dbContext.AddRange(_invoiceItems);
+        //if (dboInvoiceItems.Count() == 0)
+        //    dbContext.AddRange(_invoiceItems);
 
         dbContext.SaveChanges();
     }

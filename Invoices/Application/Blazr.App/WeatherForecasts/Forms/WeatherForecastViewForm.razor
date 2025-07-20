@@ -1,0 +1,56 @@
+﻿@namespace Blazr.App.UI
+
+@using Blazr.Cadmium.UI
+@inherits ViewerModalFormBase<DmoWeatherForecast, WeatherForecastId>
+
+<PageTitle>@this.FormTitle</PageTitle>
+
+<div class="modal-header">
+    <div class="h4">
+        @this.FormTitle
+    </div>
+</div>
+
+<div class="modal-body px-3">
+
+    <div class="row">
+
+        <div class="col-12 col-lg-6 mb-2">
+            <BlazrTextViewControl Label="Id" Value="@this.UIBroker.Item.Id.Value.ToDisplayId()" />
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-12 col-lg-8 mb-2">
+            <BlazrTextViewControl Label="Date" Value="@this.UIBroker.Item.Date.ToString()" />
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-12 col-lg-6 mb-2">
+            <BlazrTextViewControl Label="Temperature &deg; C" Value="@this.UIBroker.Item.Temperature.TemperatureC.ToString("N0")" />
+        </div>
+
+        <div class="col-12 col-lg-6 mb-2">
+            <BlazrTextViewControl Label="Temperature &deg; F" Value="@this.UIBroker.Item.Temperature.TemperatureF.ToString("N0")" />
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-12 col-lg-8 mb-2">
+            <BlazrTextViewControl Label="Summary" Value="@this.UIBroker.Item.Summary" />
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal-footer bg-light text-end">
+    <UIButton ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnExit>Exit</UIButton>
+</div>
