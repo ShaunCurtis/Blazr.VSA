@@ -3,10 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Invoice.Core;
-using Microsoft.EntityFrameworkCore;
-
-namespace Blazr.App.Invoice.Infrastructure.Server;
+namespace Blazr.App.EntityFramework;
 
 public sealed class InvoiceTestDataProvider
 {

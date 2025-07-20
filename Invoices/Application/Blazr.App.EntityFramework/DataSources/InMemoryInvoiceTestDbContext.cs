@@ -58,5 +58,5 @@ public sealed class InMemoryInvoiceTestDbContext
         //                   InvoiceID = i.InvoiceID,
         //                   TotalAmount = i.TotalAmount,
         //               }).HasKey(x => x.InvoiceID);
-        //}
     }
+}

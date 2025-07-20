@@ -18,224 +18,224 @@ namespace Blazr.Test;
 public partial class WeatherForecastEntityTests
 {
 
-    [Fact]
-    public async Task UpdateAForecast()
-    {
-        // Get a fully stocked DI container
-        var provider = GetServiceProvider();
+    //[Fact]
+    //public async Task UpdateAForecast()
+    //{
+    //    // Get a fully stocked DI container
+    //    var provider = GetServiceProvider();
 
-        //Gets the Providers
-        var _entityUIProvider = provider.GetService<IUIEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        var entityUIProvider = (WeatherForecastUIEntityProvider)_entityUIProvider;
+    //    //Gets the Providers
+    //    var _entityUIProvider = provider.GetService<IUIEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
+    //    var entityUIProvider = (WeatherForecastUIEntityProvider)_entityUIProvider;
 
-        var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
+    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
+    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
 
-        // Get the a random item and it's Id from the Test Provider
-        var testItem = _testDataProvider.WeatherForecasts.Skip(Random.Shared.Next(50)).First();
-        var testId = new WeatherForecastId(testItem.WeatherForecastID);
+    //    // Get the a random item and it's Id from the Test Provider
+    //    var testItem = _testDataProvider.WeatherForecasts.Skip(Random.Shared.Next(50)).First();
+    //    var testId = new WeatherForecastId(testItem.WeatherForecastID);
 
-        // Build a record that matches the edits we will apply to the entity
-        DmoWeatherForecast updatedRecord = AsDmoWeatherForecast(testItem) with { Summary = "Test Edit" };
+    //    // Build a record that matches the edits we will apply to the entity
+    //    DmoWeatherForecast updatedRecord = AsDmoWeatherForecast(testItem) with { Summary = "Test Edit" };
 
-        //Outputs from the process that need to be tested
-        bool result = false;
+    //    //Outputs from the process that need to be tested
+    //    bool result = false;
 
-        // Get the UI Broker for the test item
-        var uiBroker = await entityUIProvider.GetEntityEditUIBrokerAsync(testId);
+    //    // Get the UI Broker for the test item
+    //    var uiBroker = await entityUIProvider.GetEntityEditUIBrokerAsync(testId);
 
-        //Update the Summary as it would be done in the UI
-        uiBroker.EditMutator.Summary = "Test Edit";
+    //    //Update the Summary as it would be done in the UI
+    //    uiBroker.EditMutator.Summary = "Test Edit";
 
-        // Test that the EditMutator has been updated
-        Assert.Equal(updatedRecord, uiBroker.EditMutator.AsRecord);
+    //    // Test that the EditMutator has been updated
+    //    Assert.Equal(updatedRecord, uiBroker.EditMutator.AsRecord);
 
-        //Execute the Save - the method linked to the save button in the UI
-        await uiBroker.SaveItemAsync(true);
+    //    //Execute the Save - the method linked to the save button in the UI
+    //    await uiBroker.SaveItemAsync(true);
 
-        // Output the result of the save
-        uiBroker.LastResult.SideEffect(
-            success: () => result = true,
-            failure: (ex) => result = false);
+    //    // Output the result of the save
+    //    uiBroker.LastResult.SideEffect(
+    //        success: () => result = true,
+    //        failure: (ex) => result = false);
 
-        // And check the update was successful
-        Assert.True(result);
-
-
-
-        DmoWeatherForecast? dbRecord = null;
-
-        // Get the record we just updated
-        await entityProvider.RecordRequestAsync(testId)
-            .OutputTaskAsync(
-            success: (record) =>
-            {
-                dbRecord = record;
-                result = true;
-            },
-            failure: (ex) => result = false);
-
-        // check the query was successful
-        Assert.True(result);
-        // check it matches the update record
-        Assert.Equal(updatedRecord, dbRecord);
-    }
-
-    [Fact]
-    public async Task DeleteAForecast()
-    {
-        // Get a fully stocked DI container
-        var provider = GetServiceProvider();
-
-        //Gets the Providers
-        var _entityUIProvider = provider.GetService<IUIEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        var entityUIProvider = (WeatherForecastUIEntityProvider)_entityUIProvider;
-
-        var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
-
-        // Get the test item and it's Id from the Test Provider
-        var testItem = _testDataProvider.WeatherForecasts.First();
-
-        var testId = new WeatherForecastId(testItem.WeatherForecastID);
-
-        // Get the current record count
-        var CurrentItemCount = _testDataProvider.WeatherForecasts.Count();
-
-        //Outputs from the process that need to be tested
-        bool result = false;
-
-        var uiBroker = await entityUIProvider.GetEntityEditUIBrokerAsync(testId);
-
-        await uiBroker.DeleteItemAsync();
+    //    // And check the update was successful
+    //    Assert.True(result);
 
 
-        await uiBroker.SaveItemAsync(true);
 
-        result = false;
-        uiBroker.LastResult.SideEffect(
-            success: () => result = true);
+    //    DmoWeatherForecast? dbRecord = null;
 
-        // check the update was successful
-        Assert.True(result);
+    //    // Get the record we just updated
+    //    await entityProvider.RecordRequestAsync(testId)
+    //        .OutputTaskAsync(
+    //        success: (record) =>
+    //        {
+    //            dbRecord = record;
+    //            result = true;
+    //        },
+    //        failure: (ex) => result = false);
 
-        result = false;
+    //    // check the query was successful
+    //    Assert.True(result);
+    //    // check it matches the update record
+    //    Assert.Equal(updatedRecord, dbRecord);
+    //}
 
-        await entityProvider.RecordRequestAsync(testId)
-            .OutputTaskAsync(
-            failure: (ex) =>
-            {
-                result = true;
-            });
+    //[Fact]
+    //public async Task DeleteAForecast()
+    //{
+    //    // Get a fully stocked DI container
+    //    var provider = GetServiceProvider();
 
-        // check the query was successful
-        Assert.True(result);
+    //    //Gets the Providers
+    //    var _entityUIProvider = provider.GetService<IUIEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
+    //    var entityUIProvider = (WeatherForecastUIEntityProvider)_entityUIProvider;
 
-        result = false;
-        ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
+    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
+    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
 
-        await Result<WeatherForecastListRequest>
-            .Create(new()
-            {
-                PageSize = 1,
-                StartIndex = 0,
-            })
-            .MapToResultAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-            .OutputTaskAsync(success: (provider) =>
-            {
-                listItemsProvider = provider;
-                result = true;
-            });
+    //    // Get the test item and it's Id from the Test Provider
+    //    var testItem = _testDataProvider.WeatherForecasts.First();
 
-        // check the query was successful
-        Assert.True(result);
-        Assert.Equal(CurrentItemCount - 1, listItemsProvider.TotalCount);
-    }
+    //    var testId = new WeatherForecastId(testItem.WeatherForecastID);
 
-    [Fact]
-    public async Task AddAForecast()
-    {
-        var provider = GetServiceProvider();
+    //    // Get the current record count
+    //    var CurrentItemCount = _testDataProvider.WeatherForecasts.Count();
 
-        //Gets the Providers
-        var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
+    //    //Outputs from the process that need to be tested
+    //    bool result = false;
 
-        var _entityUIProvider = provider.GetService<IUIEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        var entityUIProvider = (WeatherForecastUIEntityProvider)_entityUIProvider;
+    //    var uiBroker = await entityUIProvider.GetEntityEditUIBrokerAsync(testId);
 
-        // Get the current record count
-        var CurrentItemCount = _testDataProvider.WeatherForecasts.Count();
+    //    await uiBroker.DeleteItemAsync();
 
-        // Get the broker with a default Id - as we would in the UI
-        // This creates an new entity 
-        var uiBroker = await entityUIProvider.GetEntityEditUIBrokerAsync(WeatherForecastId.Default);
 
-        // Update the EditMutator with the new record details as we would in the UI
-        uiBroker.EditMutator.Date = DateTime.Now;
-        uiBroker.EditMutator.Summary = "Test Add";
-        uiBroker.EditMutator.Temperature = 30;
+    //    await uiBroker.SaveItemAsync(true);
 
-        bool result = false;
+    //    result = false;
+    //    uiBroker.LastResult.SideEffect(
+    //        success: () => result = true);
 
-        await uiBroker.SaveItemAsync();
+    //    // check the update was successful
+    //    Assert.True(result);
 
-        uiBroker.LastResult.SideEffect(
-            success: () => result = true);
+    //    result = false;
 
-        WeatherForecastId newId = uiBroker.Id;
+    //    await entityProvider.RecordRequestAsync(testId)
+    //        .OutputTaskAsync(
+    //        failure: (ex) =>
+    //        {
+    //            result = true;
+    //        });
 
-        var newRecord = new DmoWeatherForecast
-        {
-            Id = newId,
-            Date = new(DateTime.Now),
-            Summary = "Test Add",
-            Temperature = new(30)
-        };
+    //    // check the query was successful
+    //    Assert.True(result);
 
-        // check the update was successful
-        Assert.True(result);
+    //    result = false;
+    //    ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
 
-        result = false;
-        DmoWeatherForecast? dbRecord = null;
+    //    await Result<WeatherForecastListRequest>
+    //        .Create(new()
+    //        {
+    //            PageSize = 1,
+    //            StartIndex = 0,
+    //        })
+    //        .MapToResultAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+    //        .OutputTaskAsync(success: (provider) =>
+    //        {
+    //            listItemsProvider = provider;
+    //            result = true;
+    //        });
 
-        // Now we try to get the record we just added
-        await entityProvider.RecordRequestAsync(newId)
-            .OutputTaskAsync(
-            success: (record) =>
-            {
-                dbRecord = record;
-                result = true;
-            });
+    //    // check the query was successful
+    //    Assert.True(result);
+    //    Assert.Equal(CurrentItemCount - 1, listItemsProvider.TotalCount);
+    //}
 
-        // check the query was successful
-        Assert.True(result);
+    //[Fact]
+    //public async Task AddAForecast()
+    //{
+    //    var provider = GetServiceProvider();
 
-        result = false;
-        Assert.Equal(newRecord, dbRecord);
+    //    //Gets the Providers
+    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
+    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
 
-        ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
+    //    var _entityUIProvider = provider.GetService<IUIEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
+    //    var entityUIProvider = (WeatherForecastUIEntityProvider)_entityUIProvider;
 
-        // We create a Result from a new WeatherForecastListRequest defining our test parameters
-        // and then map it to the WeatherListRequest method of the entity provider
-        // This will execute the request and return a ListItemsProvider<DmoWeatherForecast> Result
-        // which we then match to get the items provider.
+    //    // Get the current record count
+    //    var CurrentItemCount = _testDataProvider.WeatherForecasts.Count();
 
-        await Result<WeatherForecastListRequest>
-            .Create(new()
-            {
-                PageSize = 1,
-                StartIndex = 0,
-            })
-            .MapToResultAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-            .OutputTaskAsync(success: (provider) =>
-            {
-                listItemsProvider = provider;
-                result = true;
-            });
+    //    // Get the broker with a default Id - as we would in the UI
+    //    // This creates an new entity 
+    //    var uiBroker = await entityUIProvider.GetEntityEditUIBrokerAsync(WeatherForecastId.Default);
 
-        // check the query was successful
-        Assert.True(result);
-        Assert.Equal(CurrentItemCount + 1, listItemsProvider.TotalCount);
-    }
+    //    // Update the EditMutator with the new record details as we would in the UI
+    //    uiBroker.EditMutator.Date = DateTime.Now;
+    //    uiBroker.EditMutator.Summary = "Test Add";
+    //    uiBroker.EditMutator.Temperature = 30;
+
+    //    bool result = false;
+
+    //    await uiBroker.SaveItemAsync();
+
+    //    uiBroker.LastResult.SideEffect(
+    //        success: () => result = true);
+
+    //    WeatherForecastId newId = uiBroker.Id;
+
+    //    var newRecord = new DmoWeatherForecast
+    //    {
+    //        Id = newId,
+    //        Date = new(DateTime.Now),
+    //        Summary = "Test Add",
+    //        Temperature = new(30)
+    //    };
+
+    //    // check the update was successful
+    //    Assert.True(result);
+
+    //    result = false;
+    //    DmoWeatherForecast? dbRecord = null;
+
+    //    // Now we try to get the record we just added
+    //    await entityProvider.RecordRequestAsync(newId)
+    //        .OutputTaskAsync(
+    //        success: (record) =>
+    //        {
+    //            dbRecord = record;
+    //            result = true;
+    //        });
+
+    //    // check the query was successful
+    //    Assert.True(result);
+
+    //    result = false;
+    //    Assert.Equal(newRecord, dbRecord);
+
+    //    ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
+
+    //    // We create a Result from a new WeatherForecastListRequest defining our test parameters
+    //    // and then map it to the WeatherListRequest method of the entity provider
+    //    // This will execute the request and return a ListItemsProvider<DmoWeatherForecast> Result
+    //    // which we then match to get the items provider.
+
+    //    await Result<WeatherForecastListRequest>
+    //        .Create(new()
+    //        {
+    //            PageSize = 1,
+    //            StartIndex = 0,
+    //        })
+    //        .MapToResultAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+    //        .OutputTaskAsync(success: (provider) =>
+    //        {
+    //            listItemsProvider = provider;
+    //            result = true;
+    //        });
+
+    //    // check the query was successful
+    //    Assert.True(result);
+    //    Assert.Equal(CurrentItemCount + 1, listItemsProvider.TotalCount);
+    //}
 }

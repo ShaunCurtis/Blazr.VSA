@@ -18,49 +18,49 @@ namespace Blazr.Test;
 
 public partial class WeatherForecastEntityTests
 {
-    private WeatherTestDataProvider _testDataProvider;
+    //private WeatherTestDataProvider _testDataProvider;
 
-    public WeatherForecastEntityTests()
-        => _testDataProvider = WeatherTestDataProvider.Instance();
+    //public WeatherForecastEntityTests()
+    //    => _testDataProvider = WeatherTestDataProvider.Instance();
 
-    private ServiceProvider GetServiceProvider()
-    {
-        var services = new ServiceCollection();
+    //private ServiceProvider GetServiceProvider()
+    //{
+    //    var services = new ServiceCollection();
 
-        // Add Blazor Mediator Service
-        services.AddMediator(new Assembly[] {
-                typeof(Blazr.App.EntityFramework.WeatherApplicationServerServices).Assembly
-        });
+    //    // Add Blazor Mediator Service
+    //    services.AddMediator(new Assembly[] {
+    //            typeof(Blazr.App.EntityFramework.WeatherApplicationServerServices).Assembly
+    //    });
 
-        // Add the Gallium Message Bus Server services
-        services.AddScoped<IMessageBus, MessageBus>();
+    //    // Add the Gallium Message Bus Server services
+    //    services.AddScoped<IMessageBus, MessageBus>();
 
-        // InMemory Scoped State Store 
-        services.AddScoped<ScopedStateProvider>();
+    //    // InMemory Scoped State Store 
+    //    services.AddScoped<ScopedStateProvider>();
 
-        // Presenter Factories
-        services.AddScoped<ILookupUIBrokerFactory, LookupUIBrokerFactory>();
+    //    // Presenter Factories
+    //    services.AddScoped<ILookupUIBrokerFactory, LookupUIBrokerFactory>();
 
-        services.AddWeatherAppEFServices();
-        //        services.AddLogging(builder => builder.AddDebug());
+    //    services.AddWeatherAppEFServices();
+    //    //        services.AddLogging(builder => builder.AddDebug());
 
-        var provider = services.BuildServiceProvider();
+    //    var provider = services.BuildServiceProvider();
 
-        // get the DbContext factory and add the test data
-        var factory = provider.GetService<IDbContextFactory<InMemoryWeatherTestDbContext>>();
-        if (factory is not null)
-            WeatherTestDataProvider.Instance().LoadDbContext<InMemoryWeatherTestDbContext>(factory);
+    //    // get the DbContext factory and add the test data
+    //    var factory = provider.GetService<IDbContextFactory<InMemoryWeatherTestDbContext>>();
+    //    if (factory is not null)
+    //        WeatherTestDataProvider.Instance().LoadDbContext<InMemoryWeatherTestDbContext>(factory);
 
-        return provider!;
-    }
+    //    return provider!;
+    //}
 
-    private DmoWeatherForecast AsDmoWeatherForecast(DboWeatherForecast weatherForecast)
-        => new DmoWeatherForecast
-        {
-            Id = new WeatherForecastId(weatherForecast.WeatherForecastID),
-            Date = new Date(weatherForecast.Date),
-            Summary = weatherForecast.Summary ?? string.Empty,
-            Temperature = new Temperature(weatherForecast.Temperature)
-        };
+    //private DmoWeatherForecast AsDmoWeatherForecast(DboWeatherForecast weatherForecast)
+    //    => new DmoWeatherForecast
+    //    {
+    //        Id = new WeatherForecastId(weatherForecast.WeatherForecastID),
+    //        Date = new Date(weatherForecast.Date),
+    //        Summary = weatherForecast.Summary ?? string.Empty,
+    //        Temperature = new Temperature(weatherForecast.Temperature)
+    //    };
 
 }

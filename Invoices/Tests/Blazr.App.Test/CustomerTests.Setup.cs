@@ -18,10 +18,10 @@ namespace Blazr.Test;
 
 public partial class CustomerTests
 {
-    private WeatherTestDataProvider _testDataProvider;
+    private InvoiceTestDataProvider _testDataProvider;
 
     public CustomerTests()
-        => _testDataProvider = WeatherTestDataProvider.Instance();
+        => _testDataProvider = InvoiceTestDataProvider.Instance();
 
     private ServiceProvider GetServiceProvider()
     {
@@ -29,7 +29,7 @@ public partial class CustomerTests
 
         // Add Blazor Mediator Service
         services.AddMediator(new Assembly[] {
-                typeof(Blazr.App.EntityFramework.WeatherApplicationServerServices).Assembly
+                typeof(Blazr.App.EntityFramework.AppServerServices).Assembly
         });
 
         // Add the Gallium Message Bus Server services
@@ -41,7 +41,7 @@ public partial class CustomerTests
         // Presenter Factories
         services.AddScoped<ILookupUIBrokerFactory, LookupUIBrokerFactory>();
 
-        services.AddWeatherAppEFServices();
+        services.AddAppEFServices();
         //        services.AddLogging(builder => builder.AddDebug());
 
         var provider = services.BuildServiceProvider();
@@ -54,11 +54,11 @@ public partial class CustomerTests
         return provider!;
     }
 
-    private DmoCustomer AsDmoCustomer(DboCustomer weatherForecast)
+    private DmoCustomer AsDmoCustomer(DboCustomer customer)
         => new DmoCustomer
         {
-            Id = new CustomerId(weatherForecast.CustomerID),
-            Name = new CustomerName(weatherForecast.CustomerName ?? string.Empty)
+            Id = new CustomerId(customer.CustomerID),
+            Name = new CustomerName(customer.CustomerName ?? string.Empty)
         };
 
 }
