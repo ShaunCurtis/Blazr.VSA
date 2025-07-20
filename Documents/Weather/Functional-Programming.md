@@ -4,7 +4,22 @@ Applying the Functional Programming paradigm to Object Oriented Programming lang
 
 > Note: From here on Functional Programming is **FP** and Object Oriented Programming is **OOP**.  
 
-This article is my personal implementation on melding FP into C# and the DotNet Framework.
+This article describes my personal implementation on fusing FP into C# and the DotNet Framework.
+
+## What is Functional Programming
+
+The first question to answer is "What is the difference between FP and OOP?".
+
+FP is about computing a result.  When you call a FP function you pass in a value and get back a result.
+
+An OOP function performs actions.  It may do the same as a FP function, but it often changes this, adds that.  It may, or may not return a result, often a `bool` to indicate success/failure.
+
+`Void` returns are common in OOP.  In FP, there's no such thing.
+
+Some examples:
+
+`String.ToUpper()` is a FP style function.  It takes in a string as an input, applies a transform, and returns new string.
+ 
 
 ## `Result<T>` and `Result`
 
