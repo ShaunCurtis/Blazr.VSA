@@ -4,6 +4,7 @@ string? value = Console.ReadLine();
 
 // monadic function
 await ParseForIntAsync(value)
+    .TaskSideEffectAsync(success: (value) => Console.WriteLine($"Parsed value: {value}"))
     // Applying a Mapping function
     .MapTaskToResultAsync(Utilities.ToSquareRoot)
     // Output the result
@@ -12,9 +13,11 @@ await ParseForIntAsync(value)
         failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
     );
 
+
 ParseForInt(value)
+    // Get out an intermediate result
+    .ExecuteSideEffect(success: (value) => Console.WriteLine($"Parsed value: {value}"))
     // Applying a Mapping function
-    //.MapToResult((v) => Result<double>.Create(Math.Sqrt(v)))
     .MapToResult(Utilities.ToSquareRoot)
     // Output the result
     .OutputResult(

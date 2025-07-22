@@ -164,7 +164,7 @@ Result<string>
     );
 ```
 
-## Result Mapping
+### Result Mapping
 
 Mapping is the process of applying a transform to the input and producing a Result output.
 
@@ -263,14 +263,51 @@ public Result<U> Map<U>(Func<T, U> mapping)
 
 And that is it.  But it isn't, because we need to deal with `async` functions and `Task`.
 
+### Side Effects
+
+There are times when using FP in a complex object setting where you will need to update the object state.  You can do it within a `MapToResult` lambda expression, but that's messy.
+
+`Result<T>` has a set of `ExecuteSideEffect` methods so you can be explicit.  The basic pasttern is:
+
+```csharp
+public Result<T> ExecuteSideEffect(Action<T>? success = null, Action<Exception>? failure = null)
+{
+    if (_exception is null)
+        success?.Invoke(_value!);
+    else
+        failure?.Invoke(_exception!);
+
+    return this;
+}
+```
+
+And in use:
+
+```csharp
+int intValue;
+
+ParseForInt(value)
+    // Get out an intermediate result
+    .ExecuteSideEffect(success: (value) => Console.WriteLine($"Parsed value: {value}"))
+    // Applying a Mapping function
+    .MapToResult(Utilities.ToSquareRoot)
+    // Output the result
+    .OutputResult(
+        success: (value) => Console.WriteLine($"Success: {value}"),
+        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+    );
+```
+
+
+
 ## Task<Result<T>> and Task<Result>
 
-If we do an async operation in a monadic fuction we have to deal with the `Task` wrapper around the result.
+If we do an async operation in a monadic function we have to deal with the `Task` wrapper around the result.
 
 For the purposes of this discussion I've made `ParseForInt` and async method:
 
 ```csharp
-async Task<Result<int>> ParseForInt(string? input)
+async Task<Result<int>> ParseForIntAsync(string? input)
 { 
     await Task.Yield(); // Simulate async operation
     return int.TryParse(input, out int result)
@@ -280,6 +317,8 @@ async Task<Result<int>> ParseForInt(string? input)
 ```
 
 The return type is now a `Task<Result<int>>`, so we need to add some FP methods to `Task<Result<T>>`.
+
+### Map
 
 First is a mapper:
 
@@ -293,7 +332,55 @@ public static async Task<Result<TOut>> MapTaskToResultAsync<T, TOut>(this Task<R
 
 It awaits the Task and then executes the synchronous `mapping` function.  The return is a `Result<TOut>` wrapped in another `Task`.
 
+### Output
+
 And the outputter:
 
 ```csharp
-``
+public static async Task OutputTaskAsync<T>(this Task<Result<T>> task, Action<T>? success = null, Action<Exception>? failure = null)
+    => await task.HandleTaskCompletionAsync()
+        .ContinueWith((t) => t.Result.OutputResult(success: success, failure: failure));
+```
+
+The console app:
+
+```csharp
+string? value = Console.ReadLine();
+
+await ParseForIntAsync(value)
+    // Applying a Mapping function
+    .MapTaskToResultAsync(Utilities.ToSquareRoot)
+    // Output the result
+    .OutputTaskAsync(
+        success: (value) => Console.WriteLine($"Success: {value}"),
+        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+    );
+```
+
+### Side Effects
+
+And side effects:
+
+```csharp
+public static Task<Result<T>> TaskSideEffectAsync<T>(this Task<Result<T>> task, Action<T>? success = null, Action<Exception>? failure = null)
+    => task.HandleTaskCompletionAsync()
+        .ContinueWith((t) => t.Result.ExecuteSideEffect(success, failure));
+```
+
+The console app:
+
+```csharp
+string? value = Console.ReadLine();
+
+// monadic function
+await ParseForIntAsync(value)
+    .TaskSideEffectAsync(success: (value) => Console.WriteLine($"Parsed value: {value}"))
+    // Applying a Mapping function
+    .MapTaskToResultAsync(Utilities.ToSquareRoot)
+    // Output the result
+    .OutputTaskAsync(
+        success: (value) => Console.WriteLine($"Success: {value}"),
+        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+    );
+```
+
