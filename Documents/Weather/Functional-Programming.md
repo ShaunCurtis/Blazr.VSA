@@ -40,7 +40,7 @@ returns a `Result`:
 public Result DoSomething(string value) {..}
 ```
 
-There's a separate article that delves into the implementation detail of `Result<T>` and `Result`, I'll only cover the basics here.
+There's a separate article on the implementation detail of `Result<T>` and `Result`, I'll only cover the basics here.
 
 A result has two states:
 
@@ -73,18 +73,16 @@ Elevation is the process of elevating a normal type to an elevated type.
 The simplest way is to use one of the `Result<T>` static constructors.  
 
 > Note that there are no public *ctors*: you must use the static constructors.
-There are several static constructors:
 
 ```csharp
     public static Result<T> Success(T value) => new(value);
     public static Result<T> Failure(Exception exception) => new(exception);
-    public static Result<T> NoValueFailure() => new(new ResultException("No value was returned"));
     public static Result<T> Failure(string message) => new(new ResultException(message));
 ```
 
 #### Dealing with Nullable Inputs
 
-The most common code pattern in C# is the null check.
+The most common code pattern in the C# book is the null check.
 
 ```csharp
 MyClass? x;
@@ -215,8 +213,8 @@ Try entering different type of input.  `<CTL>Z` will enter a `null`.
 What you see is:
 
 1. The ability to chain simple functions together.
-2. The ability to compose complex functions by ciombining simple functions.
-3. An implementation of `Railway Orientated Programme` in dealing with errors and exceptions.
+2. The ability to compose complex functions by combining simple functions.
+3. An implementation of `Railway Orientated Programme` to handle errors and exceptions.
 
 There are four common transforms:
 
@@ -225,7 +223,7 @@ There are four common transforms:
  3. Map a `Result<T>` to a `Result`.  We can express this as `T -> Result`. 
  4. Map a `T => TOut` to a `Result<TOut>`. 
 
-The first two are handled by the basic method shown above.
+The first two are handled by the basic template above.
 
 The third by:
 
@@ -242,7 +240,7 @@ public Result MapToResult(Func<T, Result>? mapping = null)
 }
 ```
 
-And finally the fourth by:
+And the fourth by:
 
 ```csharp
 public Result<U> Map<U>(Func<T, U> mapping)
