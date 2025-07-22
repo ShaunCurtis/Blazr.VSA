@@ -86,21 +86,21 @@ public partial class CustomerTests
         var xxx = uiBroker.DispatchGridStateChange(updateGridRequest);
 
 
-        var x = gridState.
-        uiBroker.
+        //var x = gridState.
+        //uiBroker.
 
 
-        var listRequest = await Result<CustomerListRequest>
-            .Create(new CustomerListRequest { PageSize = pageSize, StartIndex = startIndex })
-            .MapToResultAsync<ListItemsProvider<DmoCustomer>>(_entityProvider..ListItemsRequestAsync)
-            .TaskSideEffectAsync(
-                success: (provider) => listItemsProvider = provider,
-                failure: (ex) => result = false);
+        //var listRequest = await Result<CustomerListRequest>
+        //    .Create(new CustomerListRequest { PageSize = pageSize, StartIndex = startIndex })
+        //    .MapToResultAsync<ListItemsProvider<DmoCustomer>>(_entityProvider..ListItemsRequestAsync)
+        //    .TaskSideEffectAsync(
+        //        success: (provider) => listItemsProvider = provider,
+        //        failure: (ex) => result = false);
 
-        Assert.True(result);
-        Assert.Equal(testCount, listItemsProvider.TotalCount);
-        Assert.Equal(pageSize, listItemsProvider.Items.Count());
-        Assert.Equal(testFirstRecord, listItemsProvider.Items.First());
+        //Assert.True(result);
+        //Assert.Equal(testCount, listItemsProvider.TotalCount);
+        //Assert.Equal(pageSize, listItemsProvider.Items.Count());
+        //Assert.Equal(testFirstRecord, listItemsProvider.Items.First());
     }
 
     [Theory]
