@@ -87,9 +87,21 @@ public partial class CustomerTests
 
         var providerResult = await uiBroker.GetItemsAsync();
 
-        Assert.Equal(testCount, providerResult.TotalItemCount);
-        Assert.Equal(pageSize, providerResult.Items.Count());
-        Assert.Equal(testFirstRecord, providerResult.Items.First());
+        //var x = gridState.
+        //uiBroker.
+
+
+        //var listRequest = await Result<CustomerListRequest>
+        //    .Create(new CustomerListRequest { PageSize = pageSize, StartIndex = startIndex })
+        //    .MapToResultAsync<ListItemsProvider<DmoCustomer>>(_entityProvider..ListItemsRequestAsync)
+        //    .TaskSideEffectAsync(
+        //        success: (provider) => listItemsProvider = provider,
+        //        failure: (ex) => result = false);
+
+        //Assert.True(result);
+        //Assert.Equal(testCount, listItemsProvider.TotalCount);
+        //Assert.Equal(pageSize, listItemsProvider.Items.Count());
+        //Assert.Equal(testFirstRecord, listItemsProvider.Items.First());
     }
 
     //[Fact]

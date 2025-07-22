@@ -8,7 +8,7 @@ There are plenty of articles on the Internet explaining what FP is, and any numb
 
 My implementation is based on the following definition:
 
-> FP is fundimentally about computing a result.  When you call a FP function you pass in a value and get back a result.  There's no mutation of state, no side effects, and no changes to the input value.  The function takes the input, applies a transform, and returns a new value.
+> FP is about computing a result.  When you call a FP function you pass in a value and get back a result.  There's no mutation of state, no side effects, and no changes to the input value.  The function takes the input, applies a transform, and returns a new value.
 
 ## `Result<T>` and `Result`
 
@@ -64,6 +64,15 @@ And `Result` has:
 
 If the operation was successful, `_exception` is `null` and `_value` contains the result value. If the operation failed, `_exception` contains the exception that caused the failure.
 
+## Fundimental Result Operations
+
+### Elevation
+
+Elevation is the process of elevating a normal type to an elevated type.
+
+The simplest way is to use one of the `Result<T>` static constructors.  
+
+> Note that there are no public *ctors*: you must use the static constructors.
 There are several static constructors:
 
 ```csharp
@@ -73,9 +82,7 @@ There are several static constructors:
     public static Result<T> Failure(string message) => new(new ResultException(message));
 ```
 
-## Fundimental Result Operations
-
-#### Dealing with a Null Input
+#### Dealing with Nullable Inputs
 
 The most common code pattern in C# is the null check.
 
@@ -88,13 +95,73 @@ else
     // do something else;
 ```
 
-In the Result world, the `Create` static constructor deals with the null case for you.
+The `Create` static constructor deals with the null case for you.
 
 ```
 public static Result<T> Create(T? value) => 
     value is null
         ? new(new ResultException("T was null."))
         : new(value);
+```
+
+#### Monadic Functions
+
+Monadic functions are delegates with the following basic pattern:
+
+```csharp
+Func<T, Result<TOut>>
+```
+
+They take a normal type in and return an elevated type.
+
+Here's a simple example:
+
+```csharp
+public Result<int> ParseForInt(string input)
+{
+    var intResult  = int.Parse(input);
+
+    return Result<int>(intResult);
+}
+```
+
+Which we can rewrite as:
+
+```csharp
+public Func<string, Result<int>> ParseForInt => (string input) =>
+{
+    var intResult = int.Parse(input);
+    return Result<int>.Create(intResult);
+};
+```
+
+### Lowering
+
+Lowering is the process of outputting a normal type from an elevated type.
+
+```csharp
+public void OutputResult(Action<T>? success = null, Action<Exception>? failure = null)
+{
+    if (_exception is null)
+        success?.Invoke(_value!);
+    else
+        failure?.Invoke(_exception!);
+}
+```
+
+Here's a simple example to demonstrate it usage:
+
+```csharp
+value = null;
+
+Result<string>
+    // elevates value
+    .Create(value)
+    // lowers Result<string>
+    .OutputResult(
+        success: (value) => Console.WriteLine($"Success: {value}"),
+        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+    );
 ```
 
 ## Result Mapping
@@ -113,39 +180,59 @@ public Result<TOut> MapToResult<TOut>(Func<T, Result<TOut>> success)
 }
 ```
 
-It may look simple, but it's a very powerful piee of code.
+It may look simple, but it's a very powerful piece of code.
 
-
-
-There are four basic transforms we can apply:
-
- - Map a `Result<T>`to a new `Result<T>`, where `T` is the same type on both.  We can express this as `T -> result<T>`.
- - Map a `Result<T>` to a `Result<TOut>`, where `TOut` is a different type to `T`.  We can express this as `T -> Result<TOut>`.  
-  - Map a `Result<T>` to a `Result`.  We can express this as `T -> Result`. 
-  - Map a `T => TOut` to a `Result<TOut>`. 
-
-The following `Map` function covers the first two transforms.
-
+Here's a simple example in a console app:
 
 ```csharp
-    public Result<TOut> Map<TOut>(Func<T, Result<TOut>> success, Func<Exception, Result<TOut>>? failure = null)
-    {
-        if (_exception is null)
-            return success(_value!);
+string? value = Console.ReadLine();
 
-        if (_exception is not null && failure != null)
-            return failure(_exception!);
+// monadic function
+ParseForInt(value)
+    // Applying a Mapping function
+    .MapToResult<double>(SquareRoot)
+    // Output the result
+    .OutputResult(
+        success: (value) => Console.WriteLine($"Success: {value}"),
+        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+    );
 
-        return Result<TOut>.Failure(_exception!);
-    }
+Result<double> SquareRoot(int value)
+    => Result<double>.Create(Math.Sqrt(value));
+
+Result<int> ParseForInt(string? input)
+    => int.TryParse(input, out int result)
+        ? Result<int>.Create(result)
+        : Result<int>.Failure(new FormatException("Input is not a valid integer."));
 ```
 
-And this the third:
+Try entering different type of input.  `<CTL>Z` will enter a `null`.
+
+1. `ParseForInt` uses the [horrible] `TryParse` method to return either a success or failure `Result<int>`.
+1. `MapToResult` then applies `SquareRoot` to the value of the input `Result<T>` if it's in success state.  If it's in failure, it creates and returns a new `Result<double>` with the `Exception` from the input Result<int>.
+1. Finally `OutputResult` outputs to the console based on the result state.
+
+What you see is:
+
+1. The ability to chain simple functions together.
+2. The ability to compose complex functions by ciombining simple functions.
+3. An implementation of `Railway Orientated Programme` in dealing with errors and exceptions.
+
+There are four common transforms:
+
+ 1. Map a `Result<T>`to a new `Result<T>`, where `T` is the same type on both.  We can express this as `T -> result<T>`.
+ 2. Map a `Result<T>` to a `Result<TOut>`, where `TOut` is a different type to `T`.  We can express this as `T -> Result<TOut>`.  
+ 3. Map a `Result<T>` to a `Result`.  We can express this as `T -> Result`. 
+ 4. Map a `T => TOut` to a `Result<TOut>`. 
+
+The first two are handled by the basic method shown above.
+
+The third by:
 
 ```csharp
-public Result Map(Func<T, Result>? mapping = null)
+public Result MapToResult(Func<T, Result>? mapping = null)
 {
-    if (_value is not null && mapping != null)
+    if (_exception is null && mapping != null)
         return mapping(_value!);
 
     if (_value is not null)
@@ -155,7 +242,7 @@ public Result Map(Func<T, Result>? mapping = null)
 }
 ```
 
-And finally the fourth:
+And finally the fourth by:
 
 ```csharp
 public Result<U> Map<U>(Func<T, U> mapping)
@@ -173,3 +260,40 @@ public Result<U> Map<U>(Func<T, U> mapping)
     }
 }
 ```
+
+And that is it.  But it isn't, because we need to deal with `async` functions and `Task`.
+
+## Task<Result<T>> and Task<Result>
+
+If we do an async operation in a monadic fuction we have to deal with the `Task` wrapper around the result.
+
+For the purposes of this discussion I've made `ParseForInt` and async method:
+
+```csharp
+async Task<Result<int>> ParseForInt(string? input)
+{ 
+    await Task.Yield(); // Simulate async operation
+    return int.TryParse(input, out int result)
+        ? Result<int>.Create(result)
+        : Result<int>.Failure(new FormatException("Input is not a valid integer."));
+}
+```
+
+The return type is now a `Task<Result<int>>`, so we need to add some FP methods to `Task<Result<T>>`.
+
+First is a mapper:
+
+```csharp
+public static async Task<Result<TOut>> MapTaskToResultAsync<T, TOut>(this Task<Result<T>> task, Func<T, Result<TOut>> mapping)
+{
+    var result = await task.HandleTaskCompletionAsync();
+    return result.MapToResult<TOut>(mapping);
+}
+```
+
+It awaits the Task and then executes the synchronous `mapping` function.  The return is a `Result<TOut>` wrapped in another `Task`.
+
+And the outputter:
+
+```csharp
+``

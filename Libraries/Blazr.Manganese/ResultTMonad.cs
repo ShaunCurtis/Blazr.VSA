@@ -200,11 +200,10 @@ public partial record Result<T>
 
     public void OutputResult(Action<T>? success = null, Action<Exception>? failure = null)
     {
-        if (_exception is null && success != null)
-            success(_value!);
-
-        if (_exception is not null && failure != null)
-            failure(_exception!);
+        if (_exception is null)
+            success?.Invoke(_value!);
+        else
+            failure?.Invoke(_exception!);
     }
 
     public ValueTask<Result<T>> CompletedValueTask

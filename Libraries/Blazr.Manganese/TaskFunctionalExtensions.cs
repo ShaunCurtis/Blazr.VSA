@@ -29,6 +29,12 @@ public static class TaskFunctionalExtensions
         => await task.HandleTaskCompletionAsync()
             .ContinueWith((t) => t.Result.OutputResult(success: success));
 
+    public static async Task<Result<TOut>> MapTaskToResultAsync<T, TOut>(this Task<Result<T>> task, Func<T, Result<TOut>> mapping)
+    {
+        var result = await task.HandleTaskCompletionAsync();
+        return result.MapToResult<TOut>(mapping);
+    }
+
     public static async Task<Result<T>> MapTaskToResultAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> isTrue, Func<T, Task<Result<T>>> isFalse)
     {
         var result = await task.HandleTaskCompletionAsync();
