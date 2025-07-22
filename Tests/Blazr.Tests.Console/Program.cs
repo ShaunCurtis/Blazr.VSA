@@ -3,11 +3,21 @@
 string? value = Console.ReadLine();
 
 // monadic function
-await ParseForInt(value)
+await ParseForIntAsync(value)
     // Applying a Mapping function
-    .MapTaskToResultAsync(SquareRoot)
+    .MapTaskToResultAsync(Utilities.ToSquareRoot)
     // Output the result
     .OutputTaskAsync(
+        success: (value) => Console.WriteLine($"Success: {value}"),
+        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+    );
+
+ParseForInt(value)
+    // Applying a Mapping function
+    //.MapToResult((v) => Result<double>.Create(Math.Sqrt(v)))
+    .MapToResult(Utilities.ToSquareRoot)
+    // Output the result
+    .OutputResult(
         success: (value) => Console.WriteLine($"Success: {value}"),
         failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
     );
@@ -63,7 +73,12 @@ await ParseForInt(value)
 Result<double> SquareRoot(int value)
     => Result<double>.Create(Math.Sqrt(value));
 
-async Task<Result<int>> ParseForInt(string? input)
+Result<int> ParseForInt(string? value)
+    => int.TryParse(value, out int result)
+        ? Result<int>.Create(result)
+        : Result<int>.Failure(new FormatException("Input is not a valid integer."));
+
+async Task<Result<int>> ParseForIntAsync(string? input)
 { 
     await Task.Yield(); // Simulate async operation
     return int.TryParse(input, out int result)
@@ -92,3 +107,9 @@ public class myClass
     };
 }
 
+
+public static class Utilities
+{
+    public static Func<int, Result<double>> ToSquareRoot => (value)
+        => Result<double>.Create(Math.Sqrt(value));
+}

@@ -65,10 +65,10 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<TOut> MapToResult<TOut>(Func<T, Result<TOut>> success)
+    public Result<TOut> MapToResult<TOut>(Func<T, Result<TOut>> mapping)
     {
         if (_exception is null)
-            return success(_value!);
+            return mapping(_value!);
 
         return Result<TOut>.Failure(_exception!);
     }

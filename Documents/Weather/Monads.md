@@ -114,6 +114,10 @@ public static Result<T> Create(T? value) =>
 And can alse be used directly like this:
 
 ```csharp
+Result<int> ParseForInt(string? value)
+    => int.TryParse(value, out int result)
+        ? Result<int>.Create(result)
+        : Result<int>.Failure(new FormatException("Input is not a valid integer."));
 ```
 
 We can then define:
@@ -122,6 +126,8 @@ We can then define:
 var input = Console.ReadLine();
 
 var result = Result<string>.Create(input);
+//or
+var result = ParseForInt(input);
 ```
 
 
@@ -130,214 +136,109 @@ var result = Result<string>.Create(input);
 Our console app now looks like this:
 
 ```csharp
-string? text = Console.ReadLine();
+var input = Console.ReadLine();
 
-var result = Result<string>.Return(text);
+var result = ParseForInt(input);
 ```
+
+### Outputting a Result
 
 Next we need to handle the Monad in `Console.WriteLine`.
 
-For this we implement a `Match` method.  A standard implementation looks like this:
+A standard implementation looks like this:
 
 ```csharp
-public void Match(Action<T> success, Action<Exception> failure)
+public void OutputResult(Action<T>? success = null, Action<Exception>? failure = null)
 {
     if (_exception is null)
-        success(_value!);
+        success?.Invoke(_value!);
     else
-        failure(_exception!);
+        failure?.Invoke(_exception!);
 }
 ```
 
 The console app now looks like this:
 
 ```csharp
-string? text = Console.ReadLine();
+var input = Console.ReadLine();
 
-var result = Result<string>.Return(text);
-
-result.Match(
-    success: value => Console.WriteLine($"Success: {value}"),
-    failure: ex => Console.WriteLine($"Failure: {ex.Message}")
-);
-```
-
-We're passing methods into match, and exectuing the appropriate method for the `Result` state.  The success path is only executed if a valid value exists.
-
-## Chaining
-
-At this point, interesting, a different way of coding, but there's no real savings.  The real benefits come when we start chaining things together.
-
-We can update our console app to start chaining:
-
-```csharp
-string? text = Console.ReadLine();
-
-Result<string>
-    .Return(text)
-    .Match(
-        success: value => Console.WriteLine($"Success: {value}"),
-        failure: ex => Console.WriteLine($"Failure: {ex.Message}")
+ParseForInt(value)
+    // Output the result
+    .OutputResult(
+        success: (value) => Console.WriteLine($"Success: {value}"),
+        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
     );
 ```
 
-Great, but the real power is in `Map` and `Bind`.
+Note the lack of null checking and the chaining of operations.
 
-## Map
+Try entering `<Ctl>z` in the console application: a null.  It's handled gracefully.
 
-`Map` merges a normal function into the Monad.  It can be represented like this:
+## Mapping
 
-```
-(in->out) -> Monad<in> -> Monad<out>.
-```
+This is where the real power comes in:
+1. Chaining operations. 
+2. Handling nulls and exceptions in the chain using *Railway Orientated Programming*.
 
-The basic `Map` in `Result<T>` looks like this:
+The basic pattern for a map is:
 
 ```csharp
-public Result<TOut> Map<TOut>(Func<T, TOut> func)
-{
-    if (_exception is not null)
-        return Result<TOut>.Return(_exception);
+    public Result<TOut> MapToResult<TOut>(Func<T, Result<TOut>> mapping)
+    {
+        if (_exception is null)
+            return mapping(_value!);
 
-    try
-    {
-        return new Result<TOut>(func(_value!));
+        return Result<TOut>.Failure(_exception!);
     }
-    catch (Exception ex)
-    {
-        return new Result<TOut>(ex);
-    }
+```
+
+A deceptively simple piece of very powerful code.
+
+Lets look at it in operation.  We've provided `MapToResult` with a lambda expression to calculate the square root of the input.
+
+```csharp
+var input = Console.ReadLine();
+
+ParseForInt(value)
+    // Applying a Mapping function
+    .MapToResult((v) => Result<double>.Create(Math.Sqrt(v)))
+    // Output the result
+    .OutputResult(
+        success: (value) => Console.WriteLine($"Success: {value}"),
+        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+    );
+```
+
+Run the application entering numbers, letters and null `<CTL>z`.  The program works gracefully.  If the result of `ParseForInt` is in failure state, `MapToResult` creates a new `Result<double>` in failure state with the input result's exception.  The `mapping` function is not executed.
+
+If the lambda expression is used a lot, it can be defined seperately:
+
+```csharp
+Result<double> SquareRoot(int value)
+    => Result<double>.Create(Math.Sqrt(value));
+
+// or
+
+public static class Utilities
+{
+    public static Func<int, Result<double>> ToSquareRoot => (value)
+        => Result<double>.Create(Math.Sqrt(value));
 }
 ```
 
-There are two paths:
-
-- **Success** - `Func` is executed within a `try/catch` and the result returned in a new `Result<TOut>`, or any generated exception captured and wrapped in a new `Result<TOut>`.
-- **Failure** - The excpetion in the input `Result<T>` is wrapped in a `Result<TOut>` and returned.
-
-Now Consider:
+And then:
 
 ```csharp
-public static int Parse(string s);
-```
+var input = Console.ReadLine();
 
-It fits the pattern, so we can chain it into our pipeline:
-
-```csharp
-Result<string>
-    .Return(input)
-    .Map(int.Parse)
-    .Match(
-        success: value => Console.WriteLine($"Parsed successfully: The transform result of {input} is: {value}"),
-        failure: ex => Console.WriteLine($"Failed to parse input: {ex.Message}"
-    ));
-```
-
-Note that `Map` can switch types, so `T->TOut` and `T->T` methods are both valid.  In this case we switch from an input `string` to an output `int`.
-
-For the next step we run into a problem While `Math.Sqrt(value)` fits the pattern, the output from `.Map(int.Parse)` is a `int`.  We solve this by changing out the parser method to `double.Parse`:
-
-```csharp
-Result<string>
-    .Return(input)
-    .Map(double.Parse)
-    .Map(Math.Sqrt)
-    .Match(
-        success: value => Console.WriteLine($"Parsed successfully: The transform result of {input} is: {value}"),
-        failure: ex => Console.WriteLine($"Failed to parse input: {ex.Message}"
-    ));
-```
-
-Next `Math.Round(value, 2)`.  It doesn't fit the pattern.
-
-The solution is to build a lambda expression that fits the pattern:
-
-```csharp
-    .Map(value => Math.Round(value, 2))
-```
-
-## Bind
-
-The basic bind pattern is:
-
-```csharp
-(in->Monad(out)) -> Monad<in> -> Monad<out>.
-```
-
-The `Bind` implementation in `Result<T>`:
-
-```csharp
-public Result<TOut> Bind<TOut>(Func<T, Result<TOut>> func)
-    => _exception is null
-        ? func(_value!)
-        : Result<TOut>.Return(_exception!);
-```
-
-We can now write a function to round:    
-
-```csharp
-Result<double> RoundToTwoPlaces(double value)
-    => Result<double>.Return(Math.Round(value, 2));
-```
-
-And the original program can now be re-written:
-
-```csharp
-Result<string>
-    .Return(input)
-    .Map(double.Parse)
-    .Map(Math.Sqrt)
-    .Bind(RoundToTwoPlaces)
-    .Match(
-        success: value => Console.WriteLine($"Parsed successfully: The transform result of {input} is: {value}"),
-        failure: ex => Console.WriteLine($"Failed to parse input: {ex.Message}"
-    ));
-```
-
-We can incorporate flexible rounding:
-
-```csharp
-Result<double> Round(double value, int places)
-    => Result<double>.Return(Math.Round(value, places));
-```
-
-And:
-
-```csharp
-    .Bind(value => Round(value, 2))
-```
-
-## Monadic Extensions
-
-While we've made the pipeline very succinct and expressive, the constructor looks a little clumsy.
-
-```csharp
-Result<string>
-    .Return(input)
-```
-
-We can improve this by adding a `Map` extension method to `string` like this:
-
-```csharp
-public static Result<TOut> Map<TOut>(this string? input, Func<string, TOut> mapper)
-    => Result<string>
-        .Return(input)
-        .Map(mapper);
-```
-
-So our final code:
-
-```csharp
-string? text = Console.ReadLine();
-
-input
-    .Map(double.Parse)
-    .Map(Math.Sqrt)
-    .Bind(value => Round(value, 2))
-    .Match(
-        success: value => Console.WriteLine($"Parsed successfully: The transform result of {input} is: {value}"),
-        failure: ex => Console.WriteLine($"Failed to parse input: {ex.Message}"
-    ));
+ParseForInt(value)
+    // Applying a Mapping function
+    .MapToResult(SquareRoot)
+    // Output the result
+    .OutputResult(
+        success: (value) => Console.WriteLine($"Success: {value}"),
+        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+    );
 ```
 
 ## So What Have We Learnt
