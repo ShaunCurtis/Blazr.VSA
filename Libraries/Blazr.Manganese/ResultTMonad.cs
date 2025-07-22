@@ -29,8 +29,6 @@ public partial record Result<T>
 
     public static Result<T> Failure(Exception exception) => new(exception);
 
-    public static Result<T> NoValueFailure() => new(new ResultException("No value was returned"));
-
     public static Result<T> Failure(string message) => new(new ResultException(message));
 
     public Result<T> ExecuteSideEffect(bool test, Action<T> isTrue, Action<T> isFalse)

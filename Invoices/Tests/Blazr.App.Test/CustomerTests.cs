@@ -14,7 +14,9 @@ using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode;
 using Blazr.Manganese;
 using Microsoft.AspNetCore.Components.QuickGrid;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 
 namespace Blazr.Test;
 
@@ -66,176 +68,29 @@ public partial class CustomerTests
         // Get the total expected count and the first record of the page
         var testCount = _testDataProvider.Customers.Count();
         var testFirstItem = _testDataProvider.Customers.Skip(startIndex).First();
-
         var testFirstRecord = this.AsDmoCustomer(testFirstItem);
 
         var uiBroker = await uIEntityProvider.GetGridUIBrokerAsync();
 
-        //Outputs from the process that need to be tested
-        bool result = true;
-
-        GridItemsProviderResult<DmoCustomer> gridItemsProviderResult = default!;
-
-        var updateGridRequest = new UpdateGridRequest<DmoCustomer>
+        // Create a GridItemsProviderRequest with the test parameters
+        var gridRequest = new GridItemsProviderRequest<DmoCustomer>
         {
-            PageSize = pageSize,
-            StartIndex = startIndex
+            Count = pageSize,
+            StartIndex = startIndex,
+            SortByAscending = false,
+            SortByColumn = null
         };
 
-        uiBroker.SetContext(Guid.NewGuid());
-        var xxx = uiBroker.DispatchGridStateChange(updateGridRequest);
+        // dispatch the request to the UI Broker as done in the UI page using a QuickGrid component
+        var mutationAction = UpdateGridRequest<DmoCustomer>.Create(gridRequest);
+        var mutationResult = uiBroker.DispatchGridStateChange(mutationAction);
 
+        var providerResult = await uiBroker.GetItemsAsync();
 
-        var x = gridState.
-        uiBroker.
-
-
-        var listRequest = await Result<CustomerListRequest>
-            .Create(new CustomerListRequest { PageSize = pageSize, StartIndex = startIndex })
-            .MapToResultAsync<ListItemsProvider<DmoCustomer>>(_entityProvider..ListItemsRequestAsync)
-            .TaskSideEffectAsync(
-                success: (provider) => listItemsProvider = provider,
-                failure: (ex) => result = false);
-
-        Assert.True(result);
-        Assert.Equal(testCount, listItemsProvider.TotalCount);
-        Assert.Equal(pageSize, listItemsProvider.Items.Count());
-        Assert.Equal(testFirstRecord, listItemsProvider.Items.First());
+        Assert.Equal(testCount, providerResult.TotalItemCount);
+        Assert.Equal(pageSize, providerResult.Items.Count());
+        Assert.Equal(testFirstRecord, providerResult.Items.First());
     }
-
-    [Theory]
-    [InlineData(0, 10)]
-    [InlineData(0, 20)]
-    [InlineData(5, 10)]
-    public async Task GetCustomerList(int startIndex, int pageSize)
-    {
-        //var provider = GetServiceProvider();
-
-        ////Injects the data broker
-        //var uIEntityProvider = provider.GetRequiredService<IUIEntityProvider<DmoCustomer, CustomerId>>()!;
-        ////var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        ////var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
-
-        //// Get the total expected count and the first record of the page
-        //var testCount = _testDataProvider.Customers.Count();
-        //var testFirstItem = _testDataProvider.Customers.Skip(startIndex).First();
-
-        //var testFirstRecord = this.AsDmoCustomer(testFirstItem);
-
-        //var uiBroker = await uIEntityProvider.GetGridUIBrokerAsync();
-
-        ////Outputs from the process that need to be tested
-        //bool result = true;
-
-        //ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
-
-
-
-        //var listRequest = await Result<CustomerListRequest>
-        //    .Create(new CustomerListRequest { PageSize = pageSize, StartIndex = startIndex })
-        //    .MapToResultAsync<ListItemsProvider<DmoCustomer>>(_entityProvider..ListItemsRequestAsync)
-        //    .TaskSideEffectAsync(
-        //        success: (provider) => listItemsProvider = provider,
-        //        failure: (ex) => result = false);
-
-        //Assert.True(result);
-        //Assert.Equal(testCount, listItemsProvider.TotalCount);
-        //Assert.Equal(pageSize, listItemsProvider.Items.Count());
-        //Assert.Equal(testFirstRecord, listItemsProvider.Items.First());
-    }
-
-    //[Fact]
-    //public async Task GetAFilteredForecastList()
-    //{
-    //    var provider = GetServiceProvider();
-
-    //    //Injects the data broker
-    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
-
-    //    // Set up the test data
-    //    var pageSize = 2;
-    //    var testSummary = "Warm";
-    //    var testQuery = _testDataProvider.WeatherForecasts.Where(item => testSummary.Equals(item.Summary, StringComparison.CurrentCultureIgnoreCase));
-    //    var testCount = testQuery.Count();
-    //    var testFirstItem = this.AsDmoWeatherForecast(testQuery.First());
-
-    //    //Outputs from the process that need to be tested
-    //    bool result = false;
-    //    ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
-
-    //    // We create a Result from a new WeatherForecastListRequest defining our test parameters
-    //    // and then map it to the WeatherListRequest method of the entity provider
-    //    // This will execute the request and return a ListItemsProvider<DmoWeatherForecast> Result
-    //    // which we then match to get the items provider.
-
-    //    await Result<WeatherForecastListRequest>
-    //        .Create(new()
-    //        {
-    //            PageSize = pageSize,
-    //            StartIndex = 0,
-    //            Summary = testSummary
-    //        })
-    //        .MapToResultAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-    //        .OutputTaskAsync(success: (provider) =>
-    //        {
-    //            listItemsProvider = provider;
-    //            result = true;
-    //        });
-
-    //    Assert.True(result);
-
-    //    // Test the results are as expected
-    //    Assert.Equal(testCount, listItemsProvider.TotalCount);
-    //    Assert.Equal(pageSize, listItemsProvider.Items.Count());
-    //    Assert.Equal(testFirstItem, listItemsProvider.Items.First());
-    //}
-
-    //[Fact]
-    //public async Task GetASortedForecastList()
-    //{
-    //    var provider = GetServiceProvider();
-
-    //    //Injects the data broker
-    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
-
-    //    // Set up the test data
-    //    var pageSize = 10;
-    //    var testQuery = _testDataProvider.WeatherForecasts.OrderByDescending(item => item.Date);
-    //    var testCount = testQuery.Count();
-    //    var testFirstItem = this.AsDmoWeatherForecast(testQuery.First());
-    //    //Outputs from the process that need to be tested
-    //    bool result = false;
-    //    ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
-
-    //    // We create a Result from a new WeatherForecastListRequest defining our test parameters
-    //    // and then map it to the WeatherListRequest method of the entity provider
-    //    // This will execute the request and return a ListItemsProvider<DmoWeatherForecast> Result
-    //    // which we then match to get the items provider.
-
-    //    await Result<WeatherForecastListRequest>
-    //        .Create(new()
-    //        {
-    //            PageSize = pageSize,
-    //            StartIndex = 0,
-    //            SortColumn = "Date",
-    //            SortDescending = true
-    //        })
-    //        .MapToResultAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-    //        .OutputTaskAsync(success: (provider) =>
-    //        {
-    //            listItemsProvider = provider;
-    //            result = true;
-    //        });
-
-    //    Assert.True(result);
-
-    //    // Test the results are as expected
-    //    Assert.Equal(testCount, listItemsProvider.TotalCount);
-    //    Assert.Equal(pageSize, listItemsProvider.Items.Count());
-    //    Assert.Equal(testFirstItem, listItemsProvider.Items.First());
-    //}
 
     //[Fact]
     //public async Task UpdateAForecast()

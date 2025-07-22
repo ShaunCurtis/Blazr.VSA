@@ -1,20 +1,18 @@
 # Monads
 
-I know: not the **M** word.  Everyone has their own interpretation.  It elicits a full spectrum of reactions: The **F** word of programmers.
-
-The internet is awash with articles that try to explain what a Monad is.  This is yet another, probably doomed to failure in enlightening the unenlightened.
+The internet is awash with articles trying to explain what a Monad is.  This is yet another: I hope I succeed where the rest fail.
 
 As a C# OOP programmer you need to open your mind.  Forget the OOP dogma that has ruled your programming life.
 
 Functional programming [**FP** from now on] requires a different way of thinking. It has solutions for coding problems that constantly vex OOP programmers.
 
-Consider this ugly, horrible code [yes it's platform code produced by MS]:
+Consider this ugly, horrible code [yes it's platform .Net code]:
 
 ```csharp
 public static bool TryParse(string? s, IFormatProvider? provider, out int result);
 ```
 
-It spouts results in all directions!
+It spouts results at both ends!
 
 Here's a classicaly coded console app using it:
 
@@ -30,7 +28,7 @@ if (isInt)
     result = Math.Sqrt(value);
     result = Math.Round(result, 2);
 }
-
+//... later
 if (isInt)
 {
     Console.WriteLine($"Parsed successfully: The transformed value of {value} is: {result}");
@@ -56,11 +54,9 @@ input
     ));
 ```
 
-The rest of this article explains this code is built and works.
-
 ## The Result Monad
 
-The `Result<T>` monad is a variation of the common `Maybe<T>` and `Option<T>` monads.  It's built for data pipelines to handle nulls and flow any errors up the pipeline. 
+The `Result<T>` monad is a variation of the common `Maybe<T>` and `Option<T>` monads.  It's built to handle null and exceptions in data pipelines. 
 
 A result has two possible states:
 - **Success**: The operation completed successfully
@@ -76,7 +72,7 @@ public record Result<T>
 }
 ```
 
-There are three private constructors: private to tightly control object creation through static constructors.
+There are three private constructors: private to only allow object creation through static constructors.
 
 ```csharp
 private Result(T? value)
@@ -92,15 +88,7 @@ private Result()
 
 ## Creating/Initialising `Result<T>`
 
-Three static methods provide object intialisation.
-
-```csharp
-public static Result<T> Return(T? value) => value is null ? new(new ResultException("T was null")) : new(value);
-public static Result<T> Return(Exception exception) => new(exception);
-public static Result<T> ReturnException(string message) => new(new ResultException(message));
-```
-
-I use standard Monad nomenclature here: `Return`.  In practice you can call the methods whatever you like as shoen below.
+Three basic static initialization methods on `Result<T>`:
 
 ```csharp
 public static Result<T> Success(T value) => new(value);
@@ -108,19 +96,34 @@ public static Result<T> Failure(Exception exception) => new(exception);
 public static Result<T> Failure(string message) => new(new ResultException(message));
 ```
 
+The basic template for creating a `Result<T>` can be expressed like this:
+
+```csharp
+    T > Monad<T>
+```
+
+Which we use in the creator that deals with nulls:
+
+```csharp
+public static Result<T> Create(T? value) =>
+    value is null
+        ? new(new ResultException("T was null."))
+        : new(value);
+```
+
+And can alse be used directly like this:
+
+```csharp
+```
+
 We can then define:
 
 ```csharp
 var input = Console.ReadLine();
 
-var result = Result<string>.Return(input);
+var result = Result<string>.Create(input);
 ```
 
-The `Return` basic template can be expressed like this:
-
-```csharp
-    T > Monad<T>
-```
 
 ## Working with `Result<T>`
 
