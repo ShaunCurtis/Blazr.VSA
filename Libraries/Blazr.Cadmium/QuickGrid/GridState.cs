@@ -40,11 +40,11 @@ public record GridState<TRecord> : IGridState<TRecord>
 
 public static class GridStateExtensions
 {
-    public static async Task<Result<ListItemsProvider<TRecord>>> MapToResultAsync<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Task<Result<ListItemsProvider<TRecord>>>> mapper)
+    public static async Task<Result<ListItemsProvider<TRecord>>> ApplyTransformOnException<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Task<Result<ListItemsProvider<TRecord>>>> mapper)
         where TRecord : class
         => await mapper(state);
 
-    public static Result<ListItemsProvider<TRecord>> MapToResult<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Result<ListItemsProvider<TRecord>>> mapper)
+    public static Result<ListItemsProvider<TRecord>> ApplyTransform<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Result<ListItemsProvider<TRecord>>> mapper)
     where TRecord : class
         => mapper(state);
 }

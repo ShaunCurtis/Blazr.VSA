@@ -16,9 +16,9 @@ await ParseForIntAsync(value)
 
 ParseForInt(value)
     // Get out an intermediate result
-    .ExecuteSideEffect(success: (value) => Console.WriteLine($"Parsed value: {value}"))
+    .ApplySideEffect(success: (value) => Console.WriteLine($"Parsed value: {value}"))
     // Applying a Mapping function
-    .MapToResult(Utilities.ToSquareRoot)
+    .ApplyTransform(Utilities.ToSquareRoot)
     // Output the result
     .OutputResult(
         success: (value) => Console.WriteLine($"Success: {value}"),
@@ -68,8 +68,8 @@ ParseForInt(value)
 //    );
 
 //var result = Result<string>.Create(value)
-//  .MapToResult(ToUpper)
-//  .MapToResult();
+//  .ApplyTransform(ToUpper)
+//  .ApplyTransform();
 
 //DisplayError(result);
 

@@ -93,7 +93,7 @@ public partial class GridUIBroker<TRecord, TKey>
         var result = GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0);
 
         this.LastResult = await Result<GridState<TRecord>>.Create(this.GridState)
-            .MapToResultAsync(_entityProvider.GetItemsAsync)
+            .ApplyTransformOnException(_entityProvider.GetItemsAsync)
             .TaskSideEffectAsync(
                 success: (provider) => result = provider,
                 failure: (ex) => this.LastResult = Result.Failure(ex.Message))

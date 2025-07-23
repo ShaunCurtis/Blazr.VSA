@@ -33,7 +33,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
                 }
             );
 
-        return result.MapToResult<ListItemsProvider<DmoCustomer>>(  
+        return result.ApplyTransform<ListItemsProvider<DmoCustomer>>(  
             success: items =>
             {
                 var mappedItems = items.Items.Select(item => CustomerMap.Map(item));

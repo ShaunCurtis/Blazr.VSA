@@ -31,7 +31,7 @@ public class CustomerEntityProvider
             SortDescending = state.SortDescending
         });
 
-        return asyncResult.MapToResult<GridItemsProviderResult<DmoCustomer>>(FromListItemsProvider);
+        return asyncResult.ApplyTransform<GridItemsProviderResult<DmoCustomer>>(FromListItemsProvider);
     }
 
     public Func<CustomerId, Task<Result<DmoCustomer>>> RecordRequestAsync

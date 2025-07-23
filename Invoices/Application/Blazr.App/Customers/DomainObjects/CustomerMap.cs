@@ -23,7 +23,7 @@ public sealed class CustomerMap
             CustomerName = item.Name.Value
         };
 
-    public static Result<DmoCustomer> MapToResult(DvoCustomer item)
+    public static Result<DmoCustomer> ApplyTransform(DvoCustomer item)
         => Result<DmoCustomer>.Create(Map(item));
 
     public static Result<DboCustomer> MapResult(DmoCustomer item)

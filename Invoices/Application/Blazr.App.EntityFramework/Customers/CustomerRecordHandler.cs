@@ -22,6 +22,6 @@ public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordReques
         var asyncResult = await _factory.CreateDbContext()
             .GetRecordAsync<DvoCustomer>(new RecordQueryRequest<DvoCustomer>(item => item.CustomerID == request.Id.Value));
 
-        return asyncResult.MapToResult<DmoCustomer>(CustomerMap.Map);
+        return asyncResult.ApplyTransform<DmoCustomer>(CustomerMap.Map);
     }
 }

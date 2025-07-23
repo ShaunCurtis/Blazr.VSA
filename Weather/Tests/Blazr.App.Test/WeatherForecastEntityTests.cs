@@ -54,7 +54,7 @@ public partial class WeatherForecastEntityTests
         await uiBroker.SaveItemAsync(true);
 
         // Output the result of the save
-        uiBroker.LastResult.SideEffect(
+        uiBroker.LastResult.ApplySideEffect(
             success: () => result = true,
             failure: (ex) => result = false);
 
@@ -113,7 +113,7 @@ public partial class WeatherForecastEntityTests
         await uiBroker.SaveItemAsync(true);
 
         result = false;
-        uiBroker.LastResult.SideEffect(
+        uiBroker.LastResult.ApplySideEffect(
             success: () => result = true);
 
         // check the update was successful
@@ -140,7 +140,7 @@ public partial class WeatherForecastEntityTests
                 PageSize = 1,
                 StartIndex = 0,
             })
-            .MapToResultAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .ApplyTransformOnException<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
             .OutputTaskAsync(success: (provider) =>
             {
                 listItemsProvider = provider;
@@ -180,7 +180,7 @@ public partial class WeatherForecastEntityTests
 
         await uiBroker.SaveItemAsync();
 
-        uiBroker.LastResult.SideEffect(
+        uiBroker.LastResult.ApplySideEffect(
             success: () => result = true);
 
         WeatherForecastId newId = uiBroker.Id;
@@ -227,7 +227,7 @@ public partial class WeatherForecastEntityTests
                 PageSize = 1,
                 StartIndex = 0,
             })
-            .MapToResultAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .ApplyTransformOnException<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
             .OutputTaskAsync(success: (provider) =>
             {
                 listItemsProvider = provider;

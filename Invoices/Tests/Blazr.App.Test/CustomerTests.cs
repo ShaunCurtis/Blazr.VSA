@@ -93,7 +93,7 @@ public partial class CustomerTests
 
         //var listRequest = await Result<CustomerListRequest>
         //    .Create(new CustomerListRequest { PageSize = pageSize, StartIndex = startIndex })
-        //    .MapToResultAsync<ListItemsProvider<DmoCustomer>>(_entityProvider..ListItemsRequestAsync)
+        //    .ApplyTransformOnException<ListItemsProvider<DmoCustomer>>(_entityProvider..ListItemsRequestAsync)
         //    .TaskSideEffectAsync(
         //        success: (provider) => listItemsProvider = provider,
         //        failure: (ex) => result = false);
@@ -208,7 +208,7 @@ public partial class CustomerTests
     //        .CreateAction()
     //        .AddSender(this)
     //        .ExecuteAction(entity)
-    //        .MapToResultAsync(entityProvider.EntityCommandAsync)
+    //        .ApplyTransformOnException(entityProvider.EntityCommandAsync)
     //        .OutputTaskAsync(success: (id) =>
     //        {
     //            result = true;
@@ -301,7 +301,7 @@ public partial class CustomerTests
     //            PageSize = 1,
     //            StartIndex = 0,
     //        })
-    //        .MapToResultAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+    //        .ApplyTransformOnException<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
     //        .OutputTaskAsync(success: (provider) =>
     //        {
     //            listItemsProvider = provider;

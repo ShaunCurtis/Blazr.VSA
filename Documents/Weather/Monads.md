@@ -183,7 +183,7 @@ This is where the real power comes in:
 The basic pattern for a map is:
 
 ```csharp
-    public Result<TOut> MapToResult<TOut>(Func<T, Result<TOut>> mapping)
+    public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> mapping)
     {
         if (_exception is null)
             return mapping(_value!);
@@ -194,14 +194,14 @@ The basic pattern for a map is:
 
 A deceptively simple piece of very powerful code.
 
-Lets look at it in operation.  We've provided `MapToResult` with a lambda expression to calculate the square root of the input.
+Lets look at it in operation.  We've provided `ApplyTransform` with a lambda expression to calculate the square root of the input.
 
 ```csharp
 var input = Console.ReadLine();
 
 ParseForInt(value)
     // Applying a Mapping function
-    .MapToResult((v) => Result<double>.Create(Math.Sqrt(v)))
+    .ApplyTransform((v) => Result<double>.Create(Math.Sqrt(v)))
     // Output the result
     .OutputResult(
         success: (value) => Console.WriteLine($"Success: {value}"),
@@ -209,7 +209,7 @@ ParseForInt(value)
     );
 ```
 
-Run the application entering numbers, letters and null `<CTL>z`.  The program works gracefully.  If the result of `ParseForInt` is in failure state, `MapToResult` creates a new `Result<double>` in failure state with the input result's exception.  The `mapping` function is not executed.
+Run the application entering numbers, letters and null `<CTL>z`.  The program works gracefully.  If the result of `ParseForInt` is in failure state, `ApplyTransform` creates a new `Result<double>` in failure state with the input result's exception.  The `mapping` function is not executed.
 
 If the lambda expression is used a lot, it can be defined seperately:
 
@@ -233,7 +233,7 @@ var input = Console.ReadLine();
 
 ParseForInt(value)
     // Applying a Mapping function
-    .MapToResult(SquareRoot)
+    .ApplyTransform(SquareRoot)
     // Output the result
     .OutputResult(
         success: (value) => Console.WriteLine($"Success: {value}"),

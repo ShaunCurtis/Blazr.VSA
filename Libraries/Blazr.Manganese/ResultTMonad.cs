@@ -31,7 +31,11 @@ public partial record Result<T>
 
     public static Result<T> Failure(string message) => new(new ResultException(message));
 
-    public Result<T> ExecuteSideEffect(bool test, Action<T> isTrue, Action<T> isFalse)
+}
+
+public partial record Result<T>
+{
+    public Result<T> ApplySideEffect(bool test, Action<T> isTrue, Action<T> isFalse)
     {
         if (_exception is not null)
             return this;
@@ -44,7 +48,7 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<T> ExecuteSideEffect(bool test, Action<T> isTrue)
+    public Result<T> ApplySideEffect(bool test, Action<T> isTrue)
     {
         if (_exception is not null)
             return this;
@@ -55,7 +59,7 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<T> ExecuteSideEffect(Action<T>? success = null, Action<Exception>? failure = null)
+    public Result<T> ApplySideEffect(Action<T>? success = null, Action<Exception>? failure = null)
     {
         if (_exception is null)
             success?.Invoke(_value!);
@@ -65,7 +69,7 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<TOut> MapToResult<TOut>(Func<T, Result<TOut>> mapping)
+    public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> mapping)
     {
         if (_exception is null)
             return mapping(_value!);
@@ -73,7 +77,7 @@ public partial record Result<T>
         return Result<TOut>.Failure(_exception!);
     }
 
-    public Result<TOut> MapToResult<TOut>(bool test, Func<T, Result<TOut>> isTrue, Func<T, Result<TOut>> isFalse)
+    public Result<TOut> ApplyTransform<TOut>(bool test, Func<T, Result<TOut>> isTrue, Func<T, Result<TOut>> isFalse)
     {
         if (_exception is not null)
             return Result<TOut>.Failure(_exception!);
@@ -81,7 +85,7 @@ public partial record Result<T>
         return test ? isTrue(_value!) : isFalse(_value!);
     }
 
-    public Result<TOut> MapToResult<TOut>(Func<T, TOut> mapping)
+    public Result<TOut> ApplyTransform<TOut>(Func<T, TOut> mapping)
     {
         if (_exception is not null)
             return Result<TOut>.Failure(_exception!);
@@ -100,7 +104,7 @@ public partial record Result<T>
         }
     }
 
-    public Result MapToResult(Func<T, Result>? mapping = null)
+    public Result ApplyTransform(Func<T, Result>? mapping = null)
     {
         if (_exception is null && mapping != null)
             return mapping(_value!);
@@ -111,7 +115,7 @@ public partial record Result<T>
         return Result.Failure(_exception ?? _defaultException);
     }
 
-    public async Task<Result> MapToResultAsync(Func<T, Task<Result>> success, Func<Exception, Task<Result>>? failure = null)
+    public async Task<Result> ApplyTransformOnException(Func<T, Task<Result>> success, Func<Exception, Task<Result>>? failure = null)
     {
         if (_exception is null && success != null)
             return await success(_value!);
@@ -122,7 +126,7 @@ public partial record Result<T>
         return Result.Failure(_exception ?? _defaultException);
     }
 
-    public async Task<Result<TOut>> MapToResultAsync<TOut>(Func<T, Task<Result<TOut>>> success)
+    public async Task<Result<TOut>> ApplyTransformOnException<TOut>(Func<T, Task<Result<TOut>>> success)
     {
         if (_exception is null)
             return await success(_value!);
@@ -130,7 +134,7 @@ public partial record Result<T>
         return Result<TOut>.Failure(_exception ?? _defaultException);
     }
 
-    public async Task<Result<TOut>> MapToResultAsync<TOut>(bool test, Func<T, Task<Result<TOut>>> isTrue, Func<T, Task<Result<TOut>>> isFalse)
+    public async Task<Result<TOut>> ApplyTransformOnException<TOut>(bool test, Func<T, Task<Result<TOut>>> isTrue, Func<T, Task<Result<TOut>>> isFalse)
     {
         if (_exception is not null)
             return Result<TOut>.Failure(_exception!);
@@ -138,7 +142,7 @@ public partial record Result<T>
         return test ? await isTrue(_value!) : await isFalse(_value!);
     }
 
-    public async Task<Result> MapToResultAsync(bool test, Func<T, Task<Result>> isTrue)
+    public async Task<Result> ApplyTransformOnException(bool test, Func<T, Task<Result>> isTrue)
     {
         if (_exception is not null)
             return Result.Failure(_exception!);
@@ -148,7 +152,7 @@ public partial record Result<T>
         return Result.Success();
     }
 
-    public async Task<Result<T>> MapToResultAsync(bool test, Func<T, Task<Result<T>>> isTrue)
+    public async Task<Result<T>> ApplyTransformOnException(bool test, Func<T, Task<Result<T>>> isTrue)
     {
         if (_exception is not null)
             return Result<T>.Failure(_exception!);
@@ -158,7 +162,7 @@ public partial record Result<T>
         return Result<T>.Success(_value!);
     }
 
-    public async Task<Result> MapToResultAsync(bool test, Func<T, Task<Result>> isTrue, Func<T, Task<Result>> isFalse)
+    public async Task<Result> ApplyTransformOnException(bool test, Func<T, Task<Result>> isTrue, Func<T, Task<Result>> isFalse)
     {
         if (_exception is not null)
             return Result.Failure(_exception!);
@@ -166,7 +170,7 @@ public partial record Result<T>
         return test ? await isTrue(_value!) : await isFalse(_value!);
     }
 
-    public async Task<Result<T>> MapToResultAsync(bool test, Func<T, Task<Result<T>>> isTrue, Func<T, Task<Result<T>>> isFalse)
+    public async Task<Result<T>> ApplyTransformOnException(bool test, Func<T, Task<Result<T>>> isTrue, Func<T, Task<Result<T>>> isFalse)
     {
         if (_exception is not null)
             return Result<T>.Failure(_exception!);
@@ -174,7 +178,7 @@ public partial record Result<T>
         return test ? await isTrue(_value!) : await isFalse(_value!);
     }
 
-    public async Task<Result<T>> MapExceptionAsync(Func<Exception, Task<Result<T>>> failure)
+    public async Task<Result<T>> ApplyTransformOnException(Func<Exception, Task<Result<T>>> failure)
     {
         if (_exception is not null)
             return await failure(_exception!);
@@ -182,7 +186,7 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<T> MapToException(bool test, string message)
+    public Result<T> ApplyTransformOnException(bool test, string message)
     {
         if (_exception is null && test)
             return Result<T>.Failure(message);
@@ -190,7 +194,7 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<T> MapToException(bool test, Exception exception)
+    public Result<T> ApplyTransformOnException(bool test, Exception exception)
     {
         if (_exception is null && test)
             return Result<T>.Failure(exception);

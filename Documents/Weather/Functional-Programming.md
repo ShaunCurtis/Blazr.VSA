@@ -169,7 +169,7 @@ Mapping is the process of applying a transform to the input and producing a Resu
 The basic template is:
 
 ```csharp
-public Result<TOut> MapToResult<TOut>(Func<T, Result<TOut>> success)
+public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> success)
 {
     if (_exception is null)
         return success(_value!);
@@ -188,7 +188,7 @@ string? value = Console.ReadLine();
 // monadic function
 ParseForInt(value)
     // Applying a Mapping function
-    .MapToResult<double>(SquareRoot)
+    .ApplyTransform<double>(SquareRoot)
     // Output the result
     .OutputResult(
         success: (value) => Console.WriteLine($"Success: {value}"),
@@ -207,7 +207,7 @@ Result<int> ParseForInt(string? input)
 Try entering different type of input.  `<CTL>Z` will enter a `null`.
 
 1. `ParseForInt` uses the [horrible] `TryParse` method to return either a success or failure `Result<int>`.
-1. `MapToResult` then applies `SquareRoot` to the value of the input `Result<T>` if it's in success state.  If it's in failure, it creates and returns a new `Result<double>` with the `Exception` from the input Result<int>.
+1. `ApplyTransform` then applies `SquareRoot` to the value of the input `Result<T>` if it's in success state.  If it's in failure, it creates and returns a new `Result<double>` with the `Exception` from the input Result<int>.
 1. Finally `OutputResult` outputs to the console based on the result state.
 
 What you see is:
@@ -228,7 +228,7 @@ The first two are handled by the basic template above.
 The third by:
 
 ```csharp
-public Result MapToResult(Func<T, Result>? mapping = null)
+public Result ApplyTransform(Func<T, Result>? mapping = null)
 {
     if (_exception is null && mapping != null)
         return mapping(_value!);
@@ -263,12 +263,12 @@ And that is it.  But it isn't, because we need to deal with `async` functions an
 
 ### Side Effects
 
-There are times when using FP in a complex object setting where you will need to update the object state.  You can do it within a `MapToResult` lambda expression, but that's messy.
+There are times when using FP in a complex object setting where you will need to update the object state.  You can do it within a `ApplyTransform` lambda expression, but that's messy.
 
-`Result<T>` has a set of `ExecuteSideEffect` methods so you can be explicit.  The basic pasttern is:
+`Result<T>` has a set of `ApplySideEffect` methods so you can be explicit.  The basic pasttern is:
 
 ```csharp
-public Result<T> ExecuteSideEffect(Action<T>? success = null, Action<Exception>? failure = null)
+public Result<T> ApplySideEffect(Action<T>? success = null, Action<Exception>? failure = null)
 {
     if (_exception is null)
         success?.Invoke(_value!);
@@ -286,9 +286,9 @@ int intValue;
 
 ParseForInt(value)
     // Get out an intermediate result
-    .ExecuteSideEffect(success: (value) => Console.WriteLine($"Parsed value: {value}"))
+    .ApplySideEffect(success: (value) => Console.WriteLine($"Parsed value: {value}"))
     // Applying a Mapping function
-    .MapToResult(Utilities.ToSquareRoot)
+    .ApplyTransform(Utilities.ToSquareRoot)
     // Output the result
     .OutputResult(
         success: (value) => Console.WriteLine($"Success: {value}"),
@@ -324,7 +324,7 @@ First is a mapper:
 public static async Task<Result<TOut>> MapTaskToResultAsync<T, TOut>(this Task<Result<T>> task, Func<T, Result<TOut>> mapping)
 {
     var result = await task.HandleTaskCompletionAsync();
-    return result.MapToResult<TOut>(mapping);
+    return result.ApplyTransform<TOut>(mapping);
 }
 ```
 
@@ -362,7 +362,7 @@ And side effects:
 ```csharp
 public static Task<Result<T>> TaskSideEffectAsync<T>(this Task<Result<T>> task, Action<T>? success = null, Action<Exception>? failure = null)
     => task.HandleTaskCompletionAsync()
-        .ContinueWith((t) => t.Result.ExecuteSideEffect(success, failure));
+        .ContinueWith((t) => t.Result.ApplySideEffect(success, failure));
 ```
 
 The console app:
