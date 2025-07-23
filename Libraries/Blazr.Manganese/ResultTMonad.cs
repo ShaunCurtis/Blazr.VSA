@@ -10,6 +10,9 @@ public partial record Result<T>
     private readonly Exception? _exception;
     private readonly T? _value;
     private ResultException _defaultException => new ResultException("An error occurred. No specific exception provided.");
+    private bool _hasException => _exception is not null;
+
+    public bool HasValue => _exception is null;
 
     private Result(T? value)
         => _value = value;
@@ -31,72 +34,31 @@ public partial record Result<T>
 
     public static Result<T> Failure(string message) => new(new ResultException(message));
 
-}
+    public Result AsResult => this._exception is null
+            ? Result.Success()
+            : Result.Failure(_exception);
 
-public partial record Result<T>
-{
-    public Result<T> ApplySideEffect(bool test, Action<T> isTrue, Action<T> isFalse)
-    {
-        if (_exception is not null)
-            return this;
+    public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> transform)
+        => HasValue
+            ? transform(_value!)
+            : Result<TOut>.Failure(_exception!);
 
-        if (test)
-            isTrue(_value!);
-        else
-            isFalse(_value!);
+    public Result<T> ApplyTransformOnException(Func<Exception, Result<T>> transform)
+        => _hasException
+            ? transform(_exception!)
+            : this;
 
-        return this;
-    }
-
-    public Result<T> ApplySideEffect(bool test, Action<T> isTrue)
-    {
-        if (_exception is not null)
-            return this;
-
-        if (test)
-            isTrue(_value!);
-
-        return this;
-    }
-
-    public Result<T> ApplySideEffect(Action<T>? success = null, Action<Exception>? failure = null)
-    {
-        if (_exception is null)
-            success?.Invoke(_value!);
-        else
-            failure?.Invoke(_exception!);
-
-        return this;
-    }
-
-    public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> mapping)
-    {
-        if (_exception is null)
-            return mapping(_value!);
-
-        return Result<TOut>.Failure(_exception!);
-    }
-
-    public Result<TOut> ApplyTransform<TOut>(bool test, Func<T, Result<TOut>> isTrue, Func<T, Result<TOut>> isFalse)
-    {
-        if (_exception is not null)
-            return Result<TOut>.Failure(_exception!);
-
-        return test ? isTrue(_value!) : isFalse(_value!);
-    }
-
-    public Result<TOut> ApplyTransform<TOut>(Func<T, TOut> mapping)
+    public Result<TOut> ApplyTransform<TOut>(Func<T, TOut> transform)
     {
         if (_exception is not null)
             return Result<TOut>.Failure(_exception!);
 
         try
         {
-            var result = mapping.Invoke(_value!);
-            if (result is null)
-                return Result<TOut>.Failure(new ResultException("The mapping function returned a null value."));
-
-            return Result<TOut>.Create(mapping(_value!));
+            var value = transform.Invoke(_value!);
+            return (value is null)
+                ? Result<TOut>.Failure(new ResultException("The mapping function returned a null value."))
+                : Result<TOut>.Create(value);
         }
         catch (Exception ex)
         {
@@ -104,115 +66,98 @@ public partial record Result<T>
         }
     }
 
-    public Result ApplyTransform(Func<T, Result>? mapping = null)
+    public Result ApplyTransform(Func<T, Result> transform)
+        => HasValue
+            ? transform(_value!)
+            : Result.Failure(_exception!);
+
+    public Result<T> ApplySideEffect(Action<T>? hasValue = null, Action<Exception>? hasException = null)
     {
-        if (_exception is null && mapping != null)
-            return mapping(_value!);
-
-        if (_value is not null)
-            return Result.Success();
-
-        return Result.Failure(_exception ?? _defaultException);
-    }
-
-    public async Task<Result> ApplyTransformOnException(Func<T, Task<Result>> success, Func<Exception, Task<Result>>? failure = null)
-    {
-        if (_exception is null && success != null)
-            return await success(_value!);
-
-        if (_exception is not null && failure != null)
-            return await failure(_exception!);
-
-        return Result.Failure(_exception ?? _defaultException);
-    }
-
-    public async Task<Result<TOut>> ApplyTransformOnException<TOut>(Func<T, Task<Result<TOut>>> success)
-    {
-        if (_exception is null)
-            return await success(_value!);
-
-        return Result<TOut>.Failure(_exception ?? _defaultException);
-    }
-
-    public async Task<Result<TOut>> ApplyTransformOnException<TOut>(bool test, Func<T, Task<Result<TOut>>> isTrue, Func<T, Task<Result<TOut>>> isFalse)
-    {
-        if (_exception is not null)
-            return Result<TOut>.Failure(_exception!);
-
-        return test ? await isTrue(_value!) : await isFalse(_value!);
-    }
-
-    public async Task<Result> ApplyTransformOnException(bool test, Func<T, Task<Result>> isTrue)
-    {
-        if (_exception is not null)
-            return Result.Failure(_exception!);
-        if (test)
-            return await isTrue(_value!);
-
-        return Result.Success();
-    }
-
-    public async Task<Result<T>> ApplyTransformOnException(bool test, Func<T, Task<Result<T>>> isTrue)
-    {
-        if (_exception is not null)
-            return Result<T>.Failure(_exception!);
-        if (test)
-            return await isTrue(_value!);
-
-        return Result<T>.Success(_value!);
-    }
-
-    public async Task<Result> ApplyTransformOnException(bool test, Func<T, Task<Result>> isTrue, Func<T, Task<Result>> isFalse)
-    {
-        if (_exception is not null)
-            return Result.Failure(_exception!);
-
-        return test ? await isTrue(_value!) : await isFalse(_value!);
-    }
-
-    public async Task<Result<T>> ApplyTransformOnException(bool test, Func<T, Task<Result<T>>> isTrue, Func<T, Task<Result<T>>> isFalse)
-    {
-        if (_exception is not null)
-            return Result<T>.Failure(_exception!);
-
-        return test ? await isTrue(_value!) : await isFalse(_value!);
-    }
-
-    public async Task<Result<T>> ApplyTransformOnException(Func<Exception, Task<Result<T>>> failure)
-    {
-        if (_exception is not null)
-            return await failure(_exception!);
-
-        return this;
-    }
-
-    public Result<T> ApplyTransformOnException(bool test, string message)
-    {
-        if (_exception is null && test)
-            return Result<T>.Failure(message);
-
-        return this;
-    }
-
-    public Result<T> ApplyTransformOnException(bool test, Exception exception)
-    {
-        if (_exception is null && test)
-            return Result<T>.Failure(exception);
-
-        return this;
-    }
-
-    public void OutputResult(Action<T>? success = null, Action<Exception>? failure = null)
-    {
-        if (_exception is null)
-            success?.Invoke(_value!);
+        if (HasValue)
+            hasValue?.Invoke(_value!);
         else
-            failure?.Invoke(_exception!);
+            hasException?.Invoke(_exception!);
+
+        return this;
     }
+
+    public void OutputResult(Action<T>? hasValue = null, Action<Exception>? hasException = null)
+    {
+        if (HasValue)
+            hasValue?.Invoke(_value!);
+        else
+            hasException?.Invoke(_exception!);
+    }
+
+    public async Task<Result<TOut>> ApplyTransformAsync<TOut>(Func<T, Task<Result<TOut>>> transform)
+        => _hasException
+            ? Result<TOut>.Failure(_exception!)
+            : await transform(_value!);
+
+    public async Task<Result> ApplyTransformAsync(Func<T, Task<Result>> transform)
+        => _hasException
+            ? Result.Failure(_exception!)
+            : await transform(_value!);
 
     public ValueTask<Result<T>> CompletedValueTask
         => ValueTask.FromResult(this);
 
     public Task<Result<T>> CompletedTask
         => Task.FromResult(this);
+}
+
+public static class ResultTExtensions
+{
+    public static Result<T> ApplySideEffect<T>(this Result<T> result, bool test, Action<T> isTrue, Action<T> isFalse)
+        => test
+            ? result.ApplySideEffect(isTrue, null)
+            : result.ApplySideEffect(isFalse, null);
+
+    public static Result<T> ApplySideEffect<T>(this Result<T> result, bool test, Action<T> isTrue)
+        => test
+            ? result.ApplySideEffect(isTrue, null)
+            : result;
+
+    public static Result<T> ApplyTransform<T>(this Result<T> result, bool test, Func<T, Result<T>> trueTransform, Func<T, Result<T>> falseTransform)
+        => test
+            ? result.ApplyTransform<T>(trueTransform)
+            : result.ApplyTransform<T>(falseTransform);
+
+    public static Result<TOut> ApplyTransform<TOut, T>(this Result<T> result, bool test, Func<T, Result<TOut>> trueTransform, Func<T, Result<TOut>> falseTransform)
+        => test
+            ? result.ApplyTransform<TOut>(trueTransform)
+            : result.ApplyTransform<TOut>(falseTransform);
+
+    public static Result<T> ApplyExceptionOnTrue<T>(this Result<T> result, bool test, string message)
+        => result.HasValue && test
+            ? Result<T>.Failure(message)
+            : result;
+
+    public static Result<T> ApplyExceptionOnTrue<T>(this Result<T> result, bool test, Exception exception)
+        => result.HasValue && test
+            ? Result<T>.Failure(exception)
+            : result;
+}
+
+public static class ResultTaskTExtensions
+{
+    public async static Task<Result<TOut>> ApplyTransformAsync<TOut, T>(this Result<T> result, bool test, Func<T, Task<Result<TOut>>> trueTransform, Func<T, Task<Result<TOut>>> falseTransform)
+        => test
+            ? await result.ApplyTransformAsync<TOut>(trueTransform)
+            : await result.ApplyTransformAsync<TOut>(falseTransform);
+
+    public async static Task<Result<T>> ApplyTransformAsync<T>(this Result<T> result, bool test, Func<T, Task<Result<T>>> trueTransform)
+        => test
+            ? await result.ApplyTransformAsync<T>(trueTransform)
+            : result;
+
+    public async static Task<Result> ApplyTransformAsync<T>(this Result<T> result, bool test, Func<T, Task<Result>> trueTransform, Func<T, Task<Result>> falseTransform)
+        => test
+            ? await result.ApplyTransformAsync(trueTransform)
+            : await result.ApplyTransformAsync(falseTransform);
+
+    public async static Task<Result> ApplyTransformAsync<T>(this Result<T> result, bool test, Func<T, Task<Result>> trueTransform)
+        => test
+            ? await result.ApplyTransformAsync(trueTransform)
+            : result.AsResult;
 }

@@ -14,6 +14,7 @@ namespace Blazr.Manganese;
 public partial record Result
 {
     private readonly Exception? _exception;
+    public bool HasException => _exception is not null;
 
     private Result(Exception? exception)
         => _exception = exception
@@ -25,104 +26,85 @@ public partial record Result
     public static Result Failure(Exception? exception) => new(exception);
     public static Result Failure(string message) => new(new ResultException(message));
 
-    public Result ApplyTransform(Func<Result> mapping)
+    public Result ApplyTransform(Func<Result> transform)
         => _exception is null
-            ? mapping()
+            ? transform()
             : this;
-}
 
-public partial record Result
-{
-    public Result<T> ApplyTransform<T>(Func<Result<T>> onResult, Func<Exception, Result<T>>? onException = null)
+    public Result<T> ApplyTransform<T>(Func<Result<T>> transform)
+        => _exception is null
+            ? transform()
+            : Result<T>.Failure(_exception);
+
+    public Result ApplySideEffect(Action? hasNoException = null, Action<Exception>? hasException = null)
     {
-        if (_exception is null)
-            return onResult();
-
-        if (_exception is not null && failure != null)
-            return onException(_exception);
-
-        return Result<T>.Failure(_exception!);
-    }
-
-    public Result ApplyTransform(bool test, Func<Result> isTrue, Func<Result> isFalse)
-    {
-        if (_exception is not null)
-            return this;
-
-        if (test)
-            return isTrue();
-
-        return isFalse();
-    }
-
-    public Result ApplyTransformOnException(bool test, string message)
-        => this.ApplyTransformOnException(test, new ResultException(message));
-
-    public Result ApplyTransformOnException(bool test, Exception exception)
-    {
-        if (_exception is not null)
-            return this;
-
-        if (test)
-            return Result.Failure(exception);
-
+        OutputResult(hasNoException, hasException);
         return this;
     }
 
-    public async Task<Result> ApplyTransformOnException(bool test, Func<Task<Result>> isTrue, Func<Task<Result>> isFalse)
+    public void OutputResult(Action? hasNoException = null, Action<Exception>? hasException = null)
     {
-        if (_exception is not null)
-            return this;
-
-        return test ? await isTrue() : await isFalse();
-    }
-
-    public async Task<Result> ApplyTransformOnException(Func<Task<Result>> mapping)
-    {
-        if (_exception is not null)
-            return this;
-
-        return await mapping();
-    }
-
-    public Result ApplySideEffect(Action success)
-    {
-        Output(success, null);
-
-        return this;
-    }
-
-    public Result ApplySideEffect(Action? success = null, Action<Exception>? failure = null)
-    {
-        Output(success, failure);
-
-        return this;
-    }
-
-    public Result ApplySideEffect(bool test, Action? isTrue = null, Action? isFalse = null)
-    {
-        if (_exception is not null)
-            return this;
-
-        if (test)
-            isTrue?.Invoke();
+        if (HasException)
+            hasException?.Invoke(_exception!);
         else
-            isFalse?.Invoke();
-
-        return this;
+            hasNoException?.Invoke();
     }
-
-    public void Output(Action? success = null, Action<Exception>? failure = null)
-    {
-        if (_exception is null)
-            success?.Invoke();
-        else
-            failure?.Invoke(_exception);
-    }
-
     public ValueTask<Result> CompletedValueTask
         => ValueTask.FromResult(this);
 
     public Task<Result> CompletedTask
         => Task.FromResult(this);
 }
+
+public static class ResultExtensions
+{
+    public static Result ApplyTransform(this Result result, bool test, Func<Result> trueTransform, Func<Result> falseTransform)
+        => test
+            ? result.ApplyTransform(trueTransform)
+            : result.ApplyTransform(falseTransform);
+
+    public static Result ApplyTransformOnException(this Result result, bool test, string message)
+        => result.HasException && test
+            ? Result.Failure(message)
+            : result;
+
+    public static Result ApplyTransformOnException(this Result result, bool test, Exception exception)
+        => result.HasException && test
+                ? Result.Failure(exception)
+                : result;
+
+    public static Result ApplySideEffect(this Result result, Action hasNoException)
+    {
+        result.OutputResult(hasNoException, null);
+        return result;
+    }
+
+    public static Result ApplySideEffect(this Result result, bool test, Action? trueAction = null, Action? falseAction = null)
+    {
+
+        if (!result.HasException)
+            if (test)
+                trueAction?.Invoke();
+            else
+                falseAction?.Invoke();
+
+        return result;
+    }
+
+}
+
+public static class ResultTaskExtensions
+{
+    public async static Task<Result> ApplyTransformAsync(this Result result, Func<Task<Result>> transform)
+        => result.HasException
+            ? result
+            : await transform();
+
+    public async static Task<Result> ApplyTransformAsync(this Result result, bool test, Func<Task<Result>> trueTransform, Func<Task<Result>> falseTransform)
+        => result.HasException
+        ? result
+        : test
+            ? await trueTransform()
+            : await falseTransform();
+}
+

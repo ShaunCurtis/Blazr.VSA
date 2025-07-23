@@ -72,10 +72,10 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
             // Check if the broker has already been loaded
             .ApplyTransform<TKey>(
                 test: _isLoaded,
-                isTrue: id => Result<TKey>.Failure("The UIBroker has already been loaded."),
-                isFalse: id => Result<TKey>.Create(id))
+                trueTransform: id => Result<TKey>.Failure("The UIBroker has already been loaded."),
+                falseTransform: id => Result<TKey>.Create(id))
             // Get the record item.  This will return a new record if the id is default
-            .ApplyTransformOnException<TRecord>(_entityProvider.RecordRequestAsync)
+            .ApplyTransformAsync<TRecord>(_entityProvider.RecordRequestAsync)
             // Set up the EditMutator and EditContext
             .TaskSideEffectAsync<TRecord>(
                 success: record =>
@@ -97,9 +97,9 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
             // Get the record item from the EditMutator
             .ApplyTransform<TRecord>(() => EditMutator.ToResult)
              // Set the broker state to dirty
-             .ApplySideEffect(success: (value) => this.State = this.State.AsDirty)
+             .ApplySideEffect(hasValue: (value) => this.State = this.State.AsDirty)
              // Save the record item to the datastore
-             .ApplyTransformOnException<TKey>(success: (record) => _entityProvider.RecordCommandAsync(StateRecord<TRecord>.Create(record, this.State)))
+             .ApplyTransformAsync<TKey>((record) => _entityProvider.RecordCommandAsync(StateRecord<TRecord>.Create(record, this.State)))
              // Set the broker state to not loaded
              .TaskSideEffectAsync(test: refreshOnNew, isTrue: (id) => _isLoaded = false)
              // Refresh the record if refreshOnNew is set
@@ -124,5 +124,5 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
             // Set the broker state
             .ApplySideEffect(() => this.State = EditState.Deleted)
             // Delete the record item from the datastore
-            .ApplyTransformOnException(this.UpdateRecordAsync);
+            .ApplyTransformAsync(this.UpdateRecordAsync);
 }
