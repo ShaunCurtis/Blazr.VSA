@@ -75,7 +75,7 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
                 trueTransform: id => Result<TKey>.Failure("The UIBroker has already been loaded."),
                 falseTransform: id => Result<TKey>.Create(id))
             // Get the record item.  This will return a new record if the id is default
-            .ApplyTransformAsync<TRecord, TKey>(_entityProvider.RecordRequestAsync)
+            .ApplyTransformAsync<TRecord>(_entityProvider.RecordRequestAsync)
             // Set up the EditMutator and EditContext
             .ApplySideEffectAsync<TRecord>(
                 hasValue: record =>
@@ -99,7 +99,7 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
              // Set the broker state to dirty
              .ApplySideEffect(hasValue: (value) => this.State = this.State.AsDirty)
              // Save the record item to the datastore
-             .ApplyTransformAsync<TKey, TRecord>((record) => _entityProvider.RecordCommandAsync(StateRecord<TRecord>.Create(record, this.State)))
+             .ApplyTransformAsync<TKey>((record) => _entityProvider.RecordCommandAsync(StateRecord<TRecord>.Create(record, this.State)))
              // Set the broker state to not loaded
              .ApplySideEffectAsync(test: refreshOnNew, trueAction: (id) => _isLoaded = false)
              // Refresh the record if refreshOnNew is set

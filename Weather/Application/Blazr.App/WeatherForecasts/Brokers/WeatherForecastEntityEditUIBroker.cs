@@ -6,7 +6,6 @@
 using Blazr.App.Core;
 using Blazr.App.Presentation;
 using Blazr.Cadmium.Core;
-using Blazr.Manganese.FunctionalExtensions;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Blazr.Cadmium.Presentation;
@@ -84,7 +83,7 @@ public partial class WeatherForecastEntityEditUIBroker
 
     private async Task<Result> LoadEntityAsync(WeatherForecastId id)
         => await Result<WeatherForecastId>.Create(id)
-            .ApplyTransformAsync<WeatherForecastEntity, WeatherForecastId>(_entityProvider.EntityRequestAsync)
+            .ApplyTransformAsync<WeatherForecastEntity>(_entityProvider.EntityRequestAsync)
             .ApplySideEffectAsync(
                 hasValue: (entity) =>
                 {

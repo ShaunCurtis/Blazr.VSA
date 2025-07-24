@@ -6,7 +6,6 @@
 using Blazr.Cadmium.Core;
 using Blazr.Diode;
 using Blazr.Gallium;
-using Blazr.Manganese.FunctionalExtensions;
 
 namespace Blazr.Cadmium.Presentation;
 
