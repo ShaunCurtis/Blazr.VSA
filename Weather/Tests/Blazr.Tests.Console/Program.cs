@@ -57,4 +57,3 @@ void DisplayError(Result result)
     );
 }
 
-

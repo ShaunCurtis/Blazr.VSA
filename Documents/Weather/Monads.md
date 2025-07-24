@@ -1,10 +1,10 @@
 # Monads
 
-The internet is awash with articles trying to explain what a Monad is.  This is yet another: I hope I succeed where the rest fail.
+The internet is awash with articles trying to explain Monads.  This is yet another: I hope I succeed where the rest fail.
 
-As a C# OOP programmer you need to open your mind.  Forget the OOP dogma that has ruled your programming life.
+As a C# OOP programmer there are less than satisfactory solutions you have been conditioned to accept as it - the best solution for a thorny issue.  You've stuck in the OOP paradigm.
 
-Functional programming [**FP** from now on] requires a different way of thinking. It has solutions for coding problems that constantly vex OOP programmers.
+Functional programming [**FP** from now on] gets you out of it.  But you do need to open your mind.  It's a different way of thinking. It has solutions for those thorny issues.  It's not all paradise:  there are thornu issues in FP languages that OOP solve.
 
 Consider this ugly, horrible code [yes it's platform .Net code]:
 
@@ -45,9 +45,9 @@ And a functionally programmed version.
 var input = Console.ReadLine();
 
 input
-    .Map(int.Parse)
-    .Map(value => Math.Sqrt(value))
-    .Map(value => Math.Round(value, 2))
+    .Bind(int.Parse)
+    .Bind(value => Math.Sqrt(value))
+    .Bind(value => Math.Round(value, 2))
     .Match(
         success: value => Console.WriteLine($"Parsed successfully: The transform result of {input} is: {value}"),
         failure: ex => Console.WriteLine($"Failed to parse input: {ex.Message}"
@@ -56,19 +56,29 @@ input
 
 ## The Result Monad
 
-The `Result<T>` monad is a variation of the common `Maybe<T>` and `Option<T>` monads.  It's built to handle null and exceptions in data pipelines. 
+So what are Monads.  
+
+> Monads elevate basic types and apply functional patterns to them.
+
+Let's create the `Result<T>` Monad.  It addresses two problems:
+
+1. Handling nullable method returns
+2. Surfacing exceptions from the infrastructure and domain layers into the presentation layer.
+   
+It works well in the data pipeline context. 
 
 A result has two possible states:
-- **Success**: The operation completed successfully
-- **Failure**: The operation failed, and the result contains an error message. 
+
+- **HasValue**: The operation completed successfully and produced a Value.
+- **HasException**: The operation failed, and the result contains an exception. 
 
 Defined as either a Value of `T` or an `Exception`:
 
 ```csharp
 public record Result<T>
 {
-    private readonly T? _value;
-    private readonly Exception? _exception;
+    public readonly T? Value;
+    public readonly Exception? Exception;
 }
 ```
 
@@ -76,19 +86,35 @@ There are three private constructors: private to only allow object creation thro
 
 ```csharp
 private Result(T? value)
-    => _value = value;
+    => this.Value = value;
 
 private Result(Exception? exception)
-    => _exception = exception ?? new ResultException("An error occurred. No specific exception provided.");
+    => this.Exception = exception ?? new ResultException("An error occurred. No specific exception provided.");
 
 private Result()
-    => _exception = new ResultException("An error occurred. No specific exception was provided.");
+    => this.Exception = new ResultException("An error occurred. No specific exception was provided.");
  }
 ```
 
+And two state properties:
+
+```csharp
+public bool HasException => Exception is not null;
+public bool HasValue => Exception is null;
+```
+
+
 ## Creating/Initialising `Result<T>`
 
-Three basic static initialization methods on `Result<T>`:
+The basic pattern is:
+
+```csharp
+T > Monad<T>
+```
+
+#### Basic Constructors
+
+There are three basic static constructors:
 
 ```csharp
 public static Result<T> Success(T value) => new(value);
@@ -96,13 +122,9 @@ public static Result<T> Failure(Exception exception) => new(exception);
 public static Result<T> Failure(string message) => new(new ResultException(message));
 ```
 
-The basic template for creating a `Result<T>` can be expressed like this:
+#### Logical Constructors
 
-```csharp
-    T > Monad<T>
-```
-
-Which we use in the creator that deals with nulls:
+And one logical constructor to handle nulls:
 
 ```csharp
 public static Result<T> Create(T? value) =>
@@ -111,7 +133,9 @@ public static Result<T> Create(T? value) =>
         : new(value);
 ```
 
-And can alse be used directly like this:
+##### Monadic Functions
+
+We can output a `Result<T>` directly from a method vsuch as this:
 
 ```csharp
 Result<int> ParseForInt(string? value)
@@ -120,16 +144,18 @@ Result<int> ParseForInt(string? value)
         : Result<int>.Failure(new FormatException("Input is not a valid integer."));
 ```
 
-We can then define:
+We can then define as:
 
 ```csharp
 var input = Console.ReadLine();
-
 var result = Result<string>.Create(input);
-//or
+```
+or:
+
+```csharp
+var input = Console.ReadLine();
 var result = ParseForInt(input);
 ```
-
 
 ## Working with `Result<T>`
 
@@ -137,40 +163,39 @@ Our console app now looks like this:
 
 ```csharp
 var input = Console.ReadLine();
-
-var result = ParseForInt(input);
+ result = ParseForInt(input);
 ```
 
-### Outputting a Result
+How do we output this to the console?
 
-Next we need to handle the Monad in `Console.WriteLine`.
+### Outputting a Result
 
 A standard implementation looks like this:
 
 ```csharp
-public void OutputResult(Action<T>? success = null, Action<Exception>? failure = null)
+public void Output(Action<T>? hasValue = null, Action<Exception>? hasException = null)
 {
-    if (_exception is null)
-        success?.Invoke(_value!);
+    if (this.Exception is null)
+        hasValue?.Invoke(_value!);
     else
-        failure?.Invoke(_exception!);
+        hasException?.Invoke(_exception!);
 }
 ```
 
-The console app now looks like this:
+We can use this to output to the console:
 
 ```csharp
 var input = Console.ReadLine();
 
 ParseForInt(value)
     // Output the result
-    .OutputResult(
-        success: (value) => Console.WriteLine($"Success: {value}"),
-        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+    .Output(
+        hasValue: (value) => Console.WriteLine($"Success: {value}"),
+        hasException: (exception) => Console.WriteLine($"Failure: {exception.Message}")
     );
 ```
 
-Note the lack of null checking and the chaining of operations.
+Note the lack of repetative null checking and the chaining of operations.
 
 Try entering `<Ctl>z` in the console application: a null.  It's handled gracefully.
 
