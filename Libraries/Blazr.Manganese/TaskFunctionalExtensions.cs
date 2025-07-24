@@ -3,7 +3,6 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.Manganese.FunctionalExtensions;
 namespace Blazr.Manganese;
 
 public static class TaskFunctionalExtensions
@@ -12,7 +11,7 @@ public static class TaskFunctionalExtensions
     {
         var result = await task.HandleTaskCompletionAsync();
 
-        return await result.ApplyTransformAsync<TOut, T>(transform);
+        return await result.ApplyTransformAsync<TOut>(transform);
     }
 
     public static async Task<Result> TransformAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> transform)
@@ -33,13 +32,13 @@ public static class TaskFunctionalExtensions
     public static async Task<Result<TOut>> ApplyTransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Result<TOut>> transform)
     {
         var result = await task.HandleTaskCompletionAsync();
-        return result.ApplyTransform<TOut, T>(transform);
+        return result.ApplyTransform<TOut>(transform);
     }
 
     public static async Task<Result<T>> ApplyTransformAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> trueTransform, Func<T, Task<Result<T>>> falseTransform)
     {
         var result = await task.HandleTaskCompletionAsync();
-        return await result.ApplyTransformAsync<T, T>(test, trueTransform, falseTransform);
+        return await result.ApplyTransformAsync<T>(test, trueTransform, falseTransform);
     }
 
     public static async Task<Result<T>> ApplyTransformAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> trueTransform)
@@ -64,9 +63,9 @@ public static class TaskFunctionalExtensions
         => task.HandleTaskCompletionAsync()
             .ContinueWith((t) => t.Result.ApplyTransform(transform));
 
-    public static Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task)
+    public static Task<Result> ToResultAsync<T>(this Task<Result<T>> task)
         => task.HandleTaskCompletionAsync()
-            .ContinueWith((t) => t.Result.AsResult);
+            .ContinueWith((t) => t.Result.ToResult);
 
     public static Task<Result<T>> ApplySideEffectAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
         => task.HandleTaskCompletionAsync()
@@ -79,6 +78,10 @@ public static class TaskFunctionalExtensions
     public static Task<Result> ApplySideEffectAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
         => task.HandleTaskCompletionAsync()
             .ContinueWith((t) => t.Result.ApplySideEffect(hasValue, hasException));
+
+    public static Task<Result> AsRecordAsync<T>(this Task<Result<T>> task)
+        => task.HandleTaskCompletionAsync()
+            .ContinueWith((t) => t.Result.ToResult);
 
     private static Task<Result<T>> HandleTaskCompletionAsync<T>(this Task<Result<T>> task)
     {

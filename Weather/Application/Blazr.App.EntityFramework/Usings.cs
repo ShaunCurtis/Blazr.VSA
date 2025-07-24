@@ -5,5 +5,6 @@ global using Blazr.Diode.Infrastructure.EntityFramework;
 global using Blazr.Diode.Mediator;
 global using Blazr.Gallium;
 global using Blazr.Manganese;
+global using Blazr.Manganese.FunctionalExtensions;
 global using Microsoft.EntityFrameworkCore;
 global using System.Linq.Expressions;

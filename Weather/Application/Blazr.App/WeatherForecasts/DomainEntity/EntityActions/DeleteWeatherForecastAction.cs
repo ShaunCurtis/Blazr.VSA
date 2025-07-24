@@ -15,12 +15,12 @@ public sealed partial class WeatherForecastEntity
         private DeleteWeatherForecastAction() { }
 
         public Result<WeatherForecastEntity> ExecuteAction(WeatherForecastEntity entity)
-            =>  entity._weatherForecast
+            => entity._weatherForecast
                 .MarkAsDeleted(this.TransactionId)
                 .ApplySideEffect(
-                    success: () => entity.StateHasChanged?.Invoke(this, entity.WeatherForecast.Id),
-                    failure: ex => entity._weatherForecast.RollBackLastUpdate(this.TransactionId)
-                )
+                    hasNoException: () => entity.StateHasChanged?.Invoke(this, entity.WeatherForecast.Id),
+                    hasException: ex => entity._weatherForecast.RollBackLastUpdate(this.TransactionId)
+                    )
                 .ApplyTransform<WeatherForecastEntity>(() => Result<WeatherForecastEntity>.Success(entity));
 
         public static DeleteWeatherForecastAction CreateAction()

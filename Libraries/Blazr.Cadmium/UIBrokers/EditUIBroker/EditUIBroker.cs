@@ -67,25 +67,25 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
             // Set the broker state
             .ApplySideEffect(
                 test: recordId.IsDefault,
-                isTrue: id => this.State = EditState.New,
-                isFalse: id => this.State = EditState.Clean)
+                trueAction: id => this.State = EditState.New,
+                falseAction: id => this.State = EditState.Clean)
             // Check if the broker has already been loaded
             .ApplyTransform<TKey>(
                 test: _isLoaded,
                 trueTransform: id => Result<TKey>.Failure("The UIBroker has already been loaded."),
                 falseTransform: id => Result<TKey>.Create(id))
             // Get the record item.  This will return a new record if the id is default
-            .ApplyTransformAsync<TRecord>(_entityProvider.RecordRequestAsync)
+            .ApplyTransformAsync<TRecord, TKey>(_entityProvider.RecordRequestAsync)
             // Set up the EditMutator and EditContext
-            .TaskSideEffectAsync<TRecord>(
-                success: record =>
+            .ApplySideEffectAsync<TRecord>(
+                hasValue: record =>
                 {
                     this.EditMutator = new();
                     this.EditMutator.Load(record!);
                     this.EditContext = new EditContext(EditMutator);
                     _isLoaded = true;
                 })
-            .MapTaskToResultAsync();
+            .AsRecordAsync();
 
     private async Task<Result> UpdateRecordAsync()
         => await UpdateRecordAsync(refreshOnNew: true);
@@ -99,11 +99,11 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
              // Set the broker state to dirty
              .ApplySideEffect(hasValue: (value) => this.State = this.State.AsDirty)
              // Save the record item to the datastore
-             .ApplyTransformAsync<TKey>((record) => _entityProvider.RecordCommandAsync(StateRecord<TRecord>.Create(record, this.State)))
+             .ApplyTransformAsync<TKey, TRecord>((record) => _entityProvider.RecordCommandAsync(StateRecord<TRecord>.Create(record, this.State)))
              // Set the broker state to not loaded
-             .TaskSideEffectAsync(test: refreshOnNew, isTrue: (id) => _isLoaded = false)
+             .ApplySideEffectAsync(test: refreshOnNew, trueAction: (id) => _isLoaded = false)
              // Refresh the record if refreshOnNew is set
-             .MapTaskToResultAsync(test: refreshOnNew, isTrue: LoadRecordAsync);
+             .ApplyTransformAsync(test: refreshOnNew, trueTransform: LoadRecordAsync);
 
     private Result ResetItem()
         => Result.Success()

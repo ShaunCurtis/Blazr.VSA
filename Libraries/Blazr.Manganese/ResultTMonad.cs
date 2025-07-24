@@ -7,23 +7,23 @@ namespace Blazr.Manganese;
 
 public partial record Result<T>
 {
-    internal readonly Exception? _exception;
-    internal readonly T? _value;
+    public readonly Exception? Exception;
+    public readonly T? Value;
  
     private ResultException _defaultException => new ResultException("An error occurred. No specific exception provided.");
     
-    public bool HasException => _exception is not null;
+    public bool HasException => Exception is not null;
 
-    public bool HasValue => _exception is null;
+    public bool HasValue => Exception is null;
 
     private Result(T? value)
-        => _value = value;
+        => Value = value;
 
     private Result(Exception? exception)
-        => _exception = exception ?? _defaultException;
+        => Exception = exception ?? _defaultException;
 
     private Result()
-        => _exception = _defaultException;
+        => Exception = _defaultException;
 
     public static Result<T> Create(T? value) =>
         value is null
@@ -36,18 +36,18 @@ public partial record Result<T>
 
     public static Result<T> Failure(string message) => new(new ResultException(message));
 
-    public Result AsResult => this._exception is null
+    public Result ToResult => this.Exception is null
             ? Result.Success()
-            : Result.Failure(_exception);
+            : Result.Failure(Exception);
 
     public Result Output(Action<T>? hasValue = null, Action<Exception>? hasException = null)
     {
         if (HasValue)
-            hasValue?.Invoke(_value!);
+            hasValue?.Invoke(Value!);
         else
-            hasException?.Invoke(_exception!);
+            hasException?.Invoke(Exception!);
 
-        return this.AsResult;
+        return this.ToResult;
     }
 
     public ValueTask<Result<T>> CompletedValueTask

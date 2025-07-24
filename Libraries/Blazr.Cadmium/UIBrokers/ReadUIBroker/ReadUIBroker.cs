@@ -50,7 +50,7 @@ public partial class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>,
             .ApplySideEffect((recordId) => _key = recordId)
             .ApplyTransformAsync(_entityProvider.RecordRequestAsync)
             .ApplySideEffectAsync(hasValue: (record) => this.Item = record)
-            .MapTaskToResultAsync();
+            .ToResultAsync();
 
     private async void OnRecordChanged(object? obj)
     {

@@ -15,22 +15,22 @@ public class DemoTests
         string? value = "Hello Result";
  
         Result<string>.Create(value)
-            .OutputResult(
-                success: (v) => Console.WriteLine($"Success: {v}"),
-                failure: (ex) => Console.WriteLine($"Failure: {ex.Message}")
+            .Output(
+                hasValue: (v) => Console.WriteLine($"Success: {v}"),
+                hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
             );
 
         Result<string>.Create(value)
-            .OutputResult(
-                failure: (ex) => Console.WriteLine($"Failure: {ex.Message}")
+            .Output(
+                hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
             );
 
         value = null;
 
         Result<string>.Create(value)
-            .OutputResult(
-                success: (v) => Console.WriteLine($"Success: {v}"),
-                failure: (ex) => Console.WriteLine($"Failure: {ex.Message}")
+            .Output(
+                hasValue: (v) => Console.WriteLine($"Success: {v}"),
+                hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
             );
     }
 
@@ -69,7 +69,7 @@ public class DemoTests
     private void DisplayResult(Result result)
     {
         result.Output(
-            failure: (ex) => Console.WriteLine($"Failure: {ex.Message}")
+            hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
         );
     }
 }

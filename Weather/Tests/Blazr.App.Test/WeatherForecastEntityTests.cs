@@ -55,8 +55,8 @@ public partial class WeatherForecastEntityTests
 
         // Output the result of the save
         uiBroker.LastResult.ApplySideEffect(
-            success: () => result = true,
-            failure: (ex) => result = false);
+            hasNoException: () => result = true,
+            hasException: (ex) => result = false);
 
         // And check the update was successful
         Assert.True(result);
@@ -67,13 +67,13 @@ public partial class WeatherForecastEntityTests
 
         // Get the record we just updated
         await entityProvider.RecordRequestAsync(testId)
-            .OutputTaskAsync(
-            success: (record) =>
+            .OutputAsync(
+            hasValue: (record) =>
             {
                 dbRecord = record;
                 result = true;
             },
-            failure: (ex) => result = false);
+            hasException: (ex) => result = false);
 
         // check the query was successful
         Assert.True(result);
@@ -114,7 +114,7 @@ public partial class WeatherForecastEntityTests
 
         result = false;
         uiBroker.LastResult.ApplySideEffect(
-            success: () => result = true);
+            hasNoException: () => result = true);
 
         // check the update was successful
         Assert.True(result);
@@ -122,11 +122,8 @@ public partial class WeatherForecastEntityTests
         result = false;
 
         await entityProvider.RecordRequestAsync(testId)
-            .OutputTaskAsync(
-            failure: (ex) =>
-            {
-                result = true;
-            });
+            .OutputAsync( 
+                hasException: (ex) => result = true);
 
         // check the query was successful
         Assert.True(result);
@@ -140,8 +137,8 @@ public partial class WeatherForecastEntityTests
                 PageSize = 1,
                 StartIndex = 0,
             })
-            .ApplyTransformOnException<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-            .OutputTaskAsync(success: (provider) =>
+            .ApplyTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .OutputAsync(hasValue: (provider) =>
             {
                 listItemsProvider = provider;
                 result = true;
@@ -181,7 +178,7 @@ public partial class WeatherForecastEntityTests
         await uiBroker.SaveItemAsync();
 
         uiBroker.LastResult.ApplySideEffect(
-            success: () => result = true);
+            hasNoException: () => result = true);
 
         WeatherForecastId newId = uiBroker.Id;
 
@@ -201,8 +198,8 @@ public partial class WeatherForecastEntityTests
 
         // Now we try to get the record we just added
         await entityProvider.RecordRequestAsync(newId)
-            .OutputTaskAsync(
-            success: (record) =>
+            .OutputAsync(
+            hasValue: (record) =>
             {
                 dbRecord = record;
                 result = true;
@@ -227,8 +224,8 @@ public partial class WeatherForecastEntityTests
                 PageSize = 1,
                 StartIndex = 0,
             })
-            .ApplyTransformOnException<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-            .OutputTaskAsync(success: (provider) =>
+            .ApplyTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .OutputAsync(hasValue: (provider) =>
             {
                 listItemsProvider = provider;
                 result = true;
