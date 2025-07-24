@@ -38,16 +38,18 @@ public partial record Result
 
     public Result ApplySideEffect(Action? hasNoException = null, Action<Exception>? hasException = null)
     {
-        OutputResult(hasNoException, hasException);
+        Output(hasNoException, hasException);
         return this;
     }
 
-    public void OutputResult(Action? hasNoException = null, Action<Exception>? hasException = null)
+    public Result Output(Action? hasNoException = null, Action<Exception>? hasException = null)
     {
         if (HasException)
             hasException?.Invoke(_exception!);
         else
             hasNoException?.Invoke();
+
+        return this;
     }
     public ValueTask<Result> CompletedValueTask
         => ValueTask.FromResult(this);
@@ -75,7 +77,7 @@ public static class ResultExtensions
 
     public static Result ApplySideEffect(this Result result, Action hasNoException)
     {
-        result.OutputResult(hasNoException, null);
+        result.Output(hasNoException, null);
         return result;
     }
 
@@ -90,7 +92,6 @@ public static class ResultExtensions
 
         return result;
     }
-
 }
 
 public static class ResultTaskExtensions

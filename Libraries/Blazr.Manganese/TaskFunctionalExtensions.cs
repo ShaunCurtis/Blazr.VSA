@@ -3,81 +3,82 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Blazr.Manganese.FunctionalExtensions;
 namespace Blazr.Manganese;
 
 public static class TaskFunctionalExtensions
 {
-    public static async Task<Result<TOut>> MapTaskAsync<T, TOut>(this Task<Result<T>> task, Func<T, Task<Result<TOut>>> mapping)
+    public static async Task<Result<TOut>> TransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Task<Result<TOut>>> transform)
     {
         var result = await task.HandleTaskCompletionAsync();
 
-        return await result.ApplyTransform<TOut>(mapping);
+        return await result.ApplyTransformAsync<TOut, T>(transform);
     }
 
-    public static async Task<Result> MapTaskAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> mapping)
+    public static async Task<Result> TransformAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> transform)
     {
         var result = await task.HandleTaskCompletionAsync();
 
-        return await result.ApplyTransform(mapping);
+        return await result.ApplyTransformAsync(transform);
     }
 
-    public static async Task OutputTaskAsync<T>(this Task<Result<T>> task, Action<T>? success = null, Action<Exception>? failure = null)
+    public static async Task OutputAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
         => await task.HandleTaskCompletionAsync()
-            .ContinueWith((t) => t.Result.OutputResult(success: success, failure: failure));
+            .ContinueWith((t) => t.Result.Output(hasValue: hasValue, hasException: hasException));
 
-    public static async Task OutputTaskAsync<T>(this Task<Result<T>> task, Action<T> success)
+    public static async Task OutputAsync<T>(this Task<Result<T>> task, Action<T> hasValue)
         => await task.HandleTaskCompletionAsync()
-            .ContinueWith((t) => t.Result.OutputResult(success: success));
+            .ContinueWith((t) => t.Result.Output(hasValue: hasValue));
 
-    public static async Task<Result<TOut>> MapTaskToResultAsync<T, TOut>(this Task<Result<T>> task, Func<T, Result<TOut>> mapping)
+    public static async Task<Result<TOut>> ApplyTransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Result<TOut>> transform)
     {
         var result = await task.HandleTaskCompletionAsync();
-        return result.ApplyTransform<TOut>(mapping);
+        return result.ApplyTransform<TOut, T>(transform);
     }
 
-    public static async Task<Result<T>> MapTaskToResultAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> isTrue, Func<T, Task<Result<T>>> isFalse)
+    public static async Task<Result<T>> ApplyTransformAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> trueTransform, Func<T, Task<Result<T>>> falseTransform)
     {
         var result = await task.HandleTaskCompletionAsync();
-        return await result.ApplyTransform<T>(test, isTrue, isFalse);
+        return await result.ApplyTransformAsync<T, T>(test, trueTransform, falseTransform);
     }
 
-    public static async Task<Result<T>> MapTaskToResultAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> isTrue)
+    public static async Task<Result<T>> ApplyTransformAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> trueTransform)
     {
         var result = await task.HandleTaskCompletionAsync();
-        return await result.ApplyTransform(test, isTrue);
+        return await result.ApplyTransformAsync(test, trueTransform);
     }
 
-    public static async Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result>> isTrue)
+    public static async Task<Result> ApplyTransformAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result>> trueTransform)
     {
         var result = await task.HandleTaskCompletionAsync();
-        return await result.ApplyTransform(test, isTrue);
+        return await result.ApplyTransformAsync(test, trueTransform);
     }
 
-    public async static Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> mapping)
+    public async static Task<Result> ApplyTransformAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> transform)
     {
         var result = await task.HandleTaskCompletionAsync();
-        return await result.ApplyTransform(mapping);
+        return await result.ApplyTransformAsync(transform);
     }
 
-    public static Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task, Func<T, Result> mapping)
+    public static Task<Result> ApplyTransformAsync<T>(this Task<Result<T>> task, Func<T, Result> transform)
         => task.HandleTaskCompletionAsync()
-            .ContinueWith((t) => t.Result.ApplyTransform(mapping));
+            .ContinueWith((t) => t.Result.ApplyTransform(transform));
 
     public static Task<Result> MapTaskToResultAsync<T>(this Task<Result<T>> task)
         => task.HandleTaskCompletionAsync()
-            .ContinueWith((t) => t.Result.ApplyTransform());
+            .ContinueWith((t) => t.Result.AsResult);
 
-    public static Task<Result<T>> TaskSideEffectAsync<T>(this Task<Result<T>> task, Action<T>? success = null, Action<Exception>? failure = null)
+    public static Task<Result<T>> ApplySideEffectAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
         => task.HandleTaskCompletionAsync()
-            .ContinueWith((t) => t.Result.ApplySideEffect(success, failure));
+            .ContinueWith((t) => t.Result.ApplySideEffect(hasValue, hasException));
 
-    public static Task<Result<T>> TaskSideEffectAsync<T>(this Task<Result<T>> task, bool test, Action<T> isTrue)
+    public static Task<Result<T>> ApplySideEffectAsync<T>(this Task<Result<T>> task, bool test, Action<T> trueAction)
         => task.HandleTaskCompletionAsync()
-            .ContinueWith((t) => t.Result.ApplySideEffect(test, isTrue));
+            .ContinueWith((t) => t.Result.ApplySideEffect(test, trueAction));
 
-    public static Task<Result> TaskSideEffectAsync(this Task<Result> task, Action? success = null, Action<Exception>? failure = null)
+    public static Task<Result> ApplySideEffectAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
         => task.HandleTaskCompletionAsync()
-            .ContinueWith((t) => t.Result.ApplySideEffect(success, failure));
+            .ContinueWith((t) => t.Result.ApplySideEffect(hasValue, hasException));
 
     private static Task<Result<T>> HandleTaskCompletionAsync<T>(this Task<Result<T>> task)
     {

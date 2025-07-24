@@ -1,4 +1,5 @@
 ﻿using Blazr.Manganese;
+using Blazr.Manganese.FunctionalExtensions;
 
 string? value = "Hello Result";
 
@@ -38,8 +39,8 @@ string? value = "Hello Result";
 value = null;
 
 var result = Result<string>.Create(value)
-  .ApplyTransform(ToUpper)
-  .ApplyTransform();
+  .ApplyTransform<string>(ToUpper)
+  .AsResult;
 
 DisplayError(result);
 
@@ -52,8 +53,8 @@ Result<string> ToUpper(string value)
 
 void DisplayError(Result result)
 {
-    result.Output(
-        failure: (ex) => Console.WriteLine($"Failure: {ex.Message}")
+    result.OutputResult(
+        hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 }
 
