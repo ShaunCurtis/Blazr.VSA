@@ -1,12 +1,8 @@
 # Monads
 
-Monads are a rich topic for articles.  The internet is awash with articles attempting to enlighten readers about Monads.
+Monads are a rich topic for conversation: the Internet is awash with Monad articles.  This is another: but I'll show you what one is, by build one.
 
-This is another: but instead of trying to explain what one is, we'll build one.
-
-As C# OOP programmers we have less than satisfactory solutions for some thorny coding challenges.  We're stuck in the OOP paradigm.
-
-Functional programming [**FP**] has better answers for many of these challenges.
+As C# OOP programmers we have less than satisfactory solutions for some thorny coding challenges.  We're stuck in the OOP paradigm. Functional programming [**FP**] has better answers for many of these challenges.
 
 Consider this ugly, horrible piece of platform code:
 
@@ -14,9 +10,9 @@ Consider this ugly, horrible piece of platform code:
 public static bool TryParse(string? s, IFormatProvider? provider, out int result);
 ```
 
-It spouts results at both ends!
+Is spouting results at both ends good practice?  Not in my book.
 
-And a classicaly coded console app using it:
+Here's a classically coded console app using it:
 
 ```csharp
 var input = Console.ReadLine();
@@ -33,7 +29,7 @@ if (isInt)
 //... later
 if (isInt)
 {
-    Console.WriteLine($"Parsed successfully: The transformed value of {value} is: {result}");
+    Console.WriteLine($"Parsed successfully: The transformed value is: {result}");
 }
 else
 {
@@ -41,20 +37,22 @@ else
 }
 ```
 
-A functionally programmed version would look something likr this:
+And the FP version we'll develop:
 
 ```csharp
-var input = Console.ReadLine();
-
-input
-    .Bind(int.Parse)
-    .Bind(value => Math.Sqrt(value))
-    .Bind(value => Math.Round(value, 2))
-    .Match(
-        success: value => Console.WriteLine($"Parsed successfully: The transform result of {input} is: {value}"),
-        failure: ex => Console.WriteLine($"Failed to parse input: {ex.Message}"
-    )); 
+Console
+    .ReadLine()
+    .ParseForInt()
+    .ApplyTransform((value) => Math.Sqrt(value))
+    .ApplyTransform((value) => Math.Round(value, 2))
+    .Output(
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failed to parse input: {ex.Message}")
+    );
 ```
+
+> Note: To enter null in the console use `<Ctl>z <Enter>`.
+
 
 ## The Result Monad
 
@@ -70,13 +68,13 @@ A `Result<T>` has two possible states:
 - **HasValue**: The operation completed successfully and produced a Value.
 - **HasException**: The operation failed, and the result contains an exception. 
 
-First, we define a generic container for normal types.  In **FP** almost everything is immutable, so it's a `record`.
+A Monad is a generic container.  In **FP** almost everything is immutable, so it's declared as  a `record`.
 
 ```csharp
 public record Result<T> { }
 ```
 
-And a `Value` of `T` and an `Exception`.  I've made them public so `Result<T>` can be used within the `OOP` paradigm.
+`Value` of `T` and an `Exception` are properties: public so `Result<T>` can be used within the `OOP` paradigm.
 
 ```csharp
 public record Result<T>
@@ -86,14 +84,14 @@ public record Result<T>
 }
 ```
 
-And two state properties:
+State exposed as readonly properties:
 
 ```csharp
 public bool HasException => Exception is not null;
 public bool HasValue => Exception is null;
 ```
 
-There are three private constructors.  We only want to allow object creation through static constructors.
+Three private constructors so we restrict object creation to static constructors.
 
 ```csharp
 private Result(T? value)
@@ -107,9 +105,7 @@ private Result()
  }
 ```
 
-
-
-## Creating/Initialising `Result<T>`
+## Creating/Initialising a `Result<T>`
 
 The basic pattern is:
 
@@ -117,9 +113,7 @@ The basic pattern is:
 T > Monad<T>
 ```
 
-#### Basic Constructors
-
-There are three basic static constructors:
+Basic static constructors:
 
 ```csharp
 public static Result<T> Success(T value) => new(value);
@@ -127,9 +121,7 @@ public static Result<T> Failure(Exception exception) => new(exception);
 public static Result<T> Failure(string message) => new(new ResultException(message));
 ```
 
-#### Logical Constructors
-
-And one logical constructor to handle nulls:
+A logical constructor to handle nulls:
 
 ```csharp
 public static Result<T> Create(T? value) =>
@@ -138,44 +130,109 @@ public static Result<T> Create(T? value) =>
         : new(value);
 ```
 
-##### Monadic Functions
-
-We can output a `Result<T>` directly from a method vsuch as this:
+We can now re-write our console app:
 
 ```csharp
-Result<int> ParseForInt(string? value)
-    => int.TryParse(value, out int result)
-        ? Result<int>.Create(result)
-        : Result<int>.Failure(new FormatException("Input is not a valid integer."));
+using Blazr.Manganese;
+
+var input = Console.ReadLine();
+
+Result<int> parseResult;
+
+if (int.TryParse(input, out int value))
+{
+    parseResult = Result<int>.Create(value);
+}
+else
+{
+    parseResult = Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
+}
+
+if (parseResult.HasValue)
+{
+    double transformedValue = Math.Sqrt(parseResult.Value);
+    transformedValue = Math.Round(transformedValue, 2);
+    Console.WriteLine($"Parsed successfully: The transformed value is: {transformedValue}");
+}
+else
+{
+    Console.WriteLine(parseResult.Exception!.Message);
+}
 ```
 
-We can then define as:
+We can refactor obtaining `parseResult` using existing functional behaviour built into C#:
+
+```csharp
+var parseResult = int.TryParse(input, out int value)
+    ? Result<int>.Create(value)
+    : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
+```
+
+And abstract it into a function.
+
+```csharp
+Result<int> ParseForInt(string? input) => int.TryParse(input, out int value)
+    ? Result<int>.Create(value)
+    : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
+```
+
+We can then refactor:
 
 ```csharp
 var input = Console.ReadLine();
-var result = Result<string>.Create(input);
+var parseResult = ParseForInt(input);
+//....
 ```
-or:
+
+Finally we can abstract out to a string extension method:
 
 ```csharp
-var input = Console.ReadLine();
-var result = ParseForInt(input);
+public static class stringExtensions
+{
+    public static Result<int> ParseForInt(this string? input) =>
+        int.TryParse(input, out int value)
+        ? Result<int>.Create(value)
+        : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
+}
 ```
+
+And refactor:
+
+```csharp
+var parseResult = Console
+    .ReadLine()
+    .ParseForInt();
+//....
+```
+
+We now have *fluent* style operations for getting the `int` from the console input with `null` handling.
 
 ## Working with `Result<T>`
 
 Our console app now looks like this:
 
 ```csharp
-var input = Console.ReadLine();
- result = ParseForInt(input);
+var parseResult = Console
+    .ReadLine()
+    .ParseForInt();
+
+if (parseResult.HasValue)
+{
+    double transformedValue = Math.Sqrt(parseResult.Value);
+    transformedValue = Math.Round(transformedValue, 2);
+    Console.WriteLine($"Parsed successfully: The transformed value is: {transformedValue}");
+}
+else
+{
+    Console.WriteLine(parseResult.Exception!.Message);
+}
 ```
 
-How do we output this to the console?
+How do we refactor the conditional statement into *fluent* operations.
 
 ### Outputting a Result
 
-A standard implementation looks like this:
+We can abstract the console write into a generic `Output` operation on `Result<T>` like this:
 
 ```csharp
 public void Output(Action<T>? hasValue = null, Action<Exception>? hasException = null)
@@ -187,61 +244,70 @@ public void Output(Action<T>? hasValue = null, Action<Exception>? hasException =
 }
 ```
 
-We can use this to output to the console:
+And then use it like this:
 
 ```csharp
-var input = Console.ReadLine();
-
-ParseForInt(value)
-    // Output the result
+var parseResult = Console
+    .ReadLine()
+    .ParseForInt()
+    //  Handle the transforms
     .Output(
-        hasValue: (value) => Console.WriteLine($"Success: {value}"),
-        hasException: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failed to parse input: {ex.Message}")
     );
 ```
 
-Note the lack of repetative null checking and the chaining of operations.
-
-Try entering `<Ctl>z` in the console application: a null.  It's handled gracefully.
-
-## Mapping
+## Applying Transforms
 
 This is where the real power comes in:
+
 1. Chaining operations. 
 2. Handling nulls and exceptions in the chain using *Railway Orientated Programming*.
 
-The basic pattern for a map is:
+The basic `Transform` pattern is:
 
 ```csharp
-    public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> mapping)
-    {
-        if (_exception is null)
-            return mapping(_value!);
-
-        return Result<TOut>.Failure(_exception!);
-    }
+public  Result<TOut> ApplyTransform<TOut>( Func<T, Result<TOut>> transform)
+    => this.HasValue
+        ? transform(this.Value!)
+        : Result<TOut>.Failure(this.Exception!);
 ```
 
-A deceptively simple piece of very powerful code.
+A deceptively simple piece of very powerful code.  It executes the provided `tranform` only if it has Valid `Value`.  Otherwise it create a new `Result<Tout>`  and passes on the exception.  
 
-Lets look at it in operation.  We've provided `ApplyTransform` with a lambda expression to calculate the square root of the input.
+Used in the console app:
 
 ```csharp
-var input = Console.ReadLine();
-
-ParseForInt(value)
-    // Applying a Mapping function
-    .ApplyTransform((v) => Result<double>.Create(Math.Sqrt(v)))
-    // Output the result
-    .OutputResult(
-        success: (value) => Console.WriteLine($"Success: {value}"),
-        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+var parseResult = Console
+    .ReadLine()
+    .ParseForInt()
+    .ApplyTransform((value) => Math.Sqrt(value))
+    //  Handle the transforms
+    .Output(
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failed to parse input: {ex.Message}")
     );
 ```
 
-Run the application entering numbers, letters and null `<CTL>z`.  The program works gracefully.  If the result of `ParseForInt` is in failure state, `ApplyTransform` creates a new `Result<double>` in failure state with the input result's exception.  The `mapping` function is not executed.
+ In this case, `ApplyTransform` is provided with a lambda expression to calculate the square root of the input.  The compiler interprets `TOut`. 
 
-If the lambda expression is used a lot, it can be defined seperately:
+The now complete refactored version of the console app:
+
+```csharp
+Console
+    .ReadLine()
+    .ParseForInt()
+    .ApplyTransform((value) => Math.Sqrt(value))
+    .ApplyTransform((value) => Math.Round(value, 2))
+    //  Handle the transforms
+    .Output(
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failed to parse input: {ex.Message}")
+    );
+```
+
+
+If the same lambda expressions are used a lot, cache them like this:
 
 ```csharp
 Result<double> SquareRoot(int value)
@@ -251,7 +317,7 @@ Result<double> SquareRoot(int value)
 
 public static class Utilities
 {
-    public static Func<int, Result<double>> ToSquareRoot => (value)
+    public static Func<int, Result<double>> GetSquareRoot => (value)
         => Result<double>.Create(Math.Sqrt(value));
 }
 ```
@@ -259,40 +325,35 @@ public static class Utilities
 And then:
 
 ```csharp
-var input = Console.ReadLine();
-
-ParseForInt(value)
-    // Applying a Mapping function
-    .ApplyTransform(SquareRoot)
-    // Output the result
-    .OutputResult(
-        success: (value) => Console.WriteLine($"Success: {value}"),
-        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
-    );
+.ApplyTransform(SquareRoot)
+.ApplyTransform(Utilities.GetSquareRoot)
 ```
 
-## So What Have We Learnt
+## So What Have We Learnt from this Exercise
 
-Hopefully, you've realised that *Monads* are just wrappers/containers: nothing mythical.  They can be applied to any type.  They add functional coding patterns to the wrapped type.  They let you code in a different way.  They provide high level coding functionality. 
+*Monads* are wrappers/containers: just an implementation of the **Decorator Pattern** with some specific *functional* methods.  They provide high level coding functionality, abstracting underlying standard C# coded functionality. 
 
 ### Functions
 
-Functions are methods that take an input, apply one or more transforms, and produce an output.
-Functions are the building blocks of FP.  `Map`, `Bind` and more complex functional patterns pass around functions as arguments.
+In FP you will hear the phrase "Functions are first class citizens" a lot.  C# has delegates and `Func` and `Action` implementations.  In OOP you will rarely see them used.
 
-You will often hear the phrase "Functions are first class citizens".  In OOP you rarely pass methods as arguments into other methods.  In FP you do it all the time
+In FP, *Functions* are methods that take an input, apply one or more transforms to that input, and produce an output.  *Functions* are the building blocks of FP.
 
-In functional programming you apply functions to data.  In OOP programming you pass data into methods and objects.
+In functional programming you apply functions to data and produce a result.  In OOP you pass data into methods to mutate the state of objects.
 
 ### Railway Orientated Programming
 
-Whether you realised it or not, FP patterns such as `Bind` and `Map` in `Result<T>` implement *Railway Orientated Programming*.  If the input `Result<T>` is in failure state, they take the exception and pass it on in the output `Result<TOut>`.  Once you've jumped onto the failure track you stay there.  Execution is safe because success code never gets executed once you're on the failure track.
+Whether you realised it or not, FP patterns implement *Railway Orientated Programming*.  If the input `Result<T>` is in *Exception* state, any transform short-circuits, passing the exception to the output `Result<TOut>`: the transform function is not executed.  Once on the *Exception* track, you stay there..
 
 ### High Level Features
 
-There are many high level features built into C#: `Task` and `IEnumerable` are good examples.  The low level code C# code is very different from the code we type.  `Linq` is a library that adds a lot of Monadic functionality to `IEnumerable`.
+There are many high level features built into C#: `Task` and `IEnumerable` are good examples.  The low level code C# code is very different from the code we type.  `Linq` is a library that adds Monadic functionality to `IEnumerable`.
 
-`Result<T>` is no different.  It's high level code, *syntactic sugar*, that abstracts higher level functionality into lower boilerplate code.
+`Result<T>` is no different.  It's high level code, *syntactic sugar*, that abstracts higher level functionality into lower level boilerplate code.
+
+### Bind, Map, Match
+
+I've deliberately not used the standard FP terms for operations: I've used names that I believe are more descriptive.  I think sticking to the classic terms is counter-productive:  Map, Bind, Match and many other have different means in OOP C#.
 
 ## Appendix
 

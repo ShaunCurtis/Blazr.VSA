@@ -79,7 +79,7 @@ public static class TaskFunctionalExtensions
         => task.HandleTaskCompletionAsync()
             .ContinueWith((t) => t.Result.ApplySideEffect(hasValue, hasException));
 
-    public static Task<Result> AsRecordAsync<T>(this Task<Result<T>> task)
+    public static Task<Result> AsResultAsync<T>(this Task<Result<T>> task)
         => task.HandleTaskCompletionAsync()
             .ContinueWith((t) => t.Result.ToResult);
 
