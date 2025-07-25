@@ -1,12 +1,14 @@
 # Monads
 
-The internet is awash with articles trying to explain Monads.  This is yet another: I hope I succeed where the rest fail.
+Monads are a rich topic for articles.  The internet is awash with articles attempting to enlighten readers about Monads.
 
-As a C# OOP programmer there are less than satisfactory solutions you have been conditioned to accept as it - the best solution for a thorny issue.  You've stuck in the OOP paradigm.
+This is another: but instead of trying to explain what one is, we'll build one.
 
-Functional programming [**FP** from now on] gets you out of it.  But you do need to open your mind.  It's a different way of thinking. It has solutions for those thorny issues.  It's not all paradise:  there are thornu issues in FP languages that OOP solve.
+As C# OOP programmers we have less than satisfactory solutions for some thorny coding challenges.  We're stuck in the OOP paradigm.
 
-Consider this ugly, horrible code [yes it's platform .Net code]:
+Functional programming [**FP**] has better answers for many of these challenges.
+
+Consider this ugly, horrible piece of platform code:
 
 ```csharp
 public static bool TryParse(string? s, IFormatProvider? provider, out int result);
@@ -14,7 +16,7 @@ public static bool TryParse(string? s, IFormatProvider? provider, out int result
 
 It spouts results at both ends!
 
-Here's a classicaly coded console app using it:
+And a classicaly coded console app using it:
 
 ```csharp
 var input = Console.ReadLine();
@@ -39,7 +41,7 @@ else
 }
 ```
 
-And a functionally programmed version.
+A functionally programmed version would look something likr this:
 
 ```csharp
 var input = Console.ReadLine();
@@ -51,28 +53,30 @@ input
     .Match(
         success: value => Console.WriteLine($"Parsed successfully: The transform result of {input} is: {value}"),
         failure: ex => Console.WriteLine($"Failed to parse input: {ex.Message}"
-    ));
+    )); 
 ```
 
 ## The Result Monad
 
-So what are Monads.  
+The `Result<T>` Monad will address two problems:
 
-> Monads elevate basic types and apply functional patterns to them.
-
-Let's create the `Result<T>` Monad.  It addresses two problems:
-
-1. Handling nullable method returns
-2. Surfacing exceptions from the infrastructure and domain layers into the presentation layer.
+1. Handle nullable method returns.
+2. Surface exceptions from the infrastructure and domain layers into the presentation layer.
    
 It works well in the data pipeline context. 
 
-A result has two possible states:
+A `Result<T>` has two possible states:
 
 - **HasValue**: The operation completed successfully and produced a Value.
 - **HasException**: The operation failed, and the result contains an exception. 
 
-Defined as either a Value of `T` or an `Exception`:
+First, we define a generic container for normal types.  In **FP** almost everything is immutable, so it's a `record`.
+
+```csharp
+public record Result<T> { }
+```
+
+And a `Value` of `T` and an `Exception`.  I've made them public so `Result<T>` can be used within the `OOP` paradigm.
 
 ```csharp
 public record Result<T>
@@ -82,7 +86,14 @@ public record Result<T>
 }
 ```
 
-There are three private constructors: private to only allow object creation through static constructors.
+And two state properties:
+
+```csharp
+public bool HasException => Exception is not null;
+public bool HasValue => Exception is null;
+```
+
+There are three private constructors.  We only want to allow object creation through static constructors.
 
 ```csharp
 private Result(T? value)
@@ -96,12 +107,6 @@ private Result()
  }
 ```
 
-And two state properties:
-
-```csharp
-public bool HasException => Exception is not null;
-public bool HasValue => Exception is null;
-```
 
 
 ## Creating/Initialising `Result<T>`
