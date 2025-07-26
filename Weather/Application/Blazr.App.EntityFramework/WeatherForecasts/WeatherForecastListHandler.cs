@@ -17,9 +17,8 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
         _factory = factory;
     }
 
-    public async Task<Result<ListItemsProvider<DmoWeatherForecast>>> HandleAsync(WeatherForecastListRequest request, CancellationToken cancellationToken)
-    {
-        var result = await _factory
+    public Task<Result<ListItemsProvider<DmoWeatherForecast>>> HandleAsync(WeatherForecastListRequest request, CancellationToken cancellationToken)
+        => _factory
             .CreateDbContext()
             .GetItemsAsync<DvoWeatherForecast>(
                 new ListQueryRequest<DvoWeatherForecast>()
@@ -31,16 +30,13 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
                     FilterExpression = this.GetFilter(request),
                     Cancellation = cancellationToken
                 }
+            )
+            .ApplyTransformAsync((provider) =>
+                Result<ListItemsProvider<DmoWeatherForecast>>
+                    .Create(new ListItemsProvider<DmoWeatherForecast>(
+                        Items: provider.Items.Select(item => WeatherForecastMap.Map(item)),
+                        TotalCount: provider.TotalCount))
             );
-
-        return result.ApplyTransform<ListItemsProvider<DmoWeatherForecast>>(  
-            transform: items =>
-            {
-                var mappedItems = items.Items.Select(item => WeatherForecastMap.Map(item));
-                return Result<ListItemsProvider<DmoWeatherForecast>>.Create(new ListItemsProvider<DmoWeatherForecast>(mappedItems, items.TotalCount));
-            }
-        );
-    }
 
     private Expression<Func<DvoWeatherForecast, object>> GetSorter(string? field)
         => field switch

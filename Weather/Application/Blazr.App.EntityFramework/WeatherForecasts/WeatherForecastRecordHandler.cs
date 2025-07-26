@@ -17,11 +17,9 @@ public sealed class WeatherForecastRecordHandler : IRequestHandler<WeatherForeca
         _factory = dbContextFactory;
     }
 
-    public async Task<Result<DmoWeatherForecast>> HandleAsync(WeatherForecastRecordRequest request, CancellationToken cancellationToken)
-    {
-        var asyncResult = await _factory.CreateDbContext()
-            .GetRecordAsync<DvoWeatherForecast>(new RecordQueryRequest<DvoWeatherForecast>(item => item.WeatherForecastID == request.Id.Value));
+    public Task<Result<DmoWeatherForecast>> HandleAsync(WeatherForecastRecordRequest request, CancellationToken cancellationToken)
+        => _factory.CreateDbContext()
+                .GetRecordAsync<DvoWeatherForecast>(new RecordQueryRequest<DvoWeatherForecast>(item => item.WeatherForecastID == request.Id.Value))
+                .ApplyTransformAsync(WeatherForecastMap.Map);
 
-        return asyncResult.ApplyTransform<DmoWeatherForecast>(WeatherForecastMap.Map);
-    }
 }
