@@ -1,5 +1,6 @@
 # Functional Programming in C#
 
+This article provides an insight into my personal implementation of Functional Programming [FP from now on] in C# and the DotNet Framework, and my personal journey to Monad enlightenment.  
 As programmers brought up on a OOP diet, Functional Programming [FP from now] is a foreign land.  This article presents my personal implementation of FP in C# and the DotNet Framework, and my journey to understanding Monads.  
 
 It's hard to remember that first point where you saw a chink of light in the otherwise unintelligible articles about Nomands, but this description sticks in my mind, and it sums up what my implmentation is base on.
@@ -14,7 +15,30 @@ Read any literature on FP and the term *Elevated World* soon crops up.
 
 Sounds daunting, but *Elevation* is the process of taking a normal type and elevating it to an elevated type.  My *Elevated World* is `Result<T>` and `Result`.
 
-The simplest way to elevate a type to `Result<T>` is to use one of the static construstors.  In a simple console app you could do this:
+The simplest way to elevate a type is to use one of the static construstors.  In a simple console app you could do this:
+
+        var result = Math.Sqrt(value);
+        result = Math.Round(result, 2);
+        Console.WriteLine($"Parsed successfully: The transformed value of {value} is: {result}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An exception occurred: {ex.Message}");
+    }
+}
+else
+{
+    Console.WriteLine("Input cannot be null or empty.");
+}
+```
+ 
+## The Elevated World
+
+Read any literature on FP and the *Elevated World* soon appears.
+
+It sounds complicated, but *Elevation* is simply the process of adding a wrapper around a normal type - taking a normal type and elevating it to an elevated type.  My *Elevated World* is `Result<T>` and `Result`.
+
+You can elevate simply by using one of the static constructors.  In a simple console app:
 
 ```csharp
 var input = Console.ReadLine();
@@ -31,7 +55,7 @@ else
 }
 ```
 
-Modern C# provides a short form of `if` we can use, so the verbose conditional statement cn become :
+*Old school* C#.  The conditional statements are pretty verbose. Modern C# has a terser short form of `if`:
 
 ```csharp
 var input = Console.ReadLine();
@@ -41,16 +65,18 @@ Result<string> result = input is not null
     : Result<string>.Failure(new ResultException("Input was null."));
 ```
 
-This short form of `if` is a good example of FP style syntax in C#.
+The imperative statement based style has changed to an expression based style.  The short form is an example of where FP styled syntax has crept into C#.
 
-Better, but we can use the `Create` static constructor to handle the null case for us.
+Note: This is just *syntactic sugar*.  The `if` statement is still there when the code is *lowered* by the compiler: we just don't need to worry about it.  The language, and our own higher level code, abstracts it.
+
+We can do better: The `Create` static constructor abstracts null handling.
 
 ```csharp
 var input = Console.ReadLine();
 var result = Result<string>.Create(input);
 ```
 
-And then extend `string`:
+One final step to make this code *fluent* is to extend `string`.
 
 ```csharp
 public static class stringExtensions
@@ -60,7 +86,7 @@ public static class stringExtensions
 }
 ```
 
-To make this code *fluent*:
+We can now write this:
 
 ```csharp
 var result = Console
@@ -68,369 +94,237 @@ var result = Console
     .ToResult();
 ```
  
-## `Result<T>` and `Result`
+## Unwapping the Elevated World
 
-Any method that returns a value:
-
-```csharp
-public int ToInt(string value) {..}
-```
-
-returns a `Result<T>`:
- 
-```csharp
-public Result<int> ToInt(string value) {..}
-```
-
-Any method that returns a `void`:
+How do we unwrap our Result<T>?  In Result<T> we have a `HasValue` and `HasException` property.  We can use these to determine if the operation was successful or not.
 
 ```csharp
-public void DoSomething(string value) {..}
-```
+var result = Console
+    .ReadLine()
+    .ToResult();
 
-returns a `Result`:
-
-```csharp
-public Result DoSomething(string value) {..}
-```
-
-A `Result<T>` has two possible states:
-
-- **HasValue**: The operation completed successfully and produced a Value.
-- **HasException**: The operation failed, and the result contains an exception. 
-
-Result is a record type: it's immutable.
-
-Internally a `Result<T>` has:
-
-```csharp
-    private readonly Exception? _exception;
-    private readonly T? _value;
-```
-
-And `Result` has: 
-
-```csharp
-    private readonly Exception? _exception;
-```
-
-If the operation is successful, `_exception` is `null` and `_value` contains the result value. If the operation fails, `_exception` contains the exception that caused the failure.
-
-## Fundimental Result Operations
-
-### Elevation
-
-Elevation is the process of elevating a normal type to an elevated type.
-
-The simplest way is to use one of the `Result<T>` static constructors.  
-
-> Note that there are no public *ctors*: you must use the static constructors.
-
-```csharp
-    public static Result<T> Success(T value) => new(value);
-    public static Result<T> Failure(Exception exception) => new(exception);
-    public static Result<T> Failure(string message) => new(new ResultException(message));
-```
-
-#### Dealing with Nullable Inputs
-
-The most common code pattern in the C# book is the null check.
-
-```csharp
-MyClass? x;
-
-if(x is null)
-    //do something;
+if (result.HasValue)
+{
+    //...
+    Console.WriteLine($"Parsed successfully: The transformed value is: {result.Value}");
+}
 else
-    // do something else;
-```
-
-The `Create` static constructor deals with the null case for you.
-
-```
-public static Result<T> Create(T? value) => 
-    value is null
-        ? new(new ResultException("T was null."))
-        : new(value);
-```
-
-#### Monadic Functions
-
-Monadic functions are delegates with the following basic pattern:
-
-```csharp
-Func<T, Result<TOut>>
-```
-
-They take a normal type in and return an elevated type.
-
-Here's a simple example:
-
-```csharp
-public Result<int> ParseForInt(string input)
 {
-    var intResult  = int.Parse(input);
-
-    return Result<int>(intResult);
+    Console.WriteLine($"Failed to parse input: {result.Exception!.Message}");
 }
 ```
 
-Which we can rewrite as:
+We're back to imperative programming.  We can go *FP* using the `Output` method to output the result.
 
 ```csharp
-public Func<string, Result<int>> ParseForInt => (string input) =>
-{
-    var intResult = int.Parse(input);
-    return Result<int>.Create(intResult);
-};
-```
-
-### Lowering
-
-Lowering is the process of outputting a normal type from an elevated type.
-
-```csharp
-public void OutputResult(Action<T>? success = null, Action<Exception>? failure = null)
-{
-    if (_exception is null)
-        success?.Invoke(_value!);
-    else
-        failure?.Invoke(_exception!);
-}
-```
-
-Here's a simple example to demonstrate it usage:
-
-```csharp
-value = null;
-
-Result<string>
-    // elevates value
-    .Create(value)
-    // lowers Result<string>
-    .OutputResult(
-        success: (value) => Console.WriteLine($"Success: {value}"),
-        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+Console
+    .ReadLine()
+    .ToResult()
+    .Output(
+        hasValue: (value) => Console.WriteLine($"Success: The transformed value is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
+We *wrap* the two possible console outputs into lambda functions to pass into `Output`. `Output` calls the appropriate delegate based on the state of `Result<T>`.
 
-### Result Mapping
 
-Mapping is the process of applying a transform to the input and producing a Result output.
+## Transforming the Elevated World
 
-The basic template is:
+The *Elevated World* is a world of immutable types.  The `Result<T>` and `Result` types are immutable, so we can't change the state of an object.  We can only create new objects.
+
+We can transform the `Result<T>` type using the `ApplyTransform` set of methods.  The basic pattern of a transform is:
 
 ```csharp
-public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> success)
-{
-    if (_exception is null)
-        return success(_value!);
-
-    return Result<TOut>.Failure(_exception!);
-}
+Tin -> Function -> Result<TOut>
 ```
 
-It may look simple, but it's a very powerful piece of code.
-
-Here's a simple example in a console app:
+Let's go back to our console app and parsing the input.  We can wrap the parsing logic into a lambda expression.  The transform function takes the input value, applies the transformation, and returns a new `Result<T>` type.
 
 ```csharp
-string? value = Console.ReadLine();
-
-// monadic function
-ParseForInt(value)
-    // Applying a Mapping function
-    .ApplyTransform<double>(SquareRoot)
-    // Output the result
-    .OutputResult(
-        success: (value) => Console.WriteLine($"Success: {value}"),
-        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
-    );
-
-Result<double> SquareRoot(int value)
-    => Result<double>.Create(Math.Sqrt(value));
-
-Result<int> ParseForInt(string? input)
-    => int.TryParse(input, out int result)
-        ? Result<int>.Create(result)
-        : Result<int>.Failure(new FormatException("Input is not a valid integer."));
-```
-
-Try entering different type of input.  `<CTL>Z` will enter a `null`.
-
-1. `ParseForInt` uses the [horrible] `TryParse` method to return either a success or failure `Result<int>`.
-1. `ApplyTransform` then applies `SquareRoot` to the value of the input `Result<T>` if it's in success state.  If it's in failure, it creates and returns a new `Result<double>` with the `Exception` from the input Result<int>.
-1. Finally `OutputResult` outputs to the console based on the result state.
-
-What you see is:
-
-1. The ability to chain simple functions together.
-2. The ability to compose complex functions by combining simple functions.
-3. An implementation of `Railway Orientated Programme` to handle errors and exceptions.
-
-There are four common transforms:
-
- 1. Map a `Result<T>`to a new `Result<T>`, where `T` is the same type on both.  We can express this as `T -> result<T>`.
- 2. Map a `Result<T>` to a `Result<TOut>`, where `TOut` is a different type to `T`.  We can express this as `T -> Result<TOut>`.  
- 3. Map a `Result<T>` to a `Result`.  We can express this as `T -> Result`. 
- 4. Map a `T => TOut` to a `Result<TOut>`. 
-
-The first two are handled by the basic template above.
-
-The third by:
-
-```csharp
-public Result ApplyTransform(Func<T, Result>? mapping = null)
-{
-    if (_exception is null && mapping != null)
-        return mapping(_value!);
-
-    if (_value is not null)
-        return Result.Success();
-
-    return Result.Failure(_exception ?? _defaultException);
-}
-```
-
-And the fourth by:
-
-```csharp
-public Result<U> Map<U>(Func<T, U> mapping)
-{
-    if (_exception is not null)
-        return Result<U>.Failure(_exception!);
-
-    try
+Console
+    .ReadLine()
+    .ToResult()
+    .ApplyTransform((input) =>
     {
-        return Result<U>.Create(mapping(_value!));
-    }
-    catch (Exception ex)
+        if (!string.IsNullOrEmpty(input))
+        {
+            try
+            {
+                var value = int.Parse(input!);
+                return Result<int>.Create((int)value);
+            }
+            catch (Exception ex)
+            {
+                return Result<int>.Failure(ex);
+            }
+        }
+        return Result<int>.Failure("Input cannot be null or empty.");
+    })
+    .Output(
+        hasValue: (value) => Console.WriteLine($"Success: The transformed value is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
+    );
+```
+
+The `ApplyTransform` method is a key part of the `Result<T>` type.  It allows us to apply a transformation to the value contained within the `Result<T>`.  If the `Result<T>` has a value, the transformation is applied, and a new `Result<TOut>` is returned.  If it has an exception, the exception is propagated without applying the transformation.
+
+We can improve this because there's an `ApplyTransform` that abstracts the exception capture logic: it wraps `Tin -> Function -> TOut` in a `try/catch` logic.
+
+```csharp
+Console
+    .ReadLine()
+    .ToResult()
+    .ApplyTransform(int.Parse)
+    .Output(
+        hasValue: (value) => Console.WriteLine($"Success: The transformed value is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
+    );
+```
+
+We can now add the *SquareRoot* and *Round* transforms.
+
+```csharp
+Console
+    .ReadLine()
+    .ToResult()
+    .ApplyTransform(int.Parse)
+    .ApplyTransform((value) => Math.Sqrt(value))
+    .ApplyTransform((value) => Math.Round(value, 2))
+    .Output(
+        hasValue: (value) => Console.WriteLine($"Success: The transformed value is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
+    );
+```
+
+We can modify the parsing transform to parse directly to a `double`:
+
+```csharp
+Console
+    .ReadLine()
+    .ToResult()
+    .ApplyTransform(double.Parse)
+    .ApplyTransform(Math.Sqrt)
+    .ApplyTransform((value) => Math.Round(value, 2))
+    .Output(
+        hasValue: (value) => Console.WriteLine($"Success: The transformed value is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
+    );
+```
+
+## Side Effects
+
+There are times when you want to output a result, normally mutate some object state, at some point in the chain.  You can always break put of the chain and then restart, but that's clunky.
+
+`ApplySideEffect` is designed for that purpose.  Here's a refactored version of the console app to output the initial parsing value.
+
+```csharp
+double doubleValue = 0;
+
+Console
+    .ReadLine()
+    .ToResult()
+    .ApplyTransform(double.Parse)
+    .ApplySideEffect((value) => doubleValue = value)
+    .ApplyTransform(Math.Sqrt)
+    .ApplyTransform((value) => Math.Round(value, 2))
+    .Output(
+        hasValue: (value) => Console.WriteLine($"Success: The transformed value of {doubleValue} is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
+    );
+```
+
+## The Async Task based Elevated World
+
+Applying asynchronous operations in FP makes things a little more complex.  The first an async operation.
+
+This encapsulates the *ToDouble* functionality in a (fake) async Function.
+
+```csharp
+public static class Utils
+{
+    public static Func<string?, Task<Result<double>>> StringToDouble = async (input)
+        =>
     {
-        return Result<U>.Failure(ex);
-    }
+        await Task.Yield();
+        return double.TryParse(input, out double value)
+        ? Result<double>.Create(value)
+        : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
+    };
 }
 ```
 
-And that is it.  But it isn't, because we need to deal with `async` functions and `Task`.
-
-### Side Effects
-
-There are times when using FP in a complex object setting where you will need to update the object state.  You can do it within a `ApplyTransform` lambda expression, but that's messy.
-
-`Result<T>` has a set of `ApplySideEffect` methods so you can be explicit.  The basic pasttern is:
+I could also have written it like this:
 
 ```csharp
-public Result<T> ApplySideEffect(Action<T>? success = null, Action<Exception>? failure = null)
+public static async Task<Result<double>> ParseForDouble(this string? input)
 {
-    if (_exception is null)
-        success?.Invoke(_value!);
-    else
-        failure?.Invoke(_exception!);
-
-    return this;
+    await Task.Yield();
+    return double.TryParse(input, out double value)
+    ? Result<double>.Create(value)
+    : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
 }
 ```
 
-And in use:
+We can now use this in our console app:
 
 ```csharp
-int intValue;
+double doubleValue = 0;
 
-ParseForInt(value)
-    // Get out an intermediate result
-    .ApplySideEffect(success: (value) => Console.WriteLine($"Parsed value: {value}"))
-    // Applying a Mapping function
-    .ApplyTransform(Utilities.ToSquareRoot)
-    // Output the result
-    .OutputResult(
-        success: (value) => Console.WriteLine($"Success: {value}"),
-        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
+await Console
+    .ReadLine()
+    .ToResult()
+    // this is our async transition
+    .ApplyTransformAsync(Utils.StringToDoubleAsync)
+    // all if these operations are now continuations
+    .ApplySideEffectAsync((value) => doubleValue = value)
+    .ApplyTransformAsync(Math.Sqrt)
+    .ApplyTransformAsync((value) => Math.Round(value, 2))
+    .OutputAsync(
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value of {doubleValue} is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failed: {ex.Message}")
     );
 ```
 
+It's important to observe that `.ApplyTransformAsync(Utils.StringToDoubleAsync)` returns a `Task<Result<double>>`.  All operations beyond that point are continuations of the `Task<Result<double>>`, and the methods called are extension methods on `Task<Result<T>>` not `Result<T>`.
 
-
-## Task<Result<T>> and Task<Result>
-
-If we do an async operation in a monadic function we have to deal with the `Task` wrapper around the result.
-
-For the purposes of this discussion I've made `ParseForInt` and async method:
+The initial `ApplyTransformAsync` on `Result<T>` is:
 
 ```csharp
-async Task<Result<int>> ParseForIntAsync(string? input)
-{ 
-    await Task.Yield(); // Simulate async operation
-    return int.TryParse(input, out int result)
-        ? Result<int>.Create(result)
-        : Result<int>.Failure(new FormatException("Input is not a valid integer."));
-}
+public async  Task<Result<TOut>> ApplyTransformAsync<TOut>( Func<T, Task<Result<TOut>>> transform)
+    => this.HasException
+        ? Result<TOut>.Failure(this.Exception!)
+        : await transform(this.Value!);
 ```
 
-The return type is now a `Task<Result<int>>`, so we need to add some FP methods to `Task<Result<T>>`.
-
-### Map
-
-First is a mapper:
+And the specific <Task<Result<T>>> extension methods used are:
 
 ```csharp
-public static async Task<Result<TOut>> MapTaskToResultAsync<T, TOut>(this Task<Result<T>> task, Func<T, Result<TOut>> mapping)
-{
-    var result = await task.HandleTaskCompletionAsync();
-    return result.ApplyTransform<TOut>(mapping);
-}
+public static Task<Result<TOut>> ApplyTransformAsync<T, TOut>(this Task<Result<T>> task, Func<T, TOut> transform)
+    => task
+        .ContinueWith(CheckForTaskException)
+        .ContinueWith((t) => t.Result.ApplyTransform<TOut>(transform));
 ```
-
-It awaits the Task and then executes the synchronous `mapping` function.  The return is a `Result<TOut>` wrapped in another `Task`.
-
-### Output
-
-And the outputter:
 
 ```csharp
-public static async Task OutputTaskAsync<T>(this Task<Result<T>> task, Action<T>? success = null, Action<Exception>? failure = null)
-    => await task.HandleTaskCompletionAsync()
-        .ContinueWith((t) => t.Result.OutputResult(success: success, failure: failure));
+public static Task OutputAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
+    => task
+        .ContinueWith(CheckForTaskException)
+        .ContinueWith((t) => t.Result.Output(hasValue: hasValue, hasException: hasException));
 ```
-
-The console app:
 
 ```csharp
-string? value = Console.ReadLine();
-
-await ParseForIntAsync(value)
-    // Applying a Mapping function
-    .MapTaskToResultAsync(Utilities.ToSquareRoot)
-    // Output the result
-    .OutputTaskAsync(
-        success: (value) => Console.WriteLine($"Success: {value}"),
-        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
-    );
+public static Task<Result<T>> ApplySideEffectAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
+    => task
+        .ContinueWith(CheckForTaskException)
+        .ContinueWith((t) => t.Result.ApplySideEffect(hasValue, hasException));
 ```
 
-### Side Effects
-
-And side effects:
+For the record , the `CheckForTaskException` method is:
 
 ```csharp
-public static Task<Result<T>> TaskSideEffectAsync<T>(this Task<Result<T>> task, Action<T>? success = null, Action<Exception>? failure = null)
-    => task.HandleTaskCompletionAsync()
-        .ContinueWith((t) => t.Result.ApplySideEffect(success, failure));
+private static Result<T> CheckForTaskException<T>(Task<Result<T>> task)
+    => task.IsCompletedSuccessfully
+        ? task.Result
+        : Result<T>.Failure(t.Exception
+            ?? new Exception("The Task failed to complete successfully"));
 ```
-
-The console app:
-
-```csharp
-string? value = Console.ReadLine();
-
-// monadic function
-await ParseForIntAsync(value)
-    .TaskSideEffectAsync(success: (value) => Console.WriteLine($"Parsed value: {value}"))
-    // Applying a Mapping function
-    .MapTaskToResultAsync(Utilities.ToSquareRoot)
-    // Output the result
-    .OutputTaskAsync(
-        success: (value) => Console.WriteLine($"Success: {value}"),
-        failure: (exception) => Console.WriteLine($"Failure: {exception.Message}")
-    );
-```
-
