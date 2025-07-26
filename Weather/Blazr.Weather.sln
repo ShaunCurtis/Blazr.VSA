@@ -45,6 +45,24 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Architecture", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.Tests.Console", "Tests\Blazr.Tests.Console\Blazr.Tests.Console.csproj", "{4E183CB2-034E-4B04-8F06-7B9EE06F231A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{68F53C88-03D1-4F9B-B8A6-217A8E758601}"
+	ProjectSection(SolutionItems) = preProject
+		..\Documents\Weather\API.md = ..\Documents\Weather\API.md
+		..\Documents\Weather\Commands.md = ..\Documents\Weather\Commands.md
+		..\Documents\Weather\CQS.md = ..\Documents\Weather\CQS.md
+		..\Documents\Weather\Diode.md = ..\Documents\Weather\Diode.md
+		..\Documents\Weather\Entities-and-Value-Objects.md = ..\Documents\Weather\Entities-and-Value-Objects.md
+		..\Documents\Weather\Functional-Programming.md = ..\Documents\Weather\Functional-Programming.md
+		..\Documents\Weather\Generics.md = ..\Documents\Weather\Generics.md
+		..\Documents\Weather\Intro.md = ..\Documents\Weather\Intro.md
+		..\Documents\Weather\ItemQueries.md = ..\Documents\Weather\ItemQueries.md
+		..\Documents\Weather\Monads.md = ..\Documents\Weather\Monads.md
+		..\Documents\Weather\Mutating-Entities-and-Validation.md = ..\Documents\Weather\Mutating-Entities-and-Validation.md
+		..\Documents\Weather\Notifications.md = ..\Documents\Weather\Notifications.md
+		..\Documents\Weather\Result-In-Action.md = ..\Documents\Weather\Result-In-Action.md
+		..\Documents\Weather\Result.md = ..\Documents\Weather\Result.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
