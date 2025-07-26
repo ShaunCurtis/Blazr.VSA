@@ -85,7 +85,7 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
                     this.EditContext = new EditContext(EditMutator);
                     _isLoaded = true;
                 })
-            .AsRecordAsync();
+            .AsResultAsync();
 
     private async Task<Result> UpdateRecordAsync()
         => await UpdateRecordAsync(refreshOnNew: true);
