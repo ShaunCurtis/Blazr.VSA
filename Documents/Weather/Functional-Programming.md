@@ -1,24 +1,20 @@
 # Functional Programming in C#
 
-This article describes my personal implementation of Functional Programming [FP from now on] in C# and the DotNet Framework, and my personal journey to understanding Monads.  
+As programmers brought up on a OOP diet, Functional Programming [FP from now] is a foreign land.  This article presents my personal implementation of FP in C# and the DotNet Framework, and my journey to understanding Monads.  
 
-My implementation is based on a codebase that implements the following definition:
+It's hard to remember that first point where you saw a chink of light in the otherwise unintelligible articles about Nomands, but this description sticks in my mind, and it sums up what my implmentation is base on.
 
 > FP is about computing a result.  When you call a FP function you pass in a value and get back a result.  There's no mutation of state, no side effects, and no changes to the input value.  The function takes the input, applies a transform, and returns a new value.
 
-There are some concessions you need to make if you intend to use FP in C# and the OOP orientated DotNetCore framework:
-
-1. Object state mutation, but only in a controlled manner.
-
-My implementation is based on the `Result<T>` and `Result` types, which are immutable.  They represent the result of a computation, and can be used to handle errors and exceptions in a functional way.
+My implementation has immutable `Result<T>` and `Result` types.  They represent the result of a computation, and handle errors and exceptions in a functional way.
  
 ## The Elavated World
 
-If you've read any literature on FP you'll have come across the *Elevated World*.
+Read any literature on FP and the term *Elevated World* soon crops up.
 
-*Elevation* is the process of taking a normal type and elevating it to an elevated type.  My *Elevated World* is the world of `Result<T>` and `Result`.
+Sounds daunting, but *Elevation* is the process of taking a normal type and elevating it to an elevated type.  My *Elevated World* is `Result<T>` and `Result`.
 
-The simplest way to elevate a type is to use one of the static construstors.  In a simple console app you could do this:
+The simplest way to elevate a type to `Result<T>` is to use one of the static construstors.  In a simple console app you could do this:
 
 ```csharp
 var input = Console.ReadLine();
@@ -35,7 +31,7 @@ else
 }
 ```
 
-Modern C# provides a short form of `if` we cn use :
+Modern C# provides a short form of `if` we can use, so the verbose conditional statement cn become :
 
 ```csharp
 var input = Console.ReadLine();
@@ -45,16 +41,16 @@ Result<string> result = input is not null
     : Result<string>.Failure(new ResultException("Input was null."));
 ```
 
-The short form `if` is an example of FP style syntax in C#.
+This short form of `if` is a good example of FP style syntax in C#.
 
-We can do better: use the `Create` static constructor to handle the null case for us.
+Better, but we can use the `Create` static constructor to handle the null case for us.
 
 ```csharp
 var input = Console.ReadLine();
 var result = Result<string>.Create(input);
 ```
 
-And one final step to make this code *fluent*: Extend `string`.
+And then extend `string`:
 
 ```csharp
 public static class stringExtensions
@@ -64,7 +60,8 @@ public static class stringExtensions
 }
 ```
 
-We can now:
+To make this code *fluent*:
+
 ```csharp
 var result = Console
     .ReadLine()
@@ -72,9 +69,6 @@ var result = Console
 ```
  
 ## `Result<T>` and `Result`
-
-
-My *Elevated World* is the `Result<T>` and `Result` types..
 
 Any method that returns a value:
 
@@ -120,7 +114,7 @@ And `Result` has:
     private readonly Exception? _exception;
 ```
 
-If the operation was successful, `_exception` is `null` and `_value` contains the result value. If the operation failed, `_exception` contains the exception that caused the failure.
+If the operation is successful, `_exception` is `null` and `_value` contains the result value. If the operation fails, `_exception` contains the exception that caused the failure.
 
 ## Fundimental Result Operations
 
