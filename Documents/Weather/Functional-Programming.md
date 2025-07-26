@@ -47,18 +47,29 @@ Result<string> result = input is not null
 
 The short form `if` is an example of FP style syntax in C#.
 
-We can do better and use the `Create` static constructor to handle the null case for us:
+We can do better: use the `Create` static constructor to handle the null case for us.
 
 ```csharp
 var input = Console.ReadLine();
 var result = Result<string>.Create(input);
 ```
 
-We cn take one final step to make this code *fluent*. Extend `string`:
+And one final step to make this code *fluent*: Extend `string`.
 
 ```csharp
+public static class stringExtensions
+{
+    public static Result<int> ToResult(this string? input) =>
+        Result<string>Create(value);
+}
 ```
 
+We can now:
+```csharp
+var result = Console
+    .ReadLine()
+    .ToResult();
+```
  
 ## `Result<T>` and `Result`
 
