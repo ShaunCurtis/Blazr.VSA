@@ -1,22 +1,71 @@
 # Functional Programming in C#
 
-> Throughout this article, I use **FP** for Functional Programming and **OOP** for Object Oriented Programming.  
+This article describes my personal implementation of Functional Programming [FP from now on] in C# and the DotNet Framework, and my personal journey to understanding Monads.  
 
-This article describes my personal implementation of FP into C# and the DotNet Framework.
-
-There are plenty of articles on the Internet explaining what FP is, and any number about Monads.
-
-My implementation is based on the following definition:
+My implementation is based on a codebase that implements the following definition:
 
 > FP is about computing a result.  When you call a FP function you pass in a value and get back a result.  There's no mutation of state, no side effects, and no changes to the input value.  The function takes the input, applies a transform, and returns a new value.
 
+There are some concessions you need to make if you intend to use FP in C# and the OOP orientated DotNetCore framework:
+
+1. Object state mutation, but only in a controlled manner.
+
+My implementation is based on the `Result<T>` and `Result` types, which are immutable.  They represent the result of a computation, and can be used to handle errors and exceptions in a functional way.
+ 
+## The Elavated World
+
+If you've read any literature on FP you'll have come across the *Elevated World*.
+
+*Elevation* is the process of taking a normal type and elevating it to an elevated type.  My *Elevated World* is the world of `Result<T>` and `Result`.
+
+The simplest way to elevate a type is to use one of the static construstors.  In a simple console app you could do this:
+
+```csharp
+var input = Console.ReadLine();
+
+Result<string> result;
+
+if (input is not null)
+{
+    result = Result<string>.Success(input);
+}
+else
+{
+    result = Rwsult<string>.Failure(new ResultException("Input was null."));
+}
+```
+
+Modern C# provides a short form of `if` we cn use :
+
+```csharp
+var input = Console.ReadLine();
+
+Result<string> result = input is not null
+    ? Result<string>.Success(input)
+    : Result<string>.Failure(new ResultException("Input was null."));
+```
+
+The short form `if` is an example of FP style syntax in C#.
+
+We can do better and use the `Create` static constructor to handle the null case for us:
+
+```csharp
+var input = Console.ReadLine();
+var result = Result<string>.Create(input);
+```
+
+We cn take one final step to make this code *fluent*. Extend `string`:
+
+```csharp
+```
+
+ 
 ## `Result<T>` and `Result`
 
-If you've read any amount of literature on FP you'll have come across the *Elevated World*.
 
 My *Elevated World* is the `Result<T>` and `Result` types..
 
-Any method that would return a value:
+Any method that returns a value:
 
 ```csharp
 public int ToInt(string value) {..}
@@ -28,7 +77,7 @@ returns a `Result<T>`:
 public Result<int> ToInt(string value) {..}
 ```
 
-Any method that would return a `void`:
+Any method that returns a `void`:
 
 ```csharp
 public void DoSomething(string value) {..}
@@ -40,12 +89,10 @@ returns a `Result`:
 public Result DoSomething(string value) {..}
 ```
 
-There's a separate article on the implementation detail of `Result<T>` and `Result`, I'll only cover the basics here.
+A `Result<T>` has two possible states:
 
-A result has two states:
-
-- **Success**: The operation completed successfully.
-- **Failure**: The operation failed, and the result contains an `Exception` or an error message wrapped in a `ResultException`. 
+- **HasValue**: The operation completed successfully and produced a Value.
+- **HasException**: The operation failed, and the result contains an exception. 
 
 Result is a record type: it's immutable.
 

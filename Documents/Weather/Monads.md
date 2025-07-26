@@ -107,8 +107,6 @@ private Result()
  }
 ```
 
-
-
 ## Creating/Initialising `Result<T>`
 
 The basic pattern is:
