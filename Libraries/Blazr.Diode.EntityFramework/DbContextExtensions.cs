@@ -8,22 +8,15 @@ namespace Blazr.Diode.Infrastructure.EntityFramework;
 public static class DbContextExtensions
 {
     public static async Task<Result<TRecord>> ExecuteCommandAsync<TRecord>(this DbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
-    where TRecord : class
-    {
-        return await CQSEFBroker<DbContext>.ExecuteCommandAsync(dbContext, request, cancellationToken);
-    }
+        where TRecord : class
+            => await CQSEFBroker<DbContext>.ExecuteCommandAsync(dbContext, request, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
     public static async Task<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(this DbContext dbContext, ListQueryRequest<TRecord> request)
-    where TRecord : class
-    {
-        return await CQSEFBroker<DbContext>.GetItemsAsync(dbContext, request);
-    }
+        where TRecord : class
+            => await CQSEFBroker<DbContext>.GetItemsAsync(dbContext, request).ConfigureAwait(ConfigureAwaitOptions.None);
 
     public static async Task<Result<TRecord>> GetRecordAsync<TRecord>(this DbContext dbContext, RecordQueryRequest<TRecord> request)
         where TRecord : class
-    {
-        return await CQSEFBroker<DbContext>.GetRecordAsync(dbContext, request);
-    }
-
+            => await CQSEFBroker<DbContext>.GetRecordAsync(dbContext, request).ConfigureAwait(ConfigureAwaitOptions.None);
 }
 

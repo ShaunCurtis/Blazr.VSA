@@ -54,7 +54,9 @@ public Task<Result<GridItemsProviderResult<DmoWeatherForecast>>> GetItemsAsync(G
 
 ## WeatherForecastListHandler
 
-Handlers are specific to the backend.  This is the Entity Framework Handler:
+Handlers are specific to the record and data store.  This is the Entity Framework Handler for the WeatherForecast.
+
+It injects the `IDbContextFactory` and gets a `DbContext` for the transaction.  It executes the `GetItemsAsync` extension method on the context.  Note it builds the Sort and Filter Predicate delegates from the fields within the `WeatherForecastListRequest`.
 
 ```csharp
 public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecastListRequest, Result<ListItemsProvider<DmoWeatherForecast>>>
@@ -106,4 +108,57 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
         return null;
     }
 }
+```
+
+## DBContext Extensions
+
+The meat is defined in the static `CQSEFBroker` class: 
+
+```csharp
+    public static async Task<Result<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+        where TRecord : class
+    {
+        if ((request.Item is not ICommandEntity))
+            return Result<TRecord>.Failure($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly.");
+
+        var stateRecord = request.Item;
+        var result = 0;
+        switch (request.State.Index)
+        {
+            case EditState.StateNewIndex:
+                dbContext.Add<TRecord>(request.Item);
+                result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+                return result == 1
+                    ? Result<TRecord>.Success(request.Item)
+                    : Result<TRecord>.Failure("Error adding Record");
+
+            case EditState.StateDeletedIndex:
+                dbContext.Remove<TRecord>(request.Item);
+                result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+                return result == 1
+                    ? Result<TRecord>.Success(request.Item)
+                    : Result<TRecord>.Failure("Error deleting Record");
+
+            case EditState.StateDirtyIndex:
+                dbContext.Update<TRecord>(request.Item);
+                result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+                return result == 1
+                    ? Result<TRecord>.Success(request.Item)
+                    : Result<TRecord>.Failure("Error saving Record");
+
+            default:
+                return Result<TRecord>.Failure("Nothing executed.  Unrecognised State.");
+        }
+    }
+```
+
+And attached to the `DbContext` with an extension method:
+
+```csharp
+    public static async Task<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(this DbContext dbContext, ListQueryRequest<TRecord> request)
+        where TRecord : class
+            => await CQSEFBroker<DbContext>.GetItemsAsync(dbContext, request).ConfigureAwait(ConfigureAwaitOptions.None);
 ```

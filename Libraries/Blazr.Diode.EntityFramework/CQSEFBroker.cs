@@ -13,7 +13,7 @@ namespace Blazr.Diode.Infrastructure.EntityFramework;
 public static class CQSEFBroker<TDbContext>
     where TDbContext : DbContext
 {
-    public static async ValueTask<Result<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+    public static async Task<Result<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
         where TRecord : class
     {
         if ((request.Item is not ICommandEntity))
@@ -52,7 +52,7 @@ public static class CQSEFBroker<TDbContext>
         }
     }
 
-    public static async ValueTask<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
+    public static async Task<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
         where TRecord : class
     {
         int totalRecordCount;
@@ -94,7 +94,7 @@ public static class CQSEFBroker<TDbContext>
         return Result<ListItemsProvider<TRecord>>.Success(new ListItemsProvider<TRecord>(list, totalRecordCount));
     }
 
-    public static async ValueTask<Result<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
+    public static async Task<Result<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
         where TRecord : class
     {
         dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
