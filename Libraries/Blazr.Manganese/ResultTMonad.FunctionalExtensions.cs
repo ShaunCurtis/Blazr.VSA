@@ -65,7 +65,13 @@ public partial record Result<T>
             ? this.ApplySideEffect(trueAction, null)
             : this;
 
-    public  Result<T> ApplyTransform( bool test, Func<T, Result<T>> trueTransform, Func<T, Result<T>> falseTransform)
+    public Result<T> ApplySideEffect(Action<Result> Action)
+    {
+        Action.Invoke(this.ToResult);
+        return this;
+    }
+
+    public Result<T> ApplyTransform( bool test, Func<T, Result<T>> trueTransform, Func<T, Result<T>> falseTransform)
         => test
             ? this.ApplyTransform<T>(trueTransform)
             : this.ApplyTransform<T>(falseTransform);

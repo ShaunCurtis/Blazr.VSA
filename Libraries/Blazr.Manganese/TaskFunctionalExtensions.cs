@@ -27,6 +27,12 @@ public static class TaskFunctionalExtensions
         => task
             .ContinueWith(CheckForTaskException)
             .ContinueWith((t) => t.Result.Output(hasValue: hasValue));
+  
+    public static Task<T> OutputAsync<T>(this Task<Result<T>> task, Func<Exception, T> ExceptionOutput)
+        => task
+            .ContinueWith(CheckForTaskException)
+            .ContinueWith((t) => t.Result.Output(hasException: ExceptionOutput));
+
 
     public static async Task<Result<T>> ApplyTransformAsync<T>(this Task<Result<T>> task, Func<T, Result<T>> transform)
     {
@@ -88,6 +94,11 @@ public static class TaskFunctionalExtensions
         => task
             .ContinueWith(CheckForTaskException)
             .ContinueWith((t) => t.Result.ApplySideEffect(hasValue, hasException));
+
+    public static Task<Result<T>> ApplySideEffectAsync<T>(this Task<Result<T>> task, Action<Result> action)
+        => task
+            .ContinueWith(CheckForTaskException)
+            .ContinueWith((t) => t.Result.ApplySideEffect(action));
 
     public static Task<Result> AsResultAsync<T>(this Task<Result<T>> task)
         => task

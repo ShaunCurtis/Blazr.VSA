@@ -14,7 +14,7 @@ public record GridState<TRecord> : IGridState<TRecord>
     public int StartIndex { get; init; }
     public bool SortDescending { get; init; }
     public string? SortField { get; init; }
-
+    public Guid ContextUid { get; init; }
     public int Page
         => this.StartIndex / this.PageSize;
 
@@ -24,12 +24,14 @@ public record GridState<TRecord> : IGridState<TRecord>
         this.StartIndex = 0;
         this.SortDescending = false;
         this.SortField = null;
+        this.ContextUid = Guid.NewGuid();
     }
 
-    public static GridState<TRecord> Create(int pageSize = 1000, int startIndex = 0, bool sortDescending = false, string? sortField = null)
+    public static GridState<TRecord> Create(Guid contextUid, int pageSize = 1000, int startIndex = 0, bool sortDescending = false, string? sortField = null)
     {
         return new GridState<TRecord>
         {
+            ContextUid = contextUid,
             PageSize = pageSize,
             StartIndex = startIndex,
             SortDescending = sortDescending,
@@ -40,6 +42,10 @@ public record GridState<TRecord> : IGridState<TRecord>
 
 public static class GridStateExtensions
 {
+    public static Result<GridState<TRecord>> ToResult<TRecord>(this GridState<TRecord> state)
+    where TRecord : class
+        => Result<GridState<TRecord>>.Create(state);
+
     public static async Task<Result<ListItemsProvider<TRecord>>> ApplyTransformOnException<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Task<Result<ListItemsProvider<TRecord>>>> mapper)
         where TRecord : class
         => await mapper(state);

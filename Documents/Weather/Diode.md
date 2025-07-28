@@ -106,4 +106,59 @@ It's attached to `DbContext` by an extension method:
 ```
 
 And accessed directly from a `DbContext` instance.
+
+Here's the WeatherForecast server-side handler for a List Query request that the Mediator Broker registers automatically.
+
+It's written in Functional Programming and Fluent style using the `Result` monad.  `ListQueryRequest` defines the query and the `ListItemsProvider<TRecord>` object encapsulates the result.
+
 ```csharp
+public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecastListRequest, Result<ListItemsProvider<DmoWeatherForecast>>>
+{
+    private readonly IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
+
+    public WeatherForecastListHandler(IDbContextFactory<InMemoryWeatherTestDbContext> factory)
+    {
+        _factory = factory;
+    }
+
+    public Task<Result<ListItemsProvider<DmoWeatherForecast>>> HandleAsync(WeatherForecastListRequest request, CancellationToken cancellationToken)
+        => _factory
+            .CreateDbContext()
+            .GetItemsAsync<DvoWeatherForecast>(
+                new ListQueryRequest<DvoWeatherForecast>()
+                {
+                    PageSize = request.PageSize,
+                    StartIndex = request.StartIndex,
+                    SortDescending = request.SortDescending,
+                    SortExpression = this.GetSorter(request.SortColumn),
+                    FilterExpression = this.GetFilter(request),
+                    Cancellation = cancellationToken
+                }
+            )
+            .ApplyTransformAsync((provider) =>
+                Result<ListItemsProvider<DmoWeatherForecast>>
+                    .Create(new ListItemsProvider<DmoWeatherForecast>(
+                        Items: provider.Items.Select(item => WeatherForecastMap.Map(item)),
+                        TotalCount: provider.TotalCount))
+            );
+
+    private Expression<Func<DvoWeatherForecast, object>> GetSorter(string? field)
+        => field switch
+        {
+            "Id" => (Item) => Item.WeatherForecastID,
+            "ID" => (Item) => Item.WeatherForecastID,
+            "Temperature" => (Item) => Item.Temperature,
+            "Summary" => (Item) => Item.Summary ?? string.Empty,
+            _ => (item) => item.Date
+        };
+
+    // No Filter Defined
+    private Expression<Func<DvoWeatherForecast, bool>>? GetFilter(WeatherForecastListRequest request)
+    {
+        if (request.Summary is not null)
+            return (item) => request.Summary.Equals(item.Summary);
+
+        return null;
+    }
+}
+```

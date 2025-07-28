@@ -8,6 +8,7 @@ using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode;
 using Blazr.Diode.Mediator;
 using Blazr.Gallium;
+using Blazr.Manganese;
 using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.Cadmium.Presentation;
@@ -39,6 +40,13 @@ public partial class GridUIBroker<TRecord, TKey>
     /// Sets the State context for the Broker and retrieves any saved GridState
     /// </summary>
     /// <param name="context"></param>
+    public void SetContext(Guid context, UpdateGridRequest<TRecord> resetGridRequest)
+    {
+        this.StateContextUid = context;
+
+        this.DispatchGridStateChange(resetGridRequest!);
+    }
+
     public void SetContext(Guid context)
     {
         this.StateContextUid = context;
@@ -56,21 +64,39 @@ public partial class GridUIBroker<TRecord, TKey>
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    public Result DispatchGridStateChange(UpdateGridRequest<TRecord> request)
+    public Result<GridState<TRecord>> DispatchGridStateChange(UpdateGridRequest<TRecord> request)
     {
-        this.GridState = new() { PageSize = request.PageSize, StartIndex = request.StartIndex, SortField = request.SortField, SortDescending = request.SortDescending };
+        this.GridState = new()
+        { 
+            ContextUid = this.StateContextUid,
+            PageSize = request.PageSize,
+            StartIndex = request.StartIndex,
+            SortField = request.SortField,
+            SortDescending = request.SortDescending
+        };
 
         _gridStateStore.Dispatch(this.StateContextUid, this.GridState);
 
-        return Result.Success();
+        return Result<GridState<TRecord>>.Create(this.GridState);
     }
 
-    /// <summary>
-    /// Method called by QuickGrid to get the items
-    /// </summary>
-    /// <returns></returns>
-    public async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync()
-        => await this.ItemsAsync();
+    public Task<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
+        => Result<UpdateGridRequest<TRecord>>
+            .Create(UpdateGridRequest<TRecord>.Create(gridRequest))
+            .ApplyTransform(this.DispatchGridStateChange)
+                .ApplyTransformAsync(_entityProvider.GetItemsAsync)
+                .ApplySideEffectAsync((result) => this.LastResult = result)
+                .OutputAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+ 
+    ///// <summary>
+    ///// Method called by QuickGrid to get the items
+    ///// </summary>
+    ///// <returns></returns>
+    //public Task<GridItemsProviderResult<TRecord>> GetItemsAsync()
+    //    => this.GridState.ToResult()
+    //            .ApplyTransformAsync(_entityProvider.GetItemsAsync)
+    //            .ApplySideEffectAsync((result) => this.LastResult = result)
+    //            .OutputAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 
     public void Dispose()
     {
@@ -87,20 +113,6 @@ public partial class GridUIBroker<TRecord, TKey>
     protected readonly IMessageBus _messageBus;
     private readonly ScopedStateProvider _gridStateStore;
     private readonly IEntityProvider<TRecord, TKey> _entityProvider;
-
-    private async ValueTask<GridItemsProviderResult<TRecord>> ItemsAsync()
-    {
-        var result = GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0);
-
-        this.LastResult = await Result<GridState<TRecord>>.Create(this.GridState)
-            .ApplyTransformAsync(_entityProvider.GetItemsAsync)
-            .ApplySideEffectAsync(
-                hasValue: (provider) => result = provider,
-                hasException: (ex) => this.LastResult = Result.Failure(ex.Message))
-            .ToResultAsync();
-
-        return result;
-    }
 
     private void OnStateChanged(object? message)
     {

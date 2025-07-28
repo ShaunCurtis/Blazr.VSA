@@ -9,29 +9,6 @@ It's hard to remember that first point where you saw a chink of light in the oth
 
 My implementation has immutable `Result<T>` and `Result` types.  They represent the result of a computation, and handle errors and exceptions in a functional way.
  
-## The Elavated World
-
-Read any literature on FP and the term *Elevated World* soon crops up.
-
-Sounds daunting, but *Elevation* is the process of taking a normal type and elevating it to an elevated type.  My *Elevated World* is `Result<T>` and `Result`.
-
-The simplest way to elevate a type is to use one of the static construstors.  In a simple console app you could do this:
-
-        var result = Math.Sqrt(value);
-        result = Math.Round(result, 2);
-        Console.WriteLine($"Parsed successfully: The transformed value of {value} is: {result}");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"An exception occurred: {ex.Message}");
-    }
-}
-else
-{
-    Console.WriteLine("Input cannot be null or empty.");
-}
-```
- 
 ## The Elevated World
 
 Read any literature on FP and the *Elevated World* soon appears.
@@ -125,7 +102,7 @@ Console
         hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
-We *wrap* the two possible console outputs into lambda functions to pass into `Output`. `Output` calls the appropriate delegate based on the state of `Result<T>`.
+The two possible console outputs are wrapped in lambda functions to pass into `Output`. `Output` calls the appropriate delegate based on the state of `Result<T>`.
 
 
 ## Transforming the Elevated World
