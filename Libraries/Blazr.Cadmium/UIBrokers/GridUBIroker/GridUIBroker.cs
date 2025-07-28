@@ -37,26 +37,27 @@ public partial class GridUIBroker<TRecord, TKey>
     }
 
     /// <summary>
-    /// Sets the State context for the Broker and retrieves any saved GridState
+    /// Sets the State context for the Broker 
     /// </summary>
     /// <param name="context"></param>
-    public void SetContext(Guid context, UpdateGridRequest<TRecord> resetGridRequest)
+    public Result SetContext(Guid context, UpdateGridRequest<TRecord> resetGridRequest)
     {
         this.StateContextUid = context;
 
-        this.DispatchGridStateChange(resetGridRequest!);
+        return this.DispatchGridStateChange(resetGridRequest)
+            .ToResult;
     }
 
-    public void SetContext(Guid context)
+    public Result SetContext(Guid context)
     {
         this.StateContextUid = context;
 
         // Check to see if we have a saved grid state for this context.
         // If so load and apply it
-        if (_gridStateStore.TryGetState<GridState<TRecord>>(context, out GridState<TRecord>? state))
-            this.GridState = state;
-        else
-            this.GridState = new GridState<TRecord>();
+        return _gridStateStore.GetState<GridState<TRecord>>(context)
+            .ApplySideEffect( hasValue: (state) => this.GridState = state,
+                hasException: (ex) => this.GridState = new GridState<TRecord>())
+            .ToResult;
     }
 
     /// <summary>
@@ -65,38 +66,24 @@ public partial class GridUIBroker<TRecord, TKey>
     /// <param name="request"></param>
     /// <returns></returns>
     public Result<GridState<TRecord>> DispatchGridStateChange(UpdateGridRequest<TRecord> request)
-    {
-        this.GridState = new()
-        { 
-            ContextUid = this.StateContextUid,
-            PageSize = request.PageSize,
-            StartIndex = request.StartIndex,
-            SortField = request.SortField,
-            SortDescending = request.SortDescending
-        };
-
-        _gridStateStore.Dispatch(this.StateContextUid, this.GridState);
-
-        return Result<GridState<TRecord>>.Create(this.GridState);
-    }
+        => Result<GridState<TRecord>>
+            .Create(new ()
+                { 
+                    Key = this.StateContextUid,
+                    PageSize = request.PageSize,
+                    StartIndex = request.StartIndex,
+                    SortField = request.SortField,
+                    SortDescending = request.SortDescending
+                })
+            .Dispatch(_gridStateStore.Dispatch);
 
     public Task<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
         => Result<UpdateGridRequest<TRecord>>
             .Create(UpdateGridRequest<TRecord>.Create(gridRequest))
-            .ApplyTransform(this.DispatchGridStateChange)
-                .ApplyTransformAsync(_entityProvider.GetItemsAsync)
-                .ApplySideEffectAsync((result) => this.LastResult = result)
-                .OutputAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
- 
-    ///// <summary>
-    ///// Method called by QuickGrid to get the items
-    ///// </summary>
-    ///// <returns></returns>
-    //public Task<GridItemsProviderResult<TRecord>> GetItemsAsync()
-    //    => this.GridState.ToResult()
-    //            .ApplyTransformAsync(_entityProvider.GetItemsAsync)
-    //            .ApplySideEffectAsync((result) => this.LastResult = result)
-    //            .OutputAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+            .Dispatch(this.DispatchGridStateChange)
+            .ApplyTransformAsync(_entityProvider.GetItemsAsync)
+            .ApplySideEffectAsync((result) => this.LastResult = result)
+            .OutputAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 
     public void Dispose()
     {

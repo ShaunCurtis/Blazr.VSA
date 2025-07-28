@@ -12,5 +12,7 @@ public class EntityProvider<TRecord>
     where TRecord : class, new()
 {
     public static Result<GridItemsProviderResult<TRecord>> FromListItemsProvider(ListItemsProvider<TRecord> itemsProvider)
-        => Result<GridItemsProviderResult<TRecord>>.Create(GridItemsProviderResult.From<TRecord>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
+        => Result<GridItemsProviderResult<TRecord>>
+            .Create(GridItemsProviderResult
+                .From<TRecord>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
 }

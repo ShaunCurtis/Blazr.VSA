@@ -6,4 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="ScopedStateProvider\IScopedState.cs~RFe16e75e.TMP" />
+    <None Remove="ScopedStateProvider\IScopedState.cs~RFe176b15.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Blazr.Manganese\Blazr.Manganese.csproj" />
+  </ItemGroup>
+
 </Project>

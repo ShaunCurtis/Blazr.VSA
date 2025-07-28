@@ -28,7 +28,12 @@ public partial record Result
             ? this.ApplyTransform(trueTransform)
             : this.ApplyTransform(falseTransform);
 
-    public  Result ApplyTransformOnException( bool test, string message)
+    public Result<T> ApplyTransform<T>(Func<Result<T>> HasNoException, Func<Exception,Result<T>> HasException)
+    => this.HasException
+        ? HasException(this.Exception!)
+        : HasNoException();
+
+    public Result ApplyTransformOnException( bool test, string message)
         => this.HasException && test
             ? Result.Failure(message)
             : this;

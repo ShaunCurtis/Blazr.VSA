@@ -1,4 +1,6 @@
-﻿/// ============================================================
+﻿using System.Diagnostics;
+
+/// ============================================================
 /// Author: Shaun Curtis, Cold Elm Coders
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
@@ -12,17 +14,17 @@ public partial record Result<T>
             ? transform(this.Value!)
             : Result<T>.Failure(this.Exception!);
 
-    public  Result<TOut> ApplyTransform<TOut>( Func<T, Result<TOut>> transform)
+    public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> transform)
         => this.HasValue
             ? transform(this.Value!)
             : Result<TOut>.Failure(this.Exception!);
 
-    public  Result<T> ApplyTransformOnException( Func<Exception, Result<T>> transform)
+    public Result<T> ApplyTransformOnException(Func<Exception, Result<T>> transform)
         => this.HasException
             ? transform(this.Exception!)
             : this;
 
-    public  Result<TOut> ApplyTransform<TOut>( Func<T, TOut> transform)
+    public Result<TOut> ApplyTransform<TOut>(Func<T, TOut> transform)
     {
         if (this.Exception is not null)
             return Result<TOut>.Failure(this.Exception!);
@@ -40,12 +42,35 @@ public partial record Result<T>
         }
     }
 
-    public  Result ApplyTransform( Func<T, Result> transform)
+    public Result ApplyTransform(Func<T, Result> transform)
         => this.HasValue
             ? transform(this.Value!)
             : Result.Failure(this.Exception!);
 
-    public  Result<T> ApplySideEffect( Action<T>? hasValue = null, Action<Exception>? hasException = null)
+    public Result<T> Dispatch(Func<T, Result<T>> transform)
+        => this.HasValue
+            ? transform(this.Value!)
+            : Result<T>.Failure(this.Exception!);
+
+    public Result<TOut> Dispatch<TOut>(Func<T, Result<TOut>> transform)
+        => this.HasValue
+            ? transform(this.Value!)
+            : Result<TOut>.Failure(this.Exception!);
+
+    public Result<T> DispatchToDispatcher(Func<T, Result> transform)
+    {
+        var outerResult = this;
+
+        return (this.HasException)
+            ? Result<T>.Failure(this.Exception!)
+            : transform(this.Value!)
+                .ApplyTransform(
+                    HasNoException: () => outerResult,
+                    HasException: (ex) => Result<T>.Failure(ex)
+                    );
+    }
+
+    public Result<T> ApplySideEffect(Action<T>? hasValue = null, Action<Exception>? hasException = null)
     {
         if (this.HasValue)
             hasValue?.Invoke(this.Value!);
@@ -55,12 +80,12 @@ public partial record Result<T>
         return this;
     }
 
-    public  Result<T> ApplySideEffect( bool test, Action<T> trueAction, Action<T> falseAction)
+    public Result<T> ApplySideEffect(bool test, Action<T> trueAction, Action<T> falseAction)
         => test
             ? this.ApplySideEffect(trueAction, null)
             : this.ApplySideEffect(falseAction, null);
 
-    public  Result<T> ApplySideEffect( bool test, Action<T> trueAction)
+    public Result<T> ApplySideEffect(bool test, Action<T> trueAction)
         => test
             ? this.ApplySideEffect(trueAction, null)
             : this;
@@ -71,22 +96,22 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<T> ApplyTransform( bool test, Func<T, Result<T>> trueTransform, Func<T, Result<T>> falseTransform)
+    public Result<T> ApplyTransform(bool test, Func<T, Result<T>> trueTransform, Func<T, Result<T>> falseTransform)
         => test
             ? this.ApplyTransform<T>(trueTransform)
             : this.ApplyTransform<T>(falseTransform);
 
-    public  Result<TOut> ApplyTransform<TOut>( bool test, Func<T, Result<TOut>> trueTransform, Func<T, Result<TOut>> falseTransform)
+    public Result<TOut> ApplyTransform<TOut>(bool test, Func<T, Result<TOut>> trueTransform, Func<T, Result<TOut>> falseTransform)
         => test
             ? this.ApplyTransform<TOut>(trueTransform)
             : this.ApplyTransform<TOut>(falseTransform);
 
-    public  Result<T> ApplyExceptionOnTrue( bool test, string message)
+    public Result<T> ApplyExceptionOnTrue(bool test, string message)
         => this.HasValue && test
             ? Result<T>.Failure(message)
             : this;
 
-    public  Result<T> ApplyExceptionOnTrue( bool test, Exception exception)
+    public Result<T> ApplyExceptionOnTrue(bool test, Exception exception)
         => this.HasValue && test
             ? Result<T>.Failure(exception)
             : this;

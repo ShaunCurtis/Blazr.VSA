@@ -3,24 +3,18 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using System.Diagnostics.CodeAnalysis;
+using Blazr.Manganese;
 
 namespace Blazr.Gallium;
 
 public interface IScopedStateProvider<TKey, TData>
      where TData : class
 {
-    public void Dispatch(TKey key, TData data);
+    public Result Dispatch(TKey key, TData data);
 
-    public void ClearState(TKey key);
+    public Result ClearState(TKey key);
 
-    public TData? GetState(TKey key);
-
-    public bool TryGetState(TKey key, out TData? value);
-
-    public T? GetState<T>(TKey key) where T : class;
-
-    public bool TryGetState<T>(TKey key, out T? value) where T : class;
+    public Result<T> GetState<T>(TKey key) where T : class;
 }
 
 public class ScopedStateProvider : IScopedStateProvider<Guid, object>
@@ -33,7 +27,7 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
     private Dictionary<Guid, StateSubscription> _subscriptions = new();
     private TimeSpan StateTTL = TimeSpan.FromMinutes(60);
 
-    public void Dispatch(Guid key, object data)
+    public Result Dispatch(Guid key, object data)
     {
         if (_subscriptions.ContainsKey(key))
             _subscriptions[key] = new(data);
@@ -41,53 +35,39 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
             _subscriptions.Add(key, new(data));
 
         this.ClearExpiredStates();
+
+        return Result.Success();
     }
 
-    public void ClearState(Guid key)
+    public Result<T> Dispatch<T>(T data) where T : class, IScopedState
+        {
+        if (_subscriptions.ContainsKey(data.Key))
+            _subscriptions[data.Key] = new(data);
+        else
+            _subscriptions.Add(data.Key, new(data));
+
+        this.ClearExpiredStates();
+
+        return Result<T>.Success(data);
+    }
+
+    public Result ClearState(Guid key)
     {
         if (_subscriptions.ContainsKey(key))
             _subscriptions.Remove(key);
+
+        return Result.Success();
     }
 
-    public T? GetState<T>(Guid key) where T : class
-    {
-        if (_subscriptions.ContainsKey(key))
-            return _subscriptions[key].Data as T;
-
-        return default;
-    }
-
-    public bool TryGetState<T>(Guid key, [NotNullWhen(true)] out T? value) where T : class
-    {
-        value = null;
-
-        if (_subscriptions.ContainsKey(key))
-            value = _subscriptions[key].Data as T;
-
-        return value is not null;
-    }
+    public Result<T> GetState<T>(Guid key) where T : class
+        => _subscriptions.ContainsKey(key)
+            ? Result<T>.Create(_subscriptions[key].Data as T)
+            : Result<T>.Failure($"No state found for key {key}");
 
     private void ClearExpiredStates()
     {
         var expiredStates = _subscriptions.Where(item => DateTime.UtcNow > item.Value.TimeStamp.AddTicks(StateTTL.Ticks)).Select(item => item.Key);
         foreach (var key in expiredStates)
             _subscriptions.Remove(key);
-    }
-
-    public object? GetState(Guid key)
-    {
-        if (_subscriptions.ContainsKey(key))
-            return _subscriptions[key].Data;
-
-        return default;
-    }
-
-    public bool TryGetState(Guid key, [NotNullWhen(true)] out object? data)
-    {
-        data = _subscriptions.ContainsKey(key)
-            ? _subscriptions[key].Data
-            : default;
-
-        return data is not null;
     }
 }

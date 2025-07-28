@@ -41,4 +41,9 @@ public partial record Result<T>
         => test
             ? await this.ApplyTransformAsync(trueTransform)
             : this.ToResult;
+
+    public async Task<Result<TOut>> DispatchAsync<TOut>(Func<T, Task<Result<TOut>>> transform)
+        => this.HasException
+            ? Result<TOut>.Failure(this.Exception!)
+            : await transform(this.Value!);
 }

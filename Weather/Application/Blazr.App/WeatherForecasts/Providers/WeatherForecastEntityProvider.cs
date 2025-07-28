@@ -21,29 +21,11 @@ public class WeatherForecastEntityProvider
         _serviceProvider = serviceProvider;
     }
 
-    //public Func<GridState<DmoWeatherForecast>, Task<Result<GridItemsProviderResult<DmoWeatherForecast>>>> GetItemsAsync1
-    //    => (state) => _mediator.Send(new WeatherForecastListRequest()
-    //        {
-    //            PageSize = state.PageSize,
-    //            StartIndex = state.StartIndex,
-    //            SortColumn = state.SortField,
-    //            SortDescending = state.SortDescending
-    //        })
-    //    .MapTaskAsync<GridItemsProviderResult<DmoWeatherForecast>>(FromListItemsProvider)
-    //        ;
-
-    public async Task<Result<GridItemsProviderResult<DmoWeatherForecast>>> GetItemsAsync(GridState<DmoWeatherForecast> state)
-    {
-        var asyncResult = await _mediator.Send(new WeatherForecastListRequest()
-        {
-            PageSize = state.PageSize,
-            StartIndex = state.StartIndex,
-            SortColumn = state.SortField,
-            SortDescending = state.SortDescending
-        });
-
-        return asyncResult.ApplyTransform<GridItemsProviderResult<DmoWeatherForecast>>(FromListItemsProvider);
-    }
+    public Task<Result<GridItemsProviderResult<DmoWeatherForecast>>> GetItemsAsync(GridState<DmoWeatherForecast> state)
+        => WeatherForecastListRequest.Create(state)
+            .DispatchAsync((request) => _mediator.DispatchAsync(request))
+            .ApplyTransformAsync((itemsProvider) => GridItemsProviderResult
+                .From<DmoWeatherForecast>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
 
     public Func<WeatherForecastId, Task<Result<WeatherForecastEntity>>> EntityRequestAsync
         => (id) => id.IsDefault ? NewEntityRequestAsync(id) : ExistingEntityRequestAsync(id);
