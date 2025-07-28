@@ -97,12 +97,12 @@ public static class TaskFunctionalExtensions
     private static Result<T> CheckForTaskException<T>(Task<Result<T>> task)
         => task.IsCompletedSuccessfully
             ? task.Result
-            : Result<T>.Failure(t.Exception
+            : Result<T>.Failure(task.Exception
                 ?? new Exception("The Task failed to complete successfully"));
 
     private static Result CheckForTaskException(Task<Result> task)
         => task.IsCompletedSuccessfully
             ? task.Result
-            : Result.Failure(t.Exception
+            : Result.Failure(task.Exception
                 ?? new Exception("The Task failed to complete successfully"));
 }
