@@ -12,7 +12,7 @@ public sealed partial class WeatherForecastEntity
     private Result ApplyRules(object? sender)
         => SetProcessing()
             .ApplyTransform(RunRules)
-            .ApplySideEffect(() => this.StateHasChanged?.Invoke(sender ?? this, this.Id)
+            .UpdateState(() => this.StateHasChanged?.Invoke(sender ?? this, this.Id)
         );
 
     private Result RunRules()

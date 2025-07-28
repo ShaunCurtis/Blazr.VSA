@@ -20,8 +20,7 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
     where TKey : notnull, IEntityId
 {
     [Inject] protected NavigationManager NavManager { get; set; } = default!;
-    [Inject] protected ILogger<GridFormBase<TRecord, TKey>> Logger { get; set; } = default!;
-    [Inject] protected IUIEntityProvider<TRecord,TKey> UIEntityProvider { get; set; } = default!;
+    [Inject] protected IUIEntityProvider<TRecord, TKey> UIEntityProvider { get; set; } = default!;
 
     [Parameter] public string? FormTitle { get; set; }
     [Parameter] public Guid GridContextId { get; set; } = Guid.NewGuid();
@@ -31,11 +30,10 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
     protected IGridUIBroker<TRecord> UIBroker { get; private set; } = default!;
     protected IModalDialog modalDialog = default!;
     protected QuickGrid<TRecord> quickGrid = default!;
-    protected virtual string formTitle => this.FormTitle ?? $"List of {this.UIEntityProvider?.PluralDisplayName ?? "Items"}";
-
     protected PaginationState Pagination = new PaginationState { ItemsPerPage = 10 };
-    protected Expression<Func<TRecord, bool>>? DefaultFilter { get; set; } = null;
+    //protected Expression<Func<TRecord, bool>>? DefaultFilter { get; set; } = null;
 
+    protected virtual string formTitle => this.FormTitle ?? $"List of {this.UIEntityProvider?.PluralDisplayName ?? "Items"}";
     protected string TableCss = "table table-sm table-striped table-hover border-bottom no-margin hide-blank-rows";
     protected string GridCss = "grid";
 
@@ -44,14 +42,11 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
         this.Pagination.ItemsPerPage = this.PageSize;
 
         // If we are resetting the grid context, then we need to reset the saved grid state
-        if (ResetGridContext)
-            UIBroker = await this.UIEntityProvider.GetGridUIBrokerAsync(this.GridContextId, new UpdateGridRequest<TRecord>(0, this.PageSize, false, null));
-else
-            UIBroker = await this.UIEntityProvider.GetGridUIBrokerAsync(this.GridContextId);
+        UIBroker = ResetGridContext
+            ? await this.UIEntityProvider.GetGridUIBrokerAsync(this.GridContextId, new UpdateGridRequest<TRecord>(0, this.PageSize, false, null))
+            : UIBroker = await this.UIEntityProvider.GetGridUIBrokerAsync(this.GridContextId);
 
         this.UIBroker.StateChanged += OnStateChanged;
-
-        this.UIBroker.SetContext(this.GridContextId);
 
         // Set the current page index in the pager.
         // This will trigger the GetItemsAsync method to be called with the correct page index.
@@ -66,11 +61,6 @@ else
         ArgumentNullException.ThrowIfNull(this.modalDialog);
         ArgumentNullException.ThrowIfNull(this.quickGrid);
     }
-
-    // This method provides the data to the QuickGrid component whenever the grid is refreshed or the page changes.
-    // It updates the GridState with the new page index and page size, then calls the UIBroker to get the new data.
-    public ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
-        => new ValueTask<GridItemsProviderResult<TRecord>>(this.UIBroker.GetItemsAsync(gridRequest));
 
     protected virtual async Task OnEditAsync(TKey id)
     {

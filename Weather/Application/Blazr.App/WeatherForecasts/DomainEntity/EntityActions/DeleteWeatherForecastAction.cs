@@ -17,7 +17,7 @@ public sealed partial class WeatherForecastEntity
         public Result<WeatherForecastEntity> ExecuteAction(WeatherForecastEntity entity)
             => entity._weatherForecast
                 .MarkAsDeleted(this.TransactionId)
-                .ApplySideEffect(
+                .UpdateState(
                     hasNoException: () => entity.StateHasChanged?.Invoke(this, entity.WeatherForecast.Id),
                     hasException: ex => entity._weatherForecast.RollBackLastUpdate(this.TransactionId)
                     )

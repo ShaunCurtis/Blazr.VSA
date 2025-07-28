@@ -21,7 +21,7 @@ public sealed partial class WeatherForecastEntity
             =>  entity._weatherForecast
                 .Update(this.Item, this.TransactionId)
                 .ApplyTransform(() => entity.ApplyRules(this.Sender))
-                .ApplySideEffect(
+                .UpdateState(
                     hasNoException: () => entity.StateHasChanged?.Invoke(this.Sender, this.Item.Id),
                     hasException: ex => entity._weatherForecast.RollBackLastUpdate(this.TransactionId)
                 )

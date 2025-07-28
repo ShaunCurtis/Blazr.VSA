@@ -6,9 +6,7 @@
 using Blazr.Cadmium.Core;
 using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode;
-using Blazr.Diode.Mediator;
 using Blazr.Gallium;
-using Blazr.Manganese;
 using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.Cadmium.Presentation;
@@ -36,16 +34,14 @@ public partial class GridUIBroker<TRecord, TKey>
         _messageBus.Subscribe<TRecord>(this.OnStateChanged);
     }
 
-    /// <summary>
-    /// Sets the State context for the Broker 
-    /// </summary>
-    /// <param name="context"></param>
+    public void Dispose()
+        => _messageBus.UnSubscribe<TRecord>(this.OnStateChanged);
+
     public Result SetContext(Guid context, UpdateGridRequest<TRecord> resetGridRequest)
     {
         this.StateContextUid = context;
 
-        return this.DispatchGridStateChange(resetGridRequest)
-            .ToResult;
+        return this.Dispatch(resetGridRequest).ToResult;
     }
 
     public Result SetContext(Guid context)
@@ -55,54 +51,38 @@ public partial class GridUIBroker<TRecord, TKey>
         // Check to see if we have a saved grid state for this context.
         // If so load and apply it
         return _gridStateStore.GetState<GridState<TRecord>>(context)
-            .ApplySideEffect( hasValue: (state) => this.GridState = state,
+            .UpdateState(hasValue: (state) => this.GridState = state,
                 hasException: (ex) => this.GridState = new GridState<TRecord>())
             .ToResult;
     }
 
-    /// <summary>
-    /// Applies a GridState change to the Broker and saves the state
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    public Result<GridState<TRecord>> DispatchGridStateChange(UpdateGridRequest<TRecord> request)
+    public Result<GridState<TRecord>> Dispatch(UpdateGridRequest<TRecord> request)
         => Result<GridState<TRecord>>
-            .Create(new ()
-                { 
-                    Key = this.StateContextUid,
-                    PageSize = request.PageSize,
-                    StartIndex = request.StartIndex,
-                    SortField = request.SortField,
-                    SortDescending = request.SortDescending
-                })
+            .Create(new()
+            {
+                Key = this.StateContextUid,
+                PageSize = request.PageSize,
+                StartIndex = request.StartIndex,
+                SortField = request.SortField,
+                SortDescending = request.SortDescending
+            })
             .Dispatch(_gridStateStore.Dispatch);
 
-    public Task<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
-        => Result<UpdateGridRequest<TRecord>>
+    public async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
+        => await Result<UpdateGridRequest<TRecord>>
             .Create(UpdateGridRequest<TRecord>.Create(gridRequest))
-            .Dispatch(this.DispatchGridStateChange)
+            .Dispatch(this.Dispatch)
             .ApplyTransformAsync(_entityProvider.GetItemsAsync)
-            .ApplySideEffectAsync((result) => this.LastResult = result)
-            .OutputAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+            .MutateStateAsync((result) => this.LastResult = result)
+            .OutputValueAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 
-    public void Dispose()
-    {
-        _messageBus.UnSubscribe<TRecord>(this.OnStateChanged);
-    }
-}
-
-public partial class GridUIBroker<TRecord, TKey>
-    : IGridUIBroker<TRecord>, IDisposable
-    where TRecord : class, new()
-    where TKey : notnull, IEntityId
-{
     // Services
     protected readonly IMessageBus _messageBus;
     private readonly ScopedStateProvider _gridStateStore;
     private readonly IEntityProvider<TRecord, TKey> _entityProvider;
 
     private void OnStateChanged(object? message)
-    {
-        this.StateChanged?.Invoke(this, EventArgs.Empty);
-    }
+        => this.StateChanged?.Invoke(this, EventArgs.Empty);
+
 }
+

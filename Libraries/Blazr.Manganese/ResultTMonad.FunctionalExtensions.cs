@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-/// ============================================================
+﻿/// ============================================================
 /// Author: Shaun Curtis, Cold Elm Coders
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
@@ -57,7 +55,7 @@ public partial record Result<T>
             ? transform(this.Value!)
             : Result<TOut>.Failure(this.Exception!);
 
-    public Result<T> DispatchToDispatcher(Func<T, Result> transform)
+    public Result<T> Dispatch(Func<T, Result> transform)
     {
         var outerResult = this;
 
@@ -70,7 +68,7 @@ public partial record Result<T>
                     );
     }
 
-    public Result<T> ApplySideEffect(Action<T>? hasValue = null, Action<Exception>? hasException = null)
+    public Result<T> UpdateState(Action<T>? hasValue = null, Action<Exception>? hasException = null)
     {
         if (this.HasValue)
             hasValue?.Invoke(this.Value!);
@@ -80,17 +78,17 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<T> ApplySideEffect(bool test, Action<T> trueAction, Action<T> falseAction)
+    public Result<T> UpdateState(bool test, Action<T> trueAction, Action<T> falseAction)
         => test
-            ? this.ApplySideEffect(trueAction, null)
-            : this.ApplySideEffect(falseAction, null);
+            ? this.UpdateState(trueAction, null)
+            : this.UpdateState(falseAction, null);
 
-    public Result<T> ApplySideEffect(bool test, Action<T> trueAction)
+    public Result<T> UpdateState(bool test, Action<T> trueAction)
         => test
-            ? this.ApplySideEffect(trueAction, null)
+            ? this.UpdateState(trueAction, null)
             : this;
 
-    public Result<T> ApplySideEffect(Action<Result> Action)
+    public Result<T> UpdateState(Action<Result> Action)
     {
         Action.Invoke(this.ToResult);
         return this;

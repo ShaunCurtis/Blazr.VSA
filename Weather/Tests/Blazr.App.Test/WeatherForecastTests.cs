@@ -74,7 +74,7 @@ public partial class WeatherForecastTests
         var listRequest = await Result<WeatherForecastListRequest>
             .Create(new WeatherForecastListRequest { PageSize = pageSize, StartIndex = startIndex })
             .ApplyTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-            .ApplySideEffectAsync(
+            .MutateStateAsync(
                 hasValue: (provider) => listItemsProvider = provider, 
                 hasException: (ex) => result = false);
 
@@ -228,7 +228,7 @@ public partial class WeatherForecastTests
 
         // Get the record from the data store
         var recordResult = await entityProvider.RecordRequestAsync(testId)
-            .ApplySideEffectAsync(
+            .MutateStateAsync(
                 hasValue: (item) =>
                 {
                     dbRecord = item;
@@ -264,7 +264,7 @@ public partial class WeatherForecastTests
         WeatherForecastId updatedId = default!;
 
         var recordResult = await entityProvider.EntityRequestAsync(testId)
-            .ApplySideEffectAsync(
+            .MutateStateAsync(
             hasValue: (item) =>
             {
                 entity = item;
@@ -336,7 +336,7 @@ public partial class WeatherForecastTests
 
         // Execute the entity command to add the new record
         var commandResult = await entityProvider.EntityCommandAsync.Invoke(entity)
-            .ApplySideEffectAsync(hasValue: (id) =>
+            .MutateStateAsync(hasValue: (id) =>
                 {
                     result = true;
                     newId = id;

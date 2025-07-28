@@ -54,7 +54,7 @@ public partial class WeatherForecastEntityTests
         await uiBroker.SaveItemAsync(true);
 
         // Output the result of the save
-        uiBroker.LastResult.ApplySideEffect(
+        uiBroker.LastResult.UpdateState(
             hasNoException: () => result = true,
             hasException: (ex) => result = false);
 
@@ -113,7 +113,7 @@ public partial class WeatherForecastEntityTests
         await uiBroker.SaveItemAsync(true);
 
         result = false;
-        uiBroker.LastResult.ApplySideEffect(
+        uiBroker.LastResult.UpdateState(
             hasNoException: () => result = true);
 
         // check the update was successful
@@ -177,7 +177,7 @@ public partial class WeatherForecastEntityTests
 
         await uiBroker.SaveItemAsync();
 
-        uiBroker.LastResult.ApplySideEffect(
+        uiBroker.LastResult.UpdateState(
             hasNoException: () => result = true);
 
         WeatherForecastId newId = uiBroker.Id;

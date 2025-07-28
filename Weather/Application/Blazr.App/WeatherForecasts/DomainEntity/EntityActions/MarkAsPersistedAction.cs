@@ -19,6 +19,6 @@ public partial class WeatherForecastEntity
 
         public Result ExecuteAction(WeatherForecastEntity entity)
             => entity._weatherForecast.MarkAsPersisted()
-                .ApplySideEffect(() => entity.StateHasChanged?.Invoke(this.Sender, entity.Id));
+                .UpdateState(() => entity.StateHasChanged?.Invoke(this.Sender, entity.Id));
     }
 }

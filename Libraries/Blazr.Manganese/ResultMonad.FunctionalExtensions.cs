@@ -43,19 +43,19 @@ public partial record Result
                 ? Result.Failure(exception)
                 : this;
 
-    public  Result ApplySideEffect( Action? hasNoException = null, Action<Exception>? hasException = null)
+    public  Result UpdateState( Action? hasNoException = null, Action<Exception>? hasException = null)
     {
         this.Output(hasNoException, hasException);
         return this;
     }
 
-    public  Result ApplySideEffect( Action hasNoException)
+    public  Result UpdateState( Action hasNoException)
     {
         this.Output(hasNoException, null);
         return this;
     }
 
-    public  Result ApplySideEffect( bool test, Action? trueAction = null, Action? falseAction = null)
+    public  Result UpdateState( bool test, Action? trueAction = null, Action? falseAction = null)
     {
 
         if (!this.HasException)

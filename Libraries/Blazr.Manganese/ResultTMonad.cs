@@ -40,17 +40,17 @@ public partial record Result<T>
             ? Result.Success()
             : Result.Failure(Exception);
 
-    public Result Output(Action<T>? hasValue = null, Action<Exception>? hasException = null)
+    public Result<T> Output(Action<T>? hasValue = null, Action<Exception>? hasException = null)
     {
         if (HasValue)
             hasValue?.Invoke(Value!);
         else
             hasException?.Invoke(Exception!);
 
-        return this.ToResult;
+        return this;
     }
 
-    public T Output(Func<Exception, T> hasException)
+    public T OutputValue(Func<Exception, T> hasException)
     {
         if (this.HasException)
             return hasException.Invoke(Exception!);

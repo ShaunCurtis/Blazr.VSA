@@ -7,7 +7,7 @@ namespace Blazr.Manganese;
 
 public static class NullableFunctionalExtensions
 {
-    public static Nullable<T> ApplySideEffect<T>(this Nullable<T> value, Action<T>? IsNotNull = null, Action? IsNull = null)
+    public static Nullable<T> UpdateState<T>(this Nullable<T> value, Action<T>? IsNotNull = null, Action? IsNull = null)
         where T : struct
     {
         if (value.HasValue && IsNotNull != null)

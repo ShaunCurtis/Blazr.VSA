@@ -55,7 +55,7 @@ await Console
     .ReadLine()
     .ToResult()
     .ApplyTransformAsync(Utils.StringToDoubleAsync)
-    .ApplySideEffectAsync((value) => doubleValue = value)
+    .MutateStateAsync((value) => doubleValue = value)
     .ApplyTransformAsync(Math.Sqrt)
     .ApplyTransformAsync((value) => Math.Round(value, 2))
     .OutputAsync(

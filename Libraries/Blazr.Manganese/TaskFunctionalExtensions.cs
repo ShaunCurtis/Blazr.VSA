@@ -18,21 +18,20 @@ public static class TaskFunctionalExtensions
             .ContinueWith(CheckForTaskException)
             .ContinueWith((t) => t.Result.ApplyTransform<TOut>(transform));
 
-    public static Task OutputAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
+    public static Task<Result<T>> OutputAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
         => task
             .ContinueWith(CheckForTaskException)
             .ContinueWith((t) => t.Result.Output(hasValue: hasValue, hasException: hasException));
 
-    public static Task OutputAsync<T>(this Task<Result<T>> task, Action<T> hasValue)
+    public static Task<Result<T>> OutputAsync<T>(this Task<Result<T>> task, Action<T> hasValue)
         => task
             .ContinueWith(CheckForTaskException)
             .ContinueWith((t) => t.Result.Output(hasValue: hasValue));
-  
-    public static Task<T> OutputAsync<T>(this Task<Result<T>> task, Func<Exception, T> ExceptionOutput)
+
+    public static Task<T> OutputValueAsync<T>(this Task<Result<T>> task, Func<Exception, T> ExceptionOutput)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.Output(hasException: ExceptionOutput));
-
+            .ContinueWith((t) => t.Result.OutputValue(hasException: ExceptionOutput));
 
     public static async Task<Result<T>> ApplyTransformAsync<T>(this Task<Result<T>> task, Func<T, Result<T>> transform)
     {
@@ -80,25 +79,25 @@ public static class TaskFunctionalExtensions
             .ContinueWith(CheckForTaskException)
             .ContinueWith((t) => t.Result.ToResult);
 
-    public static Task<Result<T>> ApplySideEffectAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
+    public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ApplySideEffect(hasValue, hasException));
+            .ContinueWith((t) => t.Result.UpdateState(hasValue, hasException));
 
-    public static Task<Result<T>> ApplySideEffectAsync<T>(this Task<Result<T>> task, bool test, Action<T> trueAction)
+    public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, bool test, Action<T> trueAction)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ApplySideEffect(test, trueAction));
+            .ContinueWith((t) => t.Result.UpdateState(test, trueAction));
 
-    public static Task<Result> ApplySideEffectAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
+    public static Task<Result> MutateStateAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ApplySideEffect(hasValue, hasException));
+            .ContinueWith((t) => t.Result.UpdateState(hasValue, hasException));
 
-    public static Task<Result<T>> ApplySideEffectAsync<T>(this Task<Result<T>> task, Action<Result> action)
+    public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, Action<Result> action)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ApplySideEffect(action));
+            .ContinueWith((t) => t.Result.UpdateState(action));
 
     public static Task<Result> AsResultAsync<T>(this Task<Result<T>> task)
         => task

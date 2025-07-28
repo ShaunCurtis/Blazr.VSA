@@ -23,7 +23,7 @@ public Task<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderReq
         .Create(UpdateGridRequest<TRecord>.Create(gridRequest))
         .Dispatch(this.DispatchGridStateChange)
         .ApplyTransformAsync(_entityProvider.GetItemsAsync)
-        .ApplySideEffectAsync((result) => this.LastResult = result)
+        .MutateStateAsync((result) => this.LastResult = result)
         .OutputAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 ```
 

@@ -38,7 +38,7 @@ public partial class WeatherForecastEntityEditUIBroker
         LastResult = Result.Success()
             .ApplyTransform(() => _isLoaded ? Result.Success() : NotLoadedResult)
             .ApplyTransform(this.ResetEntity)
-            .ApplySideEffect(hasNoException: () =>
+            .UpdateState(hasNoException: () =>
                     {
                         // Reset the EditMutator and create a new EditContext to rebuild the whole Edit Form
                         EditMutator.Reset();
@@ -53,7 +53,7 @@ public partial class WeatherForecastEntityEditUIBroker
         LastResult = await Result.Success()
             // check if the UIBroker is loaded and only update if it is
             .ApplyTransformAsync(() => _isLoaded ? this.UpdateEntityAsync(refreshOnNew) : Task.FromResult(NotLoadedResult))
-            .ApplySideEffectAsync(hasValue: () =>
+            .MutateStateAsync(hasValue: () =>
             {
                 WeatherForecastEntity.MarkAsPersistedAction
                     .CreateAction()
@@ -84,7 +84,7 @@ public partial class WeatherForecastEntityEditUIBroker
     private async Task<Result> LoadEntityAsync(WeatherForecastId id)
         => await Result<WeatherForecastId>.Create(id)
             .ApplyTransformAsync<WeatherForecastEntity>(_entityProvider.EntityRequestAsync)
-            .ApplySideEffectAsync(
+            .MutateStateAsync(
                 hasValue: (entity) =>
                 {
                     _entity = entity;

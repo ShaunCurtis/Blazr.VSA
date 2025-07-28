@@ -46,9 +46,9 @@ public partial class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>,
     private async Task<Result> GetRecordItemAsync(TKey id)
         => await Result<TKey>.Create(id)
             .ApplyExceptionOnTrue(id.IsDefault, "The record Id is default.  Mo record retrieved.")
-            .ApplySideEffect((recordId) => _key = recordId)
+            .UpdateState((recordId) => _key = recordId)
             .ApplyTransformAsync(_entityProvider.RecordRequestAsync)
-            .ApplySideEffectAsync(hasValue: (record) => this.Item = record)
+            .MutateStateAsync(hasValue: (record) => this.Item = record)
             .ToResultAsync();
 
     private async void OnRecordChanged(object? obj)
@@ -56,6 +56,6 @@ public partial class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>,
         // Get the key and update the record and trigger a RecordChanged event which will update the UI
         var result = await _entityProvider.GetKey(obj)
             .ApplyTransformAsync(this.GetRecordItemAsync)
-            .ApplySideEffectAsync(hasValue: () => this.RecordChanged?.Invoke(this, EventArgs.Empty));
+            .MutateStateAsync(hasValue: () => this.RecordChanged?.Invoke(this, EventArgs.Empty));
     }
 }

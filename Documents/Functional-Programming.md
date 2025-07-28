@@ -192,7 +192,7 @@ Console
 
 There are times when you want to output a result, normally mutate some object state, at some point in the chain.  You can always break put of the chain and then restart, but that's clunky.
 
-`ApplySideEffect` is designed for that purpose.  Here's a refactored version of the console app to output the initial parsing value.
+`UpdateState` is designed for that purpose.  Here's a refactored version of the console app to output the initial parsing value.
 
 ```csharp
 double doubleValue = 0;
@@ -201,7 +201,7 @@ Console
     .ReadLine()
     .ToResult()
     .ApplyTransform(double.Parse)
-    .ApplySideEffect((value) => doubleValue = value)
+    .UpdateState((value) => doubleValue = value)
     .ApplyTransform(Math.Sqrt)
     .ApplyTransform((value) => Math.Round(value, 2))
     .Output(
@@ -253,7 +253,7 @@ await Console
     // this is our async transition
     .ApplyTransformAsync(Utils.StringToDoubleAsync)
     // all if these operations are now continuations
-    .ApplySideEffectAsync((value) => doubleValue = value)
+    .MutateStateAsync((value) => doubleValue = value)
     .ApplyTransformAsync(Math.Sqrt)
     .ApplyTransformAsync((value) => Math.Round(value, 2))
     .OutputAsync(
@@ -290,10 +290,10 @@ public static Task OutputAsync<T>(this Task<Result<T>> task, Action<T>? hasValue
 ```
 
 ```csharp
-public static Task<Result<T>> ApplySideEffectAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
+public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
     => task
         .ContinueWith(CheckForTaskException)
-        .ContinueWith((t) => t.Result.ApplySideEffect(hasValue, hasException));
+        .ContinueWith((t) => t.Result.UpdateState(hasValue, hasException));
 ```
 
 For the record , the `CheckForTaskException` method is:

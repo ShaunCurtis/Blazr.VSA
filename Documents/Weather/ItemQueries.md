@@ -98,7 +98,7 @@ The internal `GetRecordItemAsync` method does the work.  It's written in functio
 private async Task<Result> GetRecordItemAsync(TKey id)
     => await Result<TKey>.Create(id)
         .ApplyTransformOnException(id.IsDefault, "The record Id is default.  Mo record retrieved.")
-        .ApplySideEffect((recordId) => _key = recordId)
+        .UpdateState((recordId) => _key = recordId)
         .ApplyTransformOnException(_entityProvider.RecordRequestAsync)
         .TaskSideEffectAsync(success: (record) => this.Item)
         .MapTaskToResultAsync();
