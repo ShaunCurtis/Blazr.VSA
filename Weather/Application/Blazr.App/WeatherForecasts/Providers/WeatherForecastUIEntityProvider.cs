@@ -7,6 +7,7 @@ using Blazr.App.Core;
 using Blazr.Cadmium;
 using Blazr.Cadmium.Core;
 using Blazr.Cadmium.Presentation;
+using Blazr.Cadmium.QuickGrid;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.App.UI;
@@ -34,9 +35,20 @@ public sealed record WeatherForecastUIEntityProvider : IUIEntityProvider<DmoWeat
         return presenter;
     }
 
-    public ValueTask<IGridUIBroker<DmoWeatherForecast>> GetGridUIBrokerAsync()
+    public ValueTask<IGridUIBroker<DmoWeatherForecast>> GetGridUIBrokerAsync(Guid ContextId, UpdateGridRequest<DmoWeatherForecast> resetGridRequest)
     {
         var presenter = ActivatorUtilities.CreateInstance<GridUIBroker<DmoWeatherForecast, WeatherForecastId>>(_serviceProvider);
+        
+        presenter.SetContext(ContextId, resetGridRequest);
+        
+        return ValueTask.FromResult<IGridUIBroker<DmoWeatherForecast>>(presenter);
+    }
+
+    public ValueTask<IGridUIBroker<DmoWeatherForecast>> GetGridUIBrokerAsync(Guid ContextId)
+    {
+        var presenter = ActivatorUtilities.CreateInstance<GridUIBroker<DmoWeatherForecast, WeatherForecastId>>(_serviceProvider);
+        
+        presenter.SetContext(ContextId);
 
         return ValueTask.FromResult<IGridUIBroker<DmoWeatherForecast>>(presenter);
     }

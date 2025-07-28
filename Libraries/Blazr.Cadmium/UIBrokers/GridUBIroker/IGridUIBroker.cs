@@ -19,6 +19,7 @@ public interface IGridUIBroker<TRecord>
     public event EventHandler<EventArgs>? StateChanged;
 
     public void SetContext(Guid context);
-    public ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync();
-    public Result DispatchGridStateChange(UpdateGridRequest<TRecord> request);
+    public void SetContext(Guid context, UpdateGridRequest<TRecord> resetGridRequest);
+    public Task<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest);
+    public Result<GridState<TRecord>> DispatchGridStateChange(UpdateGridRequest<TRecord> request);
 }

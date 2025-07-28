@@ -1,44 +1,13 @@
 # Functional Programming in C#
 
 This article provides an insight into my personal implementation of Functional Programming [FP from now on] in C# and the DotNet Framework, and my personal journey to Monad enlightenment.  
+As programmers brought up on a OOP diet, Functional Programming [FP from now] is a foreign land.  This article presents my personal implementation of FP in C# and the DotNet Framework, and my journey to understanding Monads.  
 
-The implementation is based on a codebase that implements the following FP definition:
+It's hard to remember that first point where you saw a chink of light in the otherwise unintelligible articles about Nomands, but this description sticks in my mind, and it sums up what my implmentation is base on.
 
 > FP is about computing a result.  When you call a FP function you pass in a value and get back a result.  There's no mutation of state, no side effects, and no changes to the input value.  The function takes the input, applies a transform, and returns a new value.
 
-There are some concessions made to C# and the OOP orientated DotNetCore framework:
-
-1. Object state mutation, but only in a controlled manner.
-
-The implementation is based on the `Result<T>` and `Result` types.  They represent the result of a computation, and can be used to handle errors and exceptions in a functional context.
-
-## The Example Code
-
-This is the console app, written in *old school* C#, we'll use to demonstrate FP concepts.  I've deliberately used `Parse` not `TryParse` to demonstrate standard exception handling.
-
-```csharp
-var input = Console.ReadLine();
-
-if (!string.IsNullOrEmpty(input))
-{
-    try
-    {
-        var value = int.Parse(input!);
-
-        var result = Math.Sqrt(value);
-        result = Math.Round(result, 2);
-        Console.WriteLine($"Parsed successfully: The transformed value of {value} is: {result}");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"An exception occurred: {ex.Message}");
-    }
-}
-else
-{
-    Console.WriteLine("Input cannot be null or empty.");
-}
-```
+My implementation has immutable `Result<T>` and `Result` types.  They represent the result of a computation, and handle errors and exceptions in a functional way.
  
 ## The Elevated World
 
@@ -133,7 +102,7 @@ Console
         hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
-We *wrap* the two possible console outputs into lambda functions to pass into `Output`. `Output` calls the appropriate delegate based on the state of `Result<T>`.
+The two possible console outputs are wrapped in lambda functions to pass into `Output`. `Output` calls the appropriate delegate based on the state of `Result<T>`.
 
 
 ## Transforming the Elevated World

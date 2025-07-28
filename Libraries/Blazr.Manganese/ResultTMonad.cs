@@ -50,6 +50,14 @@ public partial record Result<T>
         return this.ToResult;
     }
 
+    public T Output(Func<Exception, T> hasException)
+    {
+        if (this.HasException)
+            return hasException.Invoke(Exception!);
+
+        return this.Value!;
+    }
+
     public ValueTask<Result<T>> CompletedValueTask
         => ValueTask.FromResult(this);
 

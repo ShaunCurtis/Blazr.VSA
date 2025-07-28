@@ -41,16 +41,17 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
 
     protected async override Task OnInitializedAsync()
     {
-        UIBroker = await this.UIEntityProvider.GetGridUIBrokerAsync();
-
-        this.UIBroker.StateChanged += OnStateChanged;
-
-        this.UIBroker.SetContext(this.GridContextId);
         this.Pagination.ItemsPerPage = this.PageSize;
 
         // If we are resetting the grid context, then we need to reset the saved grid state
         if (ResetGridContext)
-            this.UIBroker.DispatchGridStateChange(new UpdateGridRequest<TRecord>(0, this.PageSize, false, null));
+            UIBroker = await this.UIEntityProvider.GetGridUIBrokerAsync(this.GridContextId, new UpdateGridRequest<TRecord>(0, this.PageSize, false, null));
+else
+            UIBroker = await this.UIEntityProvider.GetGridUIBrokerAsync(this.GridContextId);
+
+        this.UIBroker.StateChanged += OnStateChanged;
+
+        this.UIBroker.SetContext(this.GridContextId);
 
         // Set the current page index in the pager.
         // This will trigger the GetItemsAsync method to be called with the correct page index.
@@ -68,16 +69,8 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
 
     // This method provides the data to the QuickGrid component whenever the grid is refreshed or the page changes.
     // It updates the GridState with the new page index and page size, then calls the UIBroker to get the new data.
-    public async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
-    {
-        //mutate the GridState
-        var mutationAction = UpdateGridRequest<TRecord>.Create(gridRequest);
-        var mutationResult = UIBroker.DispatchGridStateChange(mutationAction);
-
-        var result = await this.UIBroker.GetItemsAsync();
-
-        return result;
-    }
+    public ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
+        => new ValueTask<GridItemsProviderResult<TRecord>>(this.UIBroker.GetItemsAsync(gridRequest));
 
     protected virtual async Task OnEditAsync(TKey id)
     {

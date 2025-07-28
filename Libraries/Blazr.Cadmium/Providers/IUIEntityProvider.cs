@@ -6,6 +6,7 @@
 
 using Blazr.Cadmium.Core;
 using Blazr.Cadmium.Presentation;
+using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode;
 
 namespace Blazr.Cadmium;
@@ -25,6 +26,8 @@ public interface IUIEntityProvider<TRecord, TKey>
     public ValueTask<IEditUIBroker<TRecordEditContext, TKey>> GetEditUIBrokerAsync<TRecordEditContext>(TKey id)
                 where TRecordEditContext : IRecordEditContext<TRecord>, new();
 
-    public ValueTask<IGridUIBroker<TRecord>> GetGridUIBrokerAsync();
+    public ValueTask<IGridUIBroker<TRecord>> GetGridUIBrokerAsync(Guid contextId);
+
+    public ValueTask<IGridUIBroker<TRecord>> GetGridUIBrokerAsync(Guid contextId, UpdateGridRequest<TRecord> resetGridRequest );
 
 }

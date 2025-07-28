@@ -56,6 +56,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		..\Documents\Weather\Generics.md = ..\Documents\Weather\Generics.md
 		..\Documents\Weather\Intro.md = ..\Documents\Weather\Intro.md
 		..\Documents\Weather\ItemQueries.md = ..\Documents\Weather\ItemQueries.md
+		ListQueries.md = ListQueries.md
 		..\Documents\Weather\Monads.md = ..\Documents\Weather\Monads.md
 		..\Documents\Weather\Mutating-Entities-and-Validation.md = ..\Documents\Weather\Mutating-Entities-and-Validation.md
 		..\Documents\Weather\Notifications.md = ..\Documents\Weather\Notifications.md
