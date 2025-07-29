@@ -7,17 +7,6 @@ namespace Blazr.Manganese;
 
 public static class TaskFunctionalExtensions
 {
-    public static async Task<Result<TOut>> ApplyTransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Task<Result<TOut>>> transform)
-    {
-        var result = await task.ContinueWith(CheckForTaskException);
-        return await result.ApplyTransformAsync<TOut>(transform);
-    }
-
-    public static Task<Result<TOut>> ApplyTransformAsync<T, TOut>(this Task<Result<T>> task, Func<T, TOut> transform)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ApplyTransform<TOut>(transform));
-
     public static Task<Result<T>> OutputAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
         => task
             .ContinueWith(CheckForTaskException)
@@ -32,6 +21,17 @@ public static class TaskFunctionalExtensions
         => task
             .ContinueWith(CheckForTaskException)
             .ContinueWith((t) => t.Result.OutputValue(hasException: ExceptionOutput));
+
+    public static async Task<Result<TOut>> ApplyTransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Task<Result<TOut>>> transform)
+    {
+        var result = await task.ContinueWith(CheckForTaskException);
+        return await result.ApplyTransformAsync<TOut>(transform);
+    }
+
+    public static Task<Result<TOut>> ApplyTransformAsync<T, TOut>(this Task<Result<T>> task, Func<T, TOut> transform)
+        => task
+            .ContinueWith(CheckForTaskException)
+            .ContinueWith((t) => t.Result.ApplyTransform<TOut>(transform));
 
     public static async Task<Result<T>> ApplyTransformAsync<T>(this Task<Result<T>> task, Func<T, Result<T>> transform)
     {

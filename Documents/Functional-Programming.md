@@ -1,21 +1,22 @@
 # Functional Programming in C#
 
-This article provides an insight into my personal implementation of Functional Programming [FP from now on] in C# and the DotNet Framework, and my personal journey to Monad enlightenment.  
-As programmers brought up on a OOP diet, Functional Programming [FP from now] is a foreign land.  This article presents my personal implementation of FP in C# and the DotNet Framework, and my journey to understanding Monads.  
+Programmers brought up on a strictly OOP diet find the whole concept of Functional Programming [FP from now] very alien.
 
-It's hard to remember that first point where you saw a chink of light in the otherwise unintelligible articles about Nomands, but this description sticks in my mind, and it sums up what my implmentation is base on.
+This article takes a very simple console application and walks through refactoring it using FP principles.  Along the way, I'll gently introduce you to Monads.  
+
+It's hard to remember that first point where you saw a chink of light in the otherwise unintelligible articles about Nomands, but this description sticks in my mind.
 
 > FP is about computing a result.  When you call a FP function you pass in a value and get back a result.  There's no mutation of state, no side effects, and no changes to the input value.  The function takes the input, applies a transform, and returns a new value.
 
-My implementation has immutable `Result<T>` and `Result` types.  They represent the result of a computation, and handle errors and exceptions in a functional way.
+My implementation of FP is a library called *Blazr.Manganese*. It's based around two immutable types: `Result<T>` and `Result`.  They represent the result of a computation, and handle errors and exceptions in a functional way.
  
 ## The Elevated World
 
 Read any literature on FP and the *Elevated World* soon appears.
 
-It sounds complicated, but *Elevation* is simply the process of adding a wrapper around a normal type - taking a normal type and elevating it to an elevated type.  My *Elevated World* is `Result<T>` and `Result`.
+It sounds complicated, but *Elevation* is simply the process of adding a wrapper around a normal type - taking a normal type and elevating it to an elevated type.  `Result<T>` and `Result` are my *elevated world*.
 
-You can elevate simply by using one of the static constructors.  In a simple console app:
+You can elevate simply by using one of the static constructors:
 
 ```csharp
 var input = Console.ReadLine();
@@ -46,14 +47,23 @@ The imperative statement based style has changed to an expression based style.  
 
 Note: This is just *syntactic sugar*.  The `if` statement is still there when the code is *lowered* by the compiler: we just don't need to worry about it.  The language, and our own higher level code, abstracts it.
 
-We can do better: The `Create` static constructor abstracts null handling.
+We can do better: Result's `Create` static constructor abstracts null handling.
+
+```csharp
+public static Result<T> Create(T? value) =>
+    value is null
+        ? new(new ResultException("T was null."))
+        : new(value);
+```
+
+So we now have:
 
 ```csharp
 var input = Console.ReadLine();
 var result = Result<string>.Create(input);
 ```
 
-One final step to make this code *fluent* is to extend `string`.
+The final step to make this code *fluent* by extending `string`.
 
 ```csharp
 public static class stringExtensions
@@ -70,10 +80,29 @@ var result = Console
     .ReadLine()
     .ToResult();
 ```
- 
+
+### FP Speak
+
+FP doesn't have imperative statements like `if` or `else`.  It is expression based, there is always a result to any transaction.  `Result<T>` is stateful: it contains either result, based on state.
+
+The process of *elevating* a type is the first step in FP.  We take a normal type, like `string`, and elevate it to a `Result<string>`.  This allows us to handle errors and exceptions in a functional way.  
+
+In classic FP, you call `Return` on the Monad to wrap it.  I've used different nomenclature, but the concept is the same.  The `Result<T>` type is a Monad, and it has `Create`, `Success` and `Failure` methods that wrap the provided value or exception in a `Result<T>`.  I consider them more informative.
+
 ## Unwapping the Elevated World
 
-How do we unwrap our Result<T>?  In Result<T> we have a `HasValue` and `HasException` property.  We can use these to determine if the operation was successful or not.
+We have a `Result<T>`, how do we unwrap it to, for example, output it to the console?
+
+Result<T> exposes four properties:
+
+```csharp
+    public readonly Exception? Exception;
+    public readonly T? Value;
+    public bool HasException => Exception is not null;
+    public bool HasValue => Exception is null;
+```
+
+These are `public` so `Result<T>` can be used in *OOP*:
 
 ```csharp
 var result = Console
@@ -91,7 +120,21 @@ else
 }
 ```
 
-We're back to imperative programming.  We can go *FP* using the `Output` method to output the result.
+In `Result` that code block gets wrapped into a generic `Output` method.
+
+```csharp
+public Result<T> Output(Action<T>? hasValue = null, Action<Exception>? hasException = null)
+{
+    if (HasValue)
+        hasValue?.Invoke(Value!);
+    else
+        hasException?.Invoke(Exception!);
+
+    return this;
+}
+```
+
+So we can write this bywrapping the console outputs in lambda expressions:
 
 ```csharp
 Console
@@ -102,20 +145,28 @@ Console
         hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
-The two possible console outputs are wrapped in lambda functions to pass into `Output`. `Output` calls the appropriate delegate based on the state of `Result<T>`.
-
 
 ## Transforming the Elevated World
 
-The *Elevated World* is a world of immutable types.  The `Result<T>` and `Result` types are immutable, so we can't change the state of an object.  We can only create new objects.
+So far, we've elevated a type, unwrapped it, and output the result to the console.  But we haven't done anything with the value.  The real power in monads comes in their ability to transformed the input value into an output and maintain the `Result` wrapper.
 
-We can transform the `Result<T>` type using the `ApplyTransform` set of methods.  The basic pattern of a transform is:
+In `Result<T>` this is done through the `ApplyTransform` set of methods.  The basic pattern of a transform is:
 
 ```csharp
-Tin -> Function -> Result<TOut>
+Tin -> Apply Function -> Result<TOut>
 ```
 
-Let's go back to our console app and parsing the input.  We can wrap the parsing logic into a lambda expression.  The transform function takes the input value, applies the transformation, and returns a new `Result<T>` type.
+The basic implementarion of `ApplyTransform` is:
+```csharp
+public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> transform)
+    => this.HasValue
+        ? transform(this.Value!)
+        : Result<TOut>.Failure(this.Exception!);
+```
+
+Note that the *transform* is only executed if `Result<T>` has a value.  Otherwise the method short-circuts and the exception is propagated.
+
+Back to the console app.  The parsing logic can be wrapped in a lambda expression.  The transform function takes the input value, applies the transformation, and returns a new `Result<T>` type.
 
 ```csharp
 Console
@@ -143,9 +194,31 @@ Console
     );
 ```
 
-The `ApplyTransform` method is a key part of the `Result<T>` type.  It allows us to apply a transformation to the value contained within the `Result<T>`.  If the `Result<T>` has a value, the transformation is applied, and a new `Result<TOut>` is returned.  If it has an exception, the exception is propagated without applying the transformation.
+It captures and handles both exceptions and nulls.
 
-We can improve this because there's an `ApplyTransform` that abstracts the exception capture logic: it wraps `Tin -> Function -> TOut` in a `try/catch` logic.
+The `Tin -> Apply Function -> TOut` is common enough that `Result<T>` has a `Func<T, TOut>` overload of `ApplyTransform` that wraps the `try/catch` logic for you.
+
+```csharp
+public Result<TOut> ApplyTransform<TOut>(Func<T, TOut> transform)
+{
+    if (this.Exception is not null)
+        return Result<TOut>.Failure(this.Exception!);
+
+    try
+    {
+        var value = transform.Invoke(this.Value!);
+        return (value is null)
+            ? Result<TOut>.Failure(new ResultException("The transfrom function returned a null value."))
+            : Result<TOut>.Create(value);
+    }
+    catch (Exception ex)
+    {
+        return Result<TOut>.Failure(ex);
+    }
+}
+```
+
+`int.Parse` fits the delegate pattern, so can be written like this:
 
 ```csharp
 Console
@@ -158,7 +231,7 @@ Console
     );
 ```
 
-We can now add the *SquareRoot* and *Round* transforms.
+*SquareRoot* and *Round* don't,  but that's not a problem as we can wrap then in lambda expressions that do.
 
 ```csharp
 Console
@@ -173,7 +246,7 @@ Console
     );
 ```
 
-We can modify the parsing transform to parse directly to a `double`:
+Finally, the logic can be tweated to parse directly to a `double`:
 
 ```csharp
 Console
@@ -187,6 +260,25 @@ Console
         hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
+
+### FP Discussion
+
+The *Elevated World* is a world of immutable types.  The `Result<T>` and `Result` types are immutable, so we can't change the state of an object.  We can only create new objects.
+
+The `Tin -> Apply Function -> TOut` delegate pattern, one input transformed to one output, is fundimental to FP: the staple diet of Monads.
+
+This starts to drive the way you write code.  You start to think in terms of transformations, rather than statements.  Imperative style of programming is replaced with declarative style.  Methods look like this:
+
+```csharp
+public Result<T> ApplyTransform<T>(xxxRequest request);
+```
+or 
+
+```csharp
+public T ApplyTransform<T>(xxxRequest request);
+```
+
+If you've used the *Mediator* pattern , you'll be familiar with this style of programming.  The *Mediator* pattern is a form of FP, where the *Mediator* is the *Monad* and the request is the input value.
 
 ## Side Effects
 
