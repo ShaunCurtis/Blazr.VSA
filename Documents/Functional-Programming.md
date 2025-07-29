@@ -157,6 +157,7 @@ Tin -> Apply Function -> Result<TOut>
 ```
 
 The basic implementarion of `ApplyTransform` is:
+
 ```csharp
 public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> transform)
     => this.HasValue

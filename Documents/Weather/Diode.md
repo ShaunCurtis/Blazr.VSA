@@ -5,7 +5,7 @@
 It's:
  - A set of interfaces, definitions and base implementations,
  - A *Mediator Pattern* dispatcher.
- - Built on the functional paradigm using the Result monad.
+ - Built on the functional paradigm using the `Result` and `Result<T>` monad.
 
 It consists of three channels or paths:
 
@@ -49,7 +49,7 @@ Note the filter and sort fields are expressions that can be plugged directly int
 The server-side Entity Framework Handler for this request is defined in the `CQSEFBroker` static class as follows:
 
 ```csharp
-public static async ValueTask<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
+public static async Task<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
     where TRecord : class
 {
     int totalRecordCount;
@@ -109,7 +109,7 @@ And accessed directly from a `DbContext` instance.
 
 Here's the WeatherForecast server-side handler for a List Query request that the Mediator Broker registers automatically.
 
-It's written in Functional Programming and Fluent style using the `Result` monad.  `ListQueryRequest` defines the query and the `ListItemsProvider<TRecord>` object encapsulates the result.
+It's written in Functional Programming and Fluent style using the `Result` monad.  `ListQueryRequest` defines the query and the `ListItemsProvider<TRecord>` object encapsulates the result.  Note the filter and sort expressions are built from the provided sort field string and properties defined in `WeatherForecastListRequest`.
 
 ```csharp
 public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecastListRequest, Result<ListItemsProvider<DmoWeatherForecast>>>
@@ -152,7 +152,6 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
             _ => (item) => item.Date
         };
 
-    // No Filter Defined
     private Expression<Func<DvoWeatherForecast, bool>>? GetFilter(WeatherForecastListRequest request)
     {
         if (request.Summary is not null)
@@ -160,5 +159,24 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
 
         return null;
     }
+}
+```
+
+`WeatherForecastListRequest` is API compatible.
+
+```csharp
+public record WeatherForecastListRequest
+    : BaseListRequest, IRequest<Result<ListItemsProvider<DmoWeatherForecast>>>
+{
+    public string? Summary { get; init; }
+
+    public static Result<WeatherForecastListRequest> Create(GridState<DmoWeatherForecast> state)
+        => Result<WeatherForecastListRequest>.Create(new WeatherForecastListRequest()
+        {
+            PageSize = state.PageSize,
+            StartIndex = state.StartIndex,
+            SortColumn = state.SortField,
+            SortDescending = state.SortDescending
+        });
 }
 ```
