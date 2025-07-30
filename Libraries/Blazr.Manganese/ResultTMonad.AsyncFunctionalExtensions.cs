@@ -10,7 +10,7 @@ public partial record Result<T>
     public static Result<TOut> CreateFromFunction<TOut>(Func<TOut> function)
         => Result.Success().ApplyTransform(function);
 
-    public async  Task<Result<TOut>> ApplyTransformAsync<TOut>( Func<T, Task<Result<TOut>>> transform)
+    public async  Task<Result<TOut>> ExecuteFunctionAsync<TOut>( Func<T, Task<Result<TOut>>> function)
         => this.HasException
             ? Result<TOut>.Failure(this.Exception!)
             : await function(this.Value!);
