@@ -20,7 +20,7 @@ public sealed partial class WeatherForecastEntity
 
         public Result ExecuteAction(WeatherForecastEntity entity)
             => entity._weatherForecast.Reset(entity._baseWeatherForecast)
-                .ApplyTransform(() => entity.ApplyRules(this.Sender))
-                .UpdateState(() => entity.StateHasChanged?.Invoke(this.Sender, entity.Id));
+                .ExecuteFunction(() => entity.ApplyRules(this.Sender))
+                .MutateState(() => entity.StateHasChanged?.Invoke(this.Sender, entity.Id));
     }
 }

@@ -19,7 +19,7 @@ var input = Console.ReadLine();
 
 bool isInt = int.TryParse(input, out int value);
 
-// apply some transforms to the result of the parsing
+// apply some functions to the result of the parsing
 double result = 0;
 if (isInt)
 {
@@ -29,7 +29,7 @@ if (isInt)
 //... later
 if (isInt)
 {
-    Console.WriteLine($"Parsed successfully: The transformed value is: {result}");
+    Console.WriteLine($"Parsed successfully: The functioned value is: {result}");
 }
 else
 {
@@ -43,10 +43,10 @@ And the FP version we'll develop:
 Console
     .ReadLine()
     .ParseForInt()
-    .ApplyTransform((value) => Math.Sqrt(value))
-    .ApplyTransform((value) => Math.Round(value, 2))
+    .ExecuteFunction((value) => Math.Sqrt(value))
+    .ExecuteFunction((value) => Math.Round(value, 2))
     .Output(
-        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The functioned value is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failed to parse input: {ex.Message}")
     );
 ```
@@ -150,9 +150,9 @@ else
 
 if (parseResult.HasValue)
 {
-    double transformedValue = Math.Sqrt(parseResult.Value);
-    transformedValue = Math.Round(transformedValue, 2);
-    Console.WriteLine($"Parsed successfully: The transformed value is: {transformedValue}");
+    double functionedValue = Math.Sqrt(parseResult.Value);
+    functionedValue = Math.Round(functionedValue, 2);
+    Console.WriteLine($"Parsed successfully: The functioned value is: {functionedValue}");
 }
 else
 {
@@ -218,9 +218,9 @@ var parseResult = Console
 
 if (parseResult.HasValue)
 {
-    double transformedValue = Math.Sqrt(parseResult.Value);
-    transformedValue = Math.Round(transformedValue, 2);
-    Console.WriteLine($"Parsed successfully: The transformed value is: {transformedValue}");
+    double functionedValue = Math.Sqrt(parseResult.Value);
+    functionedValue = Math.Round(functionedValue, 2);
+    Console.WriteLine($"Parsed successfully: The functioned value is: {functionedValue}");
 }
 else
 {
@@ -250,26 +250,26 @@ And then use it like this:
 var parseResult = Console
     .ReadLine()
     .ParseForInt()
-    //  Handle the transforms
+    //  Handle the functions
     .Output(
-        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The functioned value is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failed to parse input: {ex.Message}")
     );
 ```
 
-## Applying Transforms
+## Applying functions
 
 This is where the real power comes in:
 
 1. Chaining operations. 
 2. Handling nulls and exceptions in the chain using *Railway Orientated Programming*.
 
-The basic `Transform` pattern is:
+The basic `function` pattern is:
 
 ```csharp
-public  Result<TOut> ApplyTransform<TOut>( Func<T, Result<TOut>> transform)
+public  Result<TOut> ExecuteFunction<TOut>( Func<T, Result<TOut>> function)
     => this.HasValue
-        ? transform(this.Value!)
+        ? function(this.Value!)
         : Result<TOut>.Failure(this.Exception!);
 ```
 
@@ -281,15 +281,15 @@ Used in the console app:
 var parseResult = Console
     .ReadLine()
     .ParseForInt()
-    .ApplyTransform((value) => Math.Sqrt(value))
-    //  Handle the transforms
+    .ExecuteFunction((value) => Math.Sqrt(value))
+    //  Handle the functions
     .Output(
-        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The functioned value is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failed to parse input: {ex.Message}")
     );
 ```
 
- In this case, `ApplyTransform` is provided with a lambda expression to calculate the square root of the input.  The compiler interprets `TOut`. 
+ In this case, `ExecuteFunction` is provided with a lambda expression to calculate the square root of the input.  The compiler interprets `TOut`. 
 
 The now complete refactored version of the console app:
 
@@ -297,11 +297,11 @@ The now complete refactored version of the console app:
 Console
     .ReadLine()
     .ParseForInt()
-    .ApplyTransform((value) => Math.Sqrt(value))
-    .ApplyTransform((value) => Math.Round(value, 2))
-    //  Handle the transforms
+    .ExecuteFunction((value) => Math.Sqrt(value))
+    .ExecuteFunction((value) => Math.Round(value, 2))
+    //  Handle the functions
     .Output(
-        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The functioned value is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failed to parse input: {ex.Message}")
     );
 ```
@@ -325,8 +325,8 @@ public static class Utilities
 And then:
 
 ```csharp
-.ApplyTransform(SquareRoot)
-.ApplyTransform(Utilities.GetSquareRoot)
+.ExecuteFunction(SquareRoot)
+.ExecuteFunction(Utilities.GetSquareRoot)
 ```
 
 ## So What Have We Learnt from this Exercise
@@ -337,13 +337,13 @@ And then:
 
 In FP you will hear the phrase "Functions are first class citizens" a lot.  C# has delegates and `Func` and `Action` implementations.  In OOP you will rarely see them used.
 
-In FP, *Functions* are methods that take an input, apply one or more transforms to that input, and produce an output.  *Functions* are the building blocks of FP.
+In FP, *Functions* are methods that take an input, apply one or more functions to that input, and produce an output.  *Functions* are the building blocks of FP.
 
 In functional programming you apply functions to data and produce a result.  In OOP you pass data into methods to mutate the state of objects.
 
 ### Railway Orientated Programming
 
-Whether you realised it or not, FP patterns implement *Railway Orientated Programming*.  If the input `Result<T>` is in *Exception* state, any transform short-circuits, passing the exception to the output `Result<TOut>`: the transform function is not executed.  Once on the *Exception* track, you stay there..
+Whether you realised it or not, FP patterns implement *Railway Orientated Programming*.  If the input `Result<T>` is in *Exception* state, any function short-circuits, passing the exception to the output `Result<TOut>`: the function function is not executed.  Once on the *Exception* track, you stay there..
 
 ### High Level Features
 

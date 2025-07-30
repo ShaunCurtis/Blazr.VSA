@@ -22,57 +22,57 @@ public static class TaskFunctionalExtensions
             .ContinueWith(CheckForTaskException)
             .ContinueWith((t) => t.Result.OutputValue(hasException: ExceptionOutput));
 
-    public static async Task<Result<TOut>> ApplyTransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Task<Result<TOut>>> transform)
+    public static async Task<Result<TOut>> ExecuteFunctionAsync<TOut, T>(this Task<Result<T>> task, Func<T, Task<Result<TOut>>> function)
     {
         var result = await task.ContinueWith(CheckForTaskException);
-        return await result.ApplyTransformAsync<TOut>(transform);
+        return await result.ExecuteFunctionAsync<TOut>(function);
     }
 
-    public static Task<Result<TOut>> ApplyTransformAsync<T, TOut>(this Task<Result<T>> task, Func<T, TOut> transform)
+    public static Task<Result<TOut>> ExecuteFunctionAsync<T, TOut>(this Task<Result<T>> task, Func<T, TOut> function)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ApplyTransform<TOut>(transform));
+            .ContinueWith((t) => t.Result.ExecuteFunction<TOut>(function));
 
-    public static async Task<Result<T>> ApplyTransformAsync<T>(this Task<Result<T>> task, Func<T, Result<T>> transform)
+    public static async Task<Result<T>> ExecuteFunctionAsync<T>(this Task<Result<T>> task, Func<T, Result<T>> function)
     {
         var result = await task.ContinueWith(CheckForTaskException);
-        return result.ApplyTransform<T>(transform);
+        return result.ExecuteFunction<T>(function);
     }
 
-    public static async Task<Result<TOut>> ApplyTransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Result<TOut>> transform)
+    public static async Task<Result<TOut>> ExecuteFunctionAsync<TOut, T>(this Task<Result<T>> task, Func<T, Result<TOut>> function)
     {
         var result = await task.ContinueWith(CheckForTaskException);
-        return result.ApplyTransform<TOut>(transform);
+        return result.ExecuteFunction<TOut>(function);
     }
 
-    public static async Task<Result<T>> ApplyTransformAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> trueTransform, Func<T, Task<Result<T>>> falseTransform)
+    public static async Task<Result<T>> ExecuteFunctionAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> truefunction, Func<T, Task<Result<T>>> falsefunction)
     {
         var result = await task.ContinueWith(CheckForTaskException);
-        return await result.ApplyTransformAsync<T>(test, trueTransform, falseTransform);
+        return await result.ExecuteFunctionAsync<T>(test, truefunction, falsefunction);
     }
 
-    public static async Task<Result<T>> ApplyTransformAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> trueTransform)
+    public static async Task<Result<T>> ExecuteFunctionAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> truefunction)
     {
         var result = await task.ContinueWith(CheckForTaskException);
-        return await result.ApplyTransformAsync(test, trueTransform);
+        return await result.ExecuteFunctionAsync(test, truefunction);
     }
 
-    public static async Task<Result> ApplyTransformAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result>> trueTransform)
+    public static async Task<Result> ExecuteFunctionAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result>> truefunction)
     {
         var result = await task.ContinueWith(CheckForTaskException);
-        return await result.ApplyTransformAsync(test, trueTransform);
+        return await result.ExecuteFunctionAsync(test, truefunction);
     }
 
-    public async static Task<Result> ApplyTransformAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> transform)
+    public async static Task<Result> ExecuteFunctionAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> function)
     {
         var result = await task.ContinueWith(CheckForTaskException);
-        return await result.ApplyTransformAsync(transform);
+        return await result.ExecuteFunctionAsync(function);
     }
 
-    public static Task<Result> ApplyTransformAsync<T>(this Task<Result<T>> task, Func<T, Result> transform)
+    public static Task<Result> ExecuteFunctionAsync<T>(this Task<Result<T>> task, Func<T, Result> function)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ApplyTransform(transform));
+            .ContinueWith((t) => t.Result.ExecuteFunction(function));
 
     public static Task<Result> ToResultAsync<T>(this Task<Result<T>> task)
         => task
@@ -82,22 +82,22 @@ public static class TaskFunctionalExtensions
     public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.UpdateState(hasValue, hasException));
+            .ContinueWith((t) => t.Result.MutateState(hasValue, hasException));
 
     public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, bool test, Action<T> trueAction)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.UpdateState(test, trueAction));
+            .ContinueWith((t) => t.Result.MutateState(test, trueAction));
 
     public static Task<Result> MutateStateAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.UpdateState(hasValue, hasException));
+            .ContinueWith((t) => t.Result.MutateState(hasValue, hasException));
 
     public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, Action<Result> action)
         => task
             .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.UpdateState(action));
+            .ContinueWith((t) => t.Result.MutateState(action));
 
     public static Task<Result> AsResultAsync<T>(this Task<Result<T>> task)
         => task

@@ -22,7 +22,7 @@ public Task<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderReq
     => Result<UpdateGridRequest<TRecord>>
         .Create(UpdateGridRequest<TRecord>.Create(gridRequest))
         .Dispatch(this.DispatchGridStateChange)
-        .ApplyTransformAsync(_entityProvider.GetItemsAsync)
+        .ExecuteFunctionAsync(_entityProvider.GetItemsAsync)
         .MutateStateAsync((result) => this.LastResult = result)
         .OutputAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 ```
@@ -44,13 +44,13 @@ Within the the EntityProvider:
 public Task<Result<GridItemsProviderResult<DmoWeatherForecast>>> GetItemsAsync(GridState<DmoWeatherForecast> state)
     => WeatherForecastListRequest.Create(state)
         .DispatchAsync((request) => _mediator.DispatchAsync(request))
-        .ApplyTransformAsync((itemsProvider) => GridItemsProviderResult
+        .ExecuteFunctionAsync((itemsProvider) => GridItemsProviderResult
             .From<DmoWeatherForecast>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
 ```
 
 1. Creates a `WeatherForecastListRequest` from the current grid state.
 1. Dispatches the request to the mediator.
-1. Transforms the result into a `GridItemsProviderResult<DmoWeatherForecast>`.
+1. functions the result into a `GridItemsProviderResult<DmoWeatherForecast>`.
 
 ## WeatherForecastListHandler
 
@@ -82,7 +82,7 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
                     Cancellation = cancellationToken
                 }
             )
-            .ApplyTransformAsync((provider) =>
+            .ExecuteFunctionAsync((provider) =>
                 Result<ListItemsProvider<DmoWeatherForecast>>
                     .Create(new ListItemsProvider<DmoWeatherForecast>(
                         Items: provider.Items.Select(item => WeatherForecastMap.Map(item)),

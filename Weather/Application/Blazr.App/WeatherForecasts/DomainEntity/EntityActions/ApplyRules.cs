@@ -11,8 +11,8 @@ public sealed partial class WeatherForecastEntity
 
     private Result ApplyRules(object? sender)
         => SetProcessing()
-            .ApplyTransform(RunRules)
-            .UpdateState(() => this.StateHasChanged?.Invoke(sender ?? this, this.Id)
+            .ExecuteFunction(RunRules)
+            .MutateState(() => this.StateHasChanged?.Invoke(sender ?? this, this.Id)
         );
 
     private Result RunRules()

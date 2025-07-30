@@ -27,7 +27,7 @@ public sealed class WeatherForecastMap
             Summary = item.Summary
         };
 
-    public static Result<DmoWeatherForecast> ApplyTransform(DvoWeatherForecast item)
+    public static Result<DmoWeatherForecast> ExecuteFunction(DvoWeatherForecast item)
         => Result<DmoWeatherForecast>.Create(Map(item));
 
     public static Result<DboWeatherForecast> MapResult(DmoWeatherForecast item)

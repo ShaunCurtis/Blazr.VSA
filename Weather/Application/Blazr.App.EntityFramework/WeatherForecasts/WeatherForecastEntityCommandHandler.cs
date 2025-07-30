@@ -28,6 +28,6 @@ public sealed record WeatherForecastEntityCommandHandler : IRequestHandler<Weath
                 Item: WeatherForecastMap.Map(request.Item.WeatherForecastRecord.Record),
                 State: request.Item.WeatherForecastRecord.State),
                 cancellationToken)
-            .ApplyTransformAsync( record => Result<WeatherForecastId>.Success(new WeatherForecastId(record.WeatherForecastID))                )
+            .ExecuteFunctionAsync( record => Result<WeatherForecastId>.Success(new WeatherForecastId(record.WeatherForecastID))                )
             .MutateStateAsync((id) => _messageBus.Publish<DmoWeatherForecast>(id));
 }

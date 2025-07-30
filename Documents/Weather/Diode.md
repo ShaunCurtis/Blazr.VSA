@@ -6,18 +6,65 @@ It's:
  - A set of interfaces, definitions and base implementations,
  - A *Mediator Pattern* dispatcher.
  - Built on the functional paradigm using the `Result` and `Result<T>` monad.
+ - A set of Handlers for EntityFramework
 
 It consists of three channels or paths:
 
-1. List Queries returning a collection of `TRecord`.
 2. Record Queries returning a single `TRecord`.
 3. Commands issuing *Create/Update/Delete* instructions.
+
+## Overview
+
+
 
 ## `Result<T>` and `Result`
 
 All functions within the data pipeline return a `Result` or `Result<T>`.
 
 You can read more about the `Result` monad in the [Result.md](Result.md) article.
+
+## EF Db Context Extwnsions
+
+The code for the extensions is defined in the `CQSEFBroker` static class.
+
+```csharp
+public static class CQSEFBroker<TDbContext>
+    where TDbContext : DbContext
+{
+    public static async Task<Result<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+        where TRecord : class;
+
+    public static async Task<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
+        where TRecord : class;
+
+    public static async Task<Result<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
+        where TRecord : class;
+}
+```
+
+And then `DbContext` extension methods for each of the three methods:
+
+```csharp
+public static class DbContextExtensions
+{
+    public static async Task<Result<TRecord>> ExecuteCommandAsync<TRecord>(this DbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+        where TRecord : class
+            => await CQSEFBroker<DbContext>.ExecuteCommandAsync(dbContext, request, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+    public static async Task<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(this DbContext dbContext, ListQueryRequest<TRecord> request)
+        where TRecord : class
+            => await CQSEFBroker<DbContext>.GetItemsAsync(dbContext, request).ConfigureAwait(ConfigureAwaitOptions.None);
+
+    public static async Task<Result<TRecord>> GetRecordAsync<TRecord>(this DbContext dbContext, RecordQueryRequest<TRecord> request)
+        where TRecord : class
+            => await CQSEFBroker<DbContext>.GetRecordAsync(dbContext, request).ConfigureAwait(ConfigureAwaitOptions.None);
+}
+```
+
+
+
+
+
 
 ## List Queries
 
@@ -135,7 +182,7 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
                     Cancellation = cancellationToken
                 }
             )
-            .ApplyTransformAsync((provider) =>
+            .ExecuteFunctionAsync((provider) =>
                 Result<ListItemsProvider<DmoWeatherForecast>>
                     .Create(new ListItemsProvider<DmoWeatherForecast>(
                         Items: provider.Items.Select(item => WeatherForecastMap.Map(item)),

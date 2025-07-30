@@ -13,49 +13,49 @@ namespace Blazr.Manganese;
 
 public partial record Result
 {
-    public  Result ApplyTransform( Func<Result> transform)
+    public  Result ExecuteFunction( Func<Result> function)
     => this.Exception is null
-        ? transform()
+        ? function()
         : this;
 
-    public  Result<T> ApplyTransform<T>( Func<Result<T>> transform)
+    public  Result<T> ExecuteFunction<T>( Func<Result<T>> function)
         => this.Exception is null
-            ? transform()
+            ? function()
             : Result<T>.Failure(this.Exception);
 
-    public  Result ApplyTransform( bool test, Func<Result> trueTransform, Func<Result> falseTransform)
+    public  Result ExecuteFunction( bool test, Func<Result> truefunction, Func<Result> falsefunction)
         => test
-            ? this.ApplyTransform(trueTransform)
-            : this.ApplyTransform(falseTransform);
+            ? this.ExecuteFunction(truefunction)
+            : this.ExecuteFunction(falsefunction);
 
-    public Result<T> ApplyTransform<T>(Func<Result<T>> HasNoException, Func<Exception,Result<T>> HasException)
+    public Result<T> ExecuteFunction<T>(Func<Result<T>> HasNoException, Func<Exception,Result<T>> HasException)
     => this.HasException
         ? HasException(this.Exception!)
         : HasNoException();
 
-    public Result ApplyTransformOnException( bool test, string message)
+    public Result ExecuteFunctionOnException( bool test, string message)
         => this.HasException && test
             ? Result.Failure(message)
             : this;
 
-    public  Result ApplyTransformOnException( bool test, Exception exception)
+    public  Result ExecuteFunctionOnException( bool test, Exception exception)
         => this.HasException && test
                 ? Result.Failure(exception)
                 : this;
 
-    public  Result UpdateState( Action? hasNoException = null, Action<Exception>? hasException = null)
+    public  Result MutateState( Action? hasNoException = null, Action<Exception>? hasException = null)
     {
         this.Output(hasNoException, hasException);
         return this;
     }
 
-    public  Result UpdateState( Action hasNoException)
+    public  Result MutateState( Action hasNoException)
     {
         this.Output(hasNoException, null);
         return this;
     }
 
-    public  Result UpdateState( bool test, Action? trueAction = null, Action? falseAction = null)
+    public  Result MutateState( bool test, Action? trueAction = null, Action? falseAction = null)
     {
 
         if (!this.HasException)

@@ -17,11 +17,11 @@ public sealed partial class WeatherForecastEntity
         public Result<WeatherForecastEntity> ExecuteAction(WeatherForecastEntity entity)
             => entity._weatherForecast
                 .MarkAsDeleted(this.TransactionId)
-                .UpdateState(
+                .MutateState(
                     hasNoException: () => entity.StateHasChanged?.Invoke(this, entity.WeatherForecast.Id),
                     hasException: ex => entity._weatherForecast.RollBackLastUpdate(this.TransactionId)
                     )
-                .ApplyTransform<WeatherForecastEntity>(() => Result<WeatherForecastEntity>.Success(entity));
+                .ExecuteFunction<WeatherForecastEntity>(() => Result<WeatherForecastEntity>.Success(entity));
 
         public static DeleteWeatherForecastAction CreateAction()
             => new() { TransactionId = Guid.NewGuid() };

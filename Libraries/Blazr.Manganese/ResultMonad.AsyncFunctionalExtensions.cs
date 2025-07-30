@@ -7,21 +7,21 @@ namespace Blazr.Manganese;
 
 public partial record Result
 {
-    public async Task<Result> ApplyTransformAsync(Func<Task<Result>> transform)
+    public async Task<Result> ExecuteFunctionAsync(Func<Task<Result>> function)
         => this.HasException
             ? this
-            : await transform();
+            : await function();
 
-    public async Task<Result<T>> ApplyTransformAsync<T>(Func<Task<Result<T>>> transform)
+    public async Task<Result<T>> ExecuteFunctionAsync<T>(Func<Task<Result<T>>> function)
         => this.HasException
             ? Result<T>.Failure(this.Exception!)
-            : await transform();
+            : await function();
 
-    public async Task<Result> ApplyTransformAsync( bool test, Func<Task<Result>> trueTransform, Func<Task<Result>> falseTransform)
+    public async Task<Result> ExecuteFunctionAsync( bool test, Func<Task<Result>> truefunction, Func<Task<Result>> falsefunction)
         => this.HasException
         ? this
         : test
-            ? await trueTransform()
-            : await falseTransform();
+            ? await truefunction()
+            : await falsefunction();
 }
 

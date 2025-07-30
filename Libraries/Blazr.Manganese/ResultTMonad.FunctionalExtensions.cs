@@ -7,31 +7,31 @@ namespace Blazr.Manganese;
 
 public partial record Result<T>
 {
-    public Result<T> ApplyTransform(Func<T, Result<T>> transform)
+    public Result<T> ExecuteFunction(Func<T, Result<T>> function)
         => this.HasValue
-            ? transform(this.Value!)
+            ? function(this.Value!)
             : Result<T>.Failure(this.Exception!);
 
-    public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> transform)
+    public Result<TOut> ExecuteFunction<TOut>(Func<T, Result<TOut>> function)
         => this.HasValue
-            ? transform(this.Value!)
+            ? function(this.Value!)
             : Result<TOut>.Failure(this.Exception!);
 
-    public Result<T> ApplyTransformOnException(Func<Exception, Result<T>> transform)
+    public Result<T> ExecuteFunctionOnException(Func<Exception, Result<T>> function)
         => this.HasException
-            ? transform(this.Exception!)
+            ? function(this.Exception!)
             : this;
 
-    public Result<TOut> ApplyTransform<TOut>(Func<T, TOut> transform)
+    public Result<TOut> ExecuteFunction<TOut>(Func<T, TOut> function)
     {
         if (this.Exception is not null)
             return Result<TOut>.Failure(this.Exception!);
 
         try
         {
-            var value = transform.Invoke(this.Value!);
+            var value = function.Invoke(this.Value!);
             return (value is null)
-                ? Result<TOut>.Failure(new ResultException("The transfrom function returned a null value."))
+                ? Result<TOut>.Failure(new ResultException("The function returned a null value."))
                 : Result<TOut>.Create(value);
         }
         catch (Exception ex)
@@ -40,45 +40,45 @@ public partial record Result<T>
         }
     }
 
-    public Result ApplyTransform(Func<T, Result> transform)
+    public Result ExecuteFunction(Func<T, Result> function)
         => this.HasValue
-            ? transform(this.Value!)
+            ? function(this.Value!)
             : Result.Failure(this.Exception!);
 
-    public Result<T> ApplyTransform(bool test, Func<T, Result<T>> trueTransform, Func<T, Result<T>> falseTransform)
+    public Result<T> ExecuteFunction(bool test, Func<T, Result<T>> truefunction, Func<T, Result<T>> falsefunction)
         => test
-            ? this.ApplyTransform<T>(trueTransform)
-            : this.ApplyTransform<T>(falseTransform);
+            ? this.ExecuteFunction<T>(truefunction)
+            : this.ExecuteFunction<T>(falsefunction);
 
-    public Result<TOut> ApplyTransform<TOut>(bool test, Func<T, Result<TOut>> trueTransform, Func<T, Result<TOut>> falseTransform)
+    public Result<TOut> ExecuteFunction<TOut>(bool test, Func<T, Result<TOut>> truefunction, Func<T, Result<TOut>> falsefunction)
         => test
-            ? this.ApplyTransform<TOut>(trueTransform)
-            : this.ApplyTransform<TOut>(falseTransform);
+            ? this.ExecuteFunction<TOut>(truefunction)
+            : this.ExecuteFunction<TOut>(falsefunction);
 
-    public Result<T> Dispatch(Func<T, Result<T>> transform)
+    public Result<T> Dispatch(Func<T, Result<T>> function)
         => this.HasValue
-            ? transform(this.Value!)
+            ? function(this.Value!)
             : Result<T>.Failure(this.Exception!);
 
-    public Result<TOut> Dispatch<TOut>(Func<T, Result<TOut>> transform)
+    public Result<TOut> Dispatch<TOut>(Func<T, Result<TOut>> function)
         => this.HasValue
-            ? transform(this.Value!)
+            ? function(this.Value!)
             : Result<TOut>.Failure(this.Exception!);
 
-    public Result<T> Dispatch(Func<T, Result> transform)
+    public Result<T> Dispatch(Func<T, Result> function)
     {
         var outerResult = this;
 
         return (this.HasException)
             ? Result<T>.Failure(this.Exception!)
-            : transform(this.Value!)
-                .ApplyTransform(
+            : function(this.Value!)
+                .ExecuteFunction(
                     HasNoException: () => outerResult,
                     HasException: (ex) => Result<T>.Failure(ex)
                     );
     }
 
-    public Result<T> UpdateState(Action<T>? hasValue = null, Action<Exception>? hasException = null)
+    public Result<T> MutateState(Action<T>? hasValue = null, Action<Exception>? hasException = null)
     {
         if (this.HasValue)
             hasValue?.Invoke(this.Value!);
@@ -88,17 +88,17 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<T> UpdateState(bool test, Action<T> trueAction, Action<T> falseAction)
+    public Result<T> MutateState(bool test, Action<T> trueAction, Action<T> falseAction)
         => test
-            ? this.UpdateState(trueAction, null)
-            : this.UpdateState(falseAction, null);
+            ? this.MutateState(trueAction, null)
+            : this.MutateState(falseAction, null);
 
-    public Result<T> UpdateState(bool test, Action<T> trueAction)
+    public Result<T> MutateState(bool test, Action<T> trueAction)
         => test
-            ? this.UpdateState(trueAction, null)
+            ? this.MutateState(trueAction, null)
             : this;
 
-    public Result<T> UpdateState(Action<Result> Action)
+    public Result<T> MutateState(Action<Result> Action)
     {
         Action.Invoke(this.ToResult);
         return this;
