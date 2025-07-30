@@ -13,7 +13,10 @@ namespace Blazr.Manganese;
 
 public partial record Result
 {
-    public  Result ApplyTransform( Func<Result> transform)
+    public static Result<TOut> CreateFromFunction<TOut>(Func<TOut> function)
+        => Result.Success().ApplyTransform(function);
+
+    public Result ApplyTransform( Func<Result> transform)
     => this.Exception is null
         ? transform()
         : this;
@@ -32,6 +35,24 @@ public partial record Result
     => this.HasException
         ? HasException(this.Exception!)
         : HasNoException();
+
+    public Result<TOut> ApplyTransform<TOut>(Func<TOut> transform)
+    {
+        if (this.Exception is not null)
+            return Result<TOut>.Failure(this.Exception!);
+
+        try
+        {
+            var value = transform.Invoke();
+            return (value is null)
+                ? Result<TOut>.Failure(new ResultException("The transform function returned a null value."))
+                : Result<TOut>.Create(value);
+        }
+        catch (Exception ex)
+        {
+            return Result<TOut>.Failure(ex);
+        }
+    }
 
     public Result ApplyTransformOnException( bool test, string message)
         => this.HasException && test

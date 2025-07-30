@@ -4,11 +4,13 @@ Programmers brought up on a strictly OOP diet find the whole concept of Function
 
 This article takes a very simple console application and walks through refactoring it using FP principles.  Along the way, I'll gently introduce you to Monads.  
 
-It's hard to remember that first point where you saw a chink of light in the otherwise unintelligible articles about Nomands, but this description sticks in my mind.
+It's hard to remember that first point where I saw a chink of light in the otherwise baffling articles about Nomads, but this description sticks in my mind.
 
 > FP is about computing a result.  When you call a FP function you pass in a value and get back a result.  There's no mutation of state, no side effects, and no changes to the input value.  The function takes the input, applies a transform, and returns a new value.
 
-My implementation of FP is a library called *Blazr.Manganese*. It's based around two immutable types: `Result<T>` and `Result`.  They represent the result of a computation, and handle errors and exceptions in a functional way.
+Looking back, I think it was the terminology that was most confusing.  In OOP many of the terms used have somewhat different meanings.
+
+My implementation of FP is a library called *Blazr.Manganese*. It's based around two immutable types: `Result<T>` and `Result`.  They represent the result of a computation, and handle errors and exceptions in a functional way.  I use what I consider to be clearer, more descriptive terminology for the various FP patterns.  There's no `Return`, `Map`, `Bind` or `Match` methods in `Result<T>`.
  
 ## The Elevated World
 
@@ -81,17 +83,17 @@ var result = Console
     .ToResult();
 ```
 
-### FP Speak
+### Pertinent FP Notes
 
 FP doesn't have imperative statements like `if` or `else`.  It is expression based, there is always a result to any transaction.  `Result<T>` is stateful: it contains either result, based on state.
 
 The process of *elevating* a type is the first step in FP.  We take a normal type, like `string`, and elevate it to a `Result<string>`.  This allows us to handle errors and exceptions in a functional way.  
 
-In classic FP, you call `Return` on the Monad to wrap it.  I've used different nomenclature, but the concept is the same.  The `Result<T>` type is a Monad, and it has `Create`, `Success` and `Failure` methods that wrap the provided value or exception in a `Result<T>`.  I consider them more informative.
+In classic FP, you call `Return` on the Monad to wrap it.  `Result<T>` has `Create`, `Success` and `Failure` that return the provided value or exception in a `Result<T>`.
 
-## Unwapping the Elevated World
+## Unwrapping the Elevated World
 
-We have a `Result<T>`, how do we unwrap it to, for example, output it to the console?
+We have a `Result<T>`, how do we unwrap it: for example, output it to the console?
 
 Result<T> exposes four properties:
 
@@ -134,7 +136,7 @@ public Result<T> Output(Action<T>? hasValue = null, Action<Exception>? hasExcept
 }
 ```
 
-So we can write this bywrapping the console outputs in lambda expressions:
+So we can write this by wrapping the console outputs in lambda expressions:
 
 ```csharp
 Console
@@ -146,25 +148,51 @@ Console
     );
 ```
 
+An alternative is to output the message directly.  `Result<T>` has the following method:
+
+```csharp
+public TOut OutputValue<TOut>(Func<T, TOut> hasValue, Func<Exception, TOut> hasException)
+    => this.HasValue
+    ? hasValue.Invoke(this.Value!)
+    : hasException.Invoke(Exception!);
+```
+
+Which we can use like this:
+
+```csharp
+Console.WriteLine(Console
+        .ReadLine()
+        .ToResult()
+        .OutputValue<string>(
+            hasValue: (value) => $"Success: The transformed value is: {value}",
+            hasException: (ex) => $"Failure: {ex.Message}"
+        )
+    );
+```
+
+### Pertinent FP Notes
+
+In a pure FP implementation, the properties would be private.  There's no valid FP reason to access them directly. Making them public is intentional:  make `Result<T>` usable in both *OOP* and *FP*.
+
+
 ## Transforming the Elevated World
 
-So far, we've elevated a type, unwrapped it, and output the result to the console.  But we haven't done anything with the value.  The real power in monads comes in their ability to transformed the input value into an output and maintain the `Result` wrapper.
+So far, we've elevated a type, unwrapped it, and output the result to the console.  But we haven't done anything with the value.  The real power in monads comes in their ability to selectively transform the input value into an output and maintain the `Result` wrapper. The *transform* is only executed if `Result<T>` has a value.  Otherwise the method short-circuits and the exception is propagated.
 
-In `Result<T>` this is done through the `ApplyTransform` set of methods.  The basic pattern of a transform is:
+`Result<T>` has the `ApplyTransform` set of methods.  The basic pattern for a transform is:
 
 ```csharp
 Tin -> Apply Function -> Result<TOut>
 ```
 
-The basic implementarion of `ApplyTransform` is:
+The basic implementation that applies this pattern is:
+
 ```csharp
 public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> transform)
     => this.HasValue
         ? transform(this.Value!)
         : Result<TOut>.Failure(this.Exception!);
 ```
-
-Note that the *transform* is only executed if `Result<T>` has a value.  Otherwise the method short-circuts and the exception is propagated.
 
 Back to the console app.  The parsing logic can be wrapped in a lambda expression.  The transform function takes the input value, applies the transformation, and returns a new `Result<T>` type.
 
@@ -246,7 +274,7 @@ Console
     );
 ```
 
-Finally, the logic can be tweated to parse directly to a `double`:
+Finally, the logic can be tweaked to parse directly to a `double`:
 
 ```csharp
 Console
@@ -261,11 +289,33 @@ Console
     );
 ```
 
-### FP Discussion
+We can do a little more: `Result` and `Result<T>` has a static `Result.CreateFromFunction` method:
+
+```csharp
+public static Result<TOut> CreateFromFunction<TOut>(Func<TOut> function)
+    => Result.Success().ApplyTransform(function);
+```
+
+`Console.ReadLine` matches the `Func<TOut>` pattern, so:
+
+```csharp
+Console.WriteLine(
+    Result<string>
+        .CreateFromFunction(Console.ReadLine)
+        .OutputValue<string>(
+            hasValue: (value) => $"Success: The transformed value is: {value}",
+            hasException: (ex) => $"Failure: {ex.Message}"
+        )
+    );
+```
+
+### Pertinent FP Notes
 
 The *Elevated World* is a world of immutable types.  The `Result<T>` and `Result` types are immutable, so we can't change the state of an object.  We can only create new objects.
 
-The `Tin -> Apply Function -> TOut` delegate pattern, one input transformed to one output, is fundimental to FP: the staple diet of Monads.
+Functions, delegates in C#, are an integral part of FP.  They are *first class citizens* in FP, unlike in OOP C# where you will only see them rarely.  The generic versions, `Func` and `Action` are used everywhere.  Make sure you are very familiar with them.
+
+The `Tin -> Apply Function -> TOut` delegate pattern, one input transformed to one output, is a fundamental pattern to FP: the staple diet of Monads.
 
 This starts to drive the way you write code.  You start to think in terms of transformations, rather than statements.  Imperative style of programming is replaced with declarative style.  Methods look like this:
 

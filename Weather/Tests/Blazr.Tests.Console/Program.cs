@@ -1,4 +1,14 @@
 ﻿using Blazr.Manganese;
+using System;
+
+Console.WriteLine(
+    Result<string>
+        .CreateFromTransform(Console.ReadLine)
+        .OutputValue<string>(
+            hasValue: (value) => $"Success: The transformed value is: {value}",
+            hasException: (ex) => $"Failure: {ex.Message}"
+        )
+    );
 
 //Console
 //    .ReadLine()
@@ -49,19 +59,19 @@
 //    : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
 
 
-double doubleValue = 0;
+//double doubleValue = 0;
 
-await Console
-    .ReadLine()
-    .ToResult()
-    .ApplyTransformAsync(Utils.StringToDoubleAsync)
-    .MutateStateAsync((value) => doubleValue = value)
-    .ApplyTransformAsync(Math.Sqrt)
-    .ApplyTransformAsync((value) => Math.Round(value, 2))
-    .OutputAsync(
-        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value of {doubleValue} is: {value}"),
-        hasException: (ex) => Console.WriteLine($"Failed: {ex.Message}")
-    );
+//await Console
+//    .ReadLine()
+//    .ToResult()
+//    .ApplyTransformAsync(Utils.StringToDoubleAsync)
+//    .MutateStateAsync((value) => doubleValue = value)
+//    .ApplyTransformAsync(Math.Sqrt)
+//    .ApplyTransformAsync((value) => Math.Round(value, 2))
+//    .OutputAsync(
+//        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value of {doubleValue} is: {value}"),
+//        hasException: (ex) => Console.WriteLine($"Failed: {ex.Message}")
+//    );
 
 //if (result.HasValue)
 //{

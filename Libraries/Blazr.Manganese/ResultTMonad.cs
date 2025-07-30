@@ -1,4 +1,6 @@
-﻿/// ============================================================
+﻿using System.Diagnostics;
+
+/// ============================================================
 /// Author: Shaun Curtis, Cold Elm Coders
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
@@ -57,6 +59,11 @@ public partial record Result<T>
 
         return this.Value!;
     }
+
+    public TOut OutputValue<TOut>(Func<T, TOut> hasValue, Func<Exception, TOut> hasException)
+        => this.HasValue
+        ? hasValue.Invoke(this.Value!)
+        : hasException.Invoke(Exception!);
 
     public ValueTask<Result<T>> CompletedValueTask
         => ValueTask.FromResult(this);
