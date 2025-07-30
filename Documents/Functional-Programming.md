@@ -6,7 +6,7 @@ This article takes a very simple console application and walks through refactori
 
 It's hard to remember that first point where I saw a chink of light in the otherwise baffling articles about Nomads, but this description sticks in my mind.
 
-> FP is about computing a result.  When you call a FP function you pass in a value and get back a result.  There's no mutation of state, no side effects, and no changes to the input value.  The function takes the input, applies a transform, and returns a new value.
+> FP is about computing a result.  When you call a FP function you pass in a value and get back a result.  There's no mutation of state, no side effects, and no changes to the input value.  The function takes the input, applies a function, and returns a new value.
 
 Looking back, I think it was the terminology that was most confusing.  In OOP many of the terms used have somewhat different meanings.
 
@@ -114,7 +114,7 @@ var result = Console
 if (result.HasValue)
 {
     //...
-    Console.WriteLine($"Parsed successfully: The transformed value is: {result.Value}");
+    Console.WriteLine($"Parsed successfully: The functioned value is: {result.Value}");
 }
 else
 {
@@ -143,7 +143,7 @@ Console
     .ReadLine()
     .ToResult()
     .Output(
-        hasValue: (value) => Console.WriteLine($"Success: The transformed value is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Success: The functioned value is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
@@ -177,30 +177,32 @@ In a pure FP implementation, the properties would be private.  There's no valid 
 
 ## Transforming the Elevated World
 
-So far, we've elevated a type, unwrapped it, and output the result to the console.  But we haven't done anything with the value.  The real power in monads comes in their ability to selectively transform the input value into an output and maintain the `Result` wrapper. The *transform* is only executed if `Result<T>` has a value.  Otherwise the method short-circuits and the exception is propagated.
+So far, we've elevated a type, unwrapped it, and output the result to the console.  But we haven't done anything with the value.  The real power in monads comes in their ability to functioned the input value into an output and maintain the `Result` wrapper.
 
-`Result<T>` has the `ApplyTransform` set of methods.  The basic pattern for a transform is:
+In `Result<T>` this is done through the `ExecuteFunction` set of methods.  The basic pattern of a function is:
 
 ```csharp
 Tin -> Apply Function -> Result<TOut>
 ```
 
-The basic implementation that applies this pattern is:
+The basic implementarion of `ExecuteFunction` is:
 
 ```csharp
-public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> transform)
+public Result<TOut> ExecuteFunction<TOut>(Func<T, Result<TOut>> function)
     => this.HasValue
-        ? transform(this.Value!)
+        ? function(this.Value!)
         : Result<TOut>.Failure(this.Exception!);
 ```
 
-Back to the console app.  The parsing logic can be wrapped in a lambda expression.  The transform function takes the input value, applies the transformation, and returns a new `Result<T>` type.
+Note that the *function* is only executed if `Result<T>` has a value.  Otherwise the method short-circuts, and the exception is propagated.
+
+Back to the console app.  The parsing logic can be wrapped in a lambda expression.  The function function takes the input value, applies the functionation, and returns a new `Result<T>` type.
 
 ```csharp
 Console
     .ReadLine()
     .ToResult()
-    .ApplyTransform((input) =>
+    .ExecuteFunction((input) =>
     {
         if (!string.IsNullOrEmpty(input))
         {
@@ -217,24 +219,24 @@ Console
         return Result<int>.Failure("Input cannot be null or empty.");
     })
     .Output(
-        hasValue: (value) => Console.WriteLine($"Success: The transformed value is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Success: The functioned value is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
 
 It captures and handles both exceptions and nulls.
 
-The `Tin -> Apply Function -> TOut` is common enough that `Result<T>` has a `Func<T, TOut>` overload of `ApplyTransform` that wraps the `try/catch` logic for you.
+`Result<T>` has a `Func<T, TOut>` overload of `ExecuteFunction` that boilerplates the `try/catch` logic.
 
 ```csharp
-public Result<TOut> ApplyTransform<TOut>(Func<T, TOut> transform)
+public Result<TOut> ExecuteFunction<TOut>(Func<T, TOut> function)
 {
     if (this.Exception is not null)
         return Result<TOut>.Failure(this.Exception!);
 
     try
     {
-        var value = transform.Invoke(this.Value!);
+        var value = function.Invoke(this.Value!);
         return (value is null)
             ? Result<TOut>.Failure(new ResultException("The transfrom function returned a null value."))
             : Result<TOut>.Create(value);
@@ -246,30 +248,30 @@ public Result<TOut> ApplyTransform<TOut>(Func<T, TOut> transform)
 }
 ```
 
-`int.Parse` fits the delegate pattern, so can be written like this:
+`int.Parse` matches the delegate pattern, so can be written like this:
 
 ```csharp
 Console
     .ReadLine()
     .ToResult()
-    .ApplyTransform(int.Parse)
+    .ExecuteFunction(int.Parse)
     .Output(
-        hasValue: (value) => Console.WriteLine($"Success: The transformed value is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Success: The functioned value is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
 
-*SquareRoot* and *Round* don't,  but that's not a problem as we can wrap then in lambda expressions that do.
+*SquareRoot* and *Round* don't, but that's not a problem.  We can wrap then in lambda expressions that do.
 
 ```csharp
 Console
     .ReadLine()
     .ToResult()
-    .ApplyTransform(int.Parse)
-    .ApplyTransform((value) => Math.Sqrt(value))
-    .ApplyTransform((value) => Math.Round(value, 2))
+    .ExecuteFunction(int.Parse)
+    .ExecuteFunction((value) => Math.Sqrt(value))
+    .ExecuteFunction((value) => Math.Round(value, 2))
     .Output(
-        hasValue: (value) => Console.WriteLine($"Success: The transformed value is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Success: The functioned value is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
@@ -280,11 +282,11 @@ Finally, the logic can be tweaked to parse directly to a `double`:
 Console
     .ReadLine()
     .ToResult()
-    .ApplyTransform(double.Parse)
-    .ApplyTransform(Math.Sqrt)
-    .ApplyTransform((value) => Math.Round(value, 2))
+    .ExecuteFunction(double.Parse)
+    .ExecuteFunction(Math.Sqrt)
+    .ExecuteFunction((value) => Math.Round(value, 2))
     .Output(
-        hasValue: (value) => Console.WriteLine($"Success: The transformed value is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Success: The functioned value is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
@@ -311,30 +313,46 @@ Console.WriteLine(
 
 ### Pertinent FP Notes
 
-The *Elevated World* is a world of immutable types.  The `Result<T>` and `Result` types are immutable, so we can't change the state of an object.  We can only create new objects.
+The *Elevated World* is a world of immutable types.  `Result<T>` and `Result` are immutable: they contain no state logic.  The output result is either a new object or `this`.
 
 Functions, delegates in C#, are an integral part of FP.  They are *first class citizens* in FP, unlike in OOP C# where you will only see them rarely.  The generic versions, `Func` and `Action` are used everywhere.  Make sure you are very familiar with them.
 
 The `Tin -> Apply Function -> TOut` delegate pattern, one input transformed to one output, is a fundamental pattern to FP: the staple diet of Monads.
 
-This starts to drive the way you write code.  You start to think in terms of transformations, rather than statements.  Imperative style of programming is replaced with declarative style.  Methods look like this:
+Once you start down the FP road, this pattern starts to drive the way you write code.  You start to think in terms of functions.  Imperative style replaces declarative style.  Methods look like this:
 
 ```csharp
-public Result<T> ApplyTransform<T>(xxxRequest request);
+public Result<T> ExecuteFunction<T>(xxxRequest request);
 ```
 or 
 
 ```csharp
-public T ApplyTransform<T>(xxxRequest request);
+public T ExecuteFunction<T>(xxxRequest request);
 ```
 
-If you've used the *Mediator* pattern , you'll be familiar with this style of programming.  The *Mediator* pattern is a form of FP, where the *Mediator* is the *Monad* and the request is the input value.
+If you're familiar with the *Mediator* pattern, you'll recognise the pattern.  The *Mediator* pattern is a form of FP, where the *Mediator* is the *Monad* and the request is the input value.
 
 ## Side Effects
 
-There are times when you want to output a result, normally mutate some object state, at some point in the chain.  You can always break put of the chain and then restart, but that's clunky.
+We need to recognise that FP is not about removing side effects, but about managing them.  The *Elevated World* is a world of pure functions, where the input is transformed into an output without side effects.  However, there are times when you want to perform an action that has side effects, such as outputting to the console or mutating an object state.
 
-`UpdateState` is designed for that purpose.  Here's a refactored version of the console app to output the initial parsing value.
+You can break out of the chain to make the changes imperitively, and then restart.  But that's clunky.
+
+The `MutateState` methods are designed for the purpose.  
+
+```csharp
+public Result<T> MutateState(Action<T>? hasValue = null, Action<Exception>? hasException = null)
+{
+    if (this.HasValue)
+        hasValue?.Invoke(this.Value!);
+    else
+        hasException?.Invoke(this.Exception!);
+
+    return this;
+}
+```
+
+We can refactor the console app to output the initial parsing value, and then use it in the console message.
 
 ```csharp
 double doubleValue = 0;
@@ -342,21 +360,21 @@ double doubleValue = 0;
 Console
     .ReadLine()
     .ToResult()
-    .ApplyTransform(double.Parse)
-    .UpdateState((value) => doubleValue = value)
-    .ApplyTransform(Math.Sqrt)
-    .ApplyTransform((value) => Math.Round(value, 2))
+    .ExecuteFunction(double.Parse)
+    .MutateState((value) => doubleValue = value)
+    .ExecuteFunction(Math.Sqrt)
+    .ExecuteFunction((value) => Math.Round(value, 2))
     .Output(
-        hasValue: (value) => Console.WriteLine($"Success: The transformed value of {doubleValue} is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Success: The functioned value of {doubleValue} is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
     );
 ```
 
 ## The Async Task based Elevated World
 
-Applying asynchronous operations in FP makes things a little more complex.  The first an async operation.
+Applying asynchronous operations in FP makes things a little more complex.
 
-This encapsulates the *ToDouble* functionality in a (fake) async Function.
+An example method that encapsulates the *ToDouble* functionality in an async Function.
 
 ```csharp
 public static class Utils
@@ -372,7 +390,7 @@ public static class Utils
 }
 ```
 
-I could also have written it like this:
+This could have been written like this:
 
 ```csharp
 public static async Task<Result<double>> ParseForDouble(this string? input)
@@ -384,7 +402,7 @@ public static async Task<Result<double>> ParseForDouble(this string? input)
 }
 ```
 
-We can now use this in our console app:
+Which can be used in the console app:
 
 ```csharp
 double doubleValue = 0;
@@ -393,35 +411,37 @@ await Console
     .ReadLine()
     .ToResult()
     // this is our async transition
-    .ApplyTransformAsync(Utils.StringToDoubleAsync)
+    .ExecuteFunctionAsync(Utils.StringToDoubleAsync)
     // all if these operations are now continuations
     .MutateStateAsync((value) => doubleValue = value)
-    .ApplyTransformAsync(Math.Sqrt)
-    .ApplyTransformAsync((value) => Math.Round(value, 2))
+    .ExecuteFunctionAsync(Math.Sqrt)
+    .ExecuteFunctionAsync((value) => Math.Round(value, 2))
     .OutputAsync(
-        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value of {doubleValue} is: {value}"),
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The functioned value of {doubleValue} is: {value}"),
         hasException: (ex) => Console.WriteLine($"Failed: {ex.Message}")
     );
 ```
 
-It's important to observe that `.ApplyTransformAsync(Utils.StringToDoubleAsync)` returns a `Task<Result<double>>`.  All operations beyond that point are continuations of the `Task<Result<double>>`, and the methods called are extension methods on `Task<Result<T>>` not `Result<T>`.
+It's important to observe that `.ExecuteFunctionAsync(Utils.StringToDoubleAsync)` returns a `Task<Result<double>>`.  All fluent dotted operations beyond this point are on `Task<Result<double>>` wrapper, not on `Result<double>`.
 
-The initial `ApplyTransformAsync` on `Result<T>` is:
+The `TaskFunctionalExtensions` class adds all the necessary functional style methods from `Result` and `Result<T>` in extension methods on Task<Result<T>> and Task<Result>.
+
+For example, the base `ExecuteFunctionAsync` on `Task<Result<T>>` is:
 
 ```csharp
-public async  Task<Result<TOut>> ApplyTransformAsync<TOut>( Func<T, Task<Result<TOut>>> transform)
+public async  Task<Result<TOut>> ExecuteFunctionAsync<TOut>( Func<T, Task<Result<TOut>>> function)
     => this.HasException
         ? Result<TOut>.Failure(this.Exception!)
-        : await transform(this.Value!);
+        : await function(this.Value!);
 ```
 
 And the specific <Task<Result<T>>> extension methods used are:
 
 ```csharp
-public static Task<Result<TOut>> ApplyTransformAsync<T, TOut>(this Task<Result<T>> task, Func<T, TOut> transform)
+public static Task<Result<TOut>> ExecuteFunctionAsync<T, TOut>(this Task<Result<T>> task, Func<T, TOut> function)
     => task
         .ContinueWith(CheckForTaskException)
-        .ContinueWith((t) => t.Result.ApplyTransform<TOut>(transform));
+        .ContinueWith((t) => t.Result.ExecuteFunction<TOut>(function));
 ```
 
 ```csharp
@@ -435,7 +455,7 @@ public static Task OutputAsync<T>(this Task<Result<T>> task, Action<T>? hasValue
 public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
     => task
         .ContinueWith(CheckForTaskException)
-        .ContinueWith((t) => t.Result.UpdateState(hasValue, hasException));
+        .ContinueWith((t) => t.Result.MutateState(hasValue, hasException));
 ```
 
 For the record , the `CheckForTaskException` method is:

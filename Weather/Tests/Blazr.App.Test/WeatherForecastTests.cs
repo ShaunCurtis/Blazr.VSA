@@ -73,7 +73,7 @@ public partial class WeatherForecastTests
 
         var listRequest = await Result<WeatherForecastListRequest>
             .Create(new WeatherForecastListRequest { PageSize = pageSize, StartIndex = startIndex })
-            .ApplyTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .ExecuteFunctionAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
             .MutateStateAsync(
                 hasValue: (provider) => listItemsProvider = provider, 
                 hasException: (ex) => result = false);
@@ -116,7 +116,7 @@ public partial class WeatherForecastTests
                 StartIndex = 0,
                 Summary = testSummary
             })
-            .ApplyTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .ExecuteFunctionAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
             .OutputAsync(hasValue: (provider) =>
             {
                 listItemsProvider = provider;
@@ -162,7 +162,7 @@ public partial class WeatherForecastTests
                 SortColumn = "Date",
                 SortDescending = true
             })
-            .ApplyTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .ExecuteFunctionAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
             .OutputAsync(hasValue: (provider) =>
             {
                 listItemsProvider = provider;
@@ -281,7 +281,7 @@ public partial class WeatherForecastTests
             .CreateAction()
             .AddSender(this)
             .ExecuteAction(entity)
-            .ApplyTransformAsync(entityProvider.EntityCommandAsync)
+            .ExecuteFunctionAsync(entityProvider.EntityCommandAsync)
             .OutputAsync(hasValue: (id) =>
             {
                 result = true;
@@ -374,7 +374,7 @@ public partial class WeatherForecastTests
                 PageSize = 1,
                 StartIndex = 0,
             })
-            .ApplyTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .ExecuteFunctionAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
             .OutputAsync(hasValue: (provider) =>
             {
                 listItemsProvider = provider;

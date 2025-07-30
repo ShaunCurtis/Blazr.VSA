@@ -96,11 +96,11 @@ Result<string>.Create(value)
 
 ### Mapping
 
-Mapping is the process of applying a transform to the value of a `Result<T>`.
+Mapping is the process of applying a function to the value of a `Result<T>`.
 
 It's important to note that mappings only execute the provided function if the source result state is success i.e. it has a valid `T` value.  If the source result is in failure state, it either passes the source result as the output result, or passes a new result (with the source exception) in failure state. 
 
-There are three basic transforms we can apply.
+There are three basic functions we can apply.
 
 #### Map a `Result<T>`to a `Result<TOut>` 
 
@@ -245,7 +245,7 @@ public async Task<Result<TOut>> MapAsync<TOut>(Func<T, Task<Result<TOut>>> succe
 Side Effects provide a mechanism to effect mutate data within edit and aggregate objects.
 
 ```csharp
-public Result<T> UpdateState(Action<T>? success = null, Action<Exception>? failure = null)
+public Result<T> MutateState(Action<T>? success = null, Action<Exception>? failure = null)
 {
     if (_value is not null && success != null)
         success(_value!);
@@ -299,5 +299,5 @@ public Result<U> Bind<U>(Func<T, U> func)
 }
 ```
 
-Basically, `Bind` is a way to chain operations on the result, allowing us to transform the value from `T` to `U` by applying the provided *T -> U* method while preserving the result's success or failure state.
+Basically, `Bind` is a way to chain operations on the result, allowing us to function the value from `T` to `U` by applying the provided *T -> U* method while preserving the result's success or failure state.
 

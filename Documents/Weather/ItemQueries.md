@@ -97,9 +97,9 @@ The internal `GetRecordItemAsync` method does the work.  It's written in functio
 ```csharp
 private async Task<Result> GetRecordItemAsync(TKey id)
     => await Result<TKey>.Create(id)
-        .ApplyTransformOnException(id.IsDefault, "The record Id is default.  Mo record retrieved.")
-        .UpdateState((recordId) => _key = recordId)
-        .ApplyTransformOnException(_entityProvider.RecordRequestAsync)
+        .ExecuteFunctionOnException(id.IsDefault, "The record Id is default.  Mo record retrieved.")
+        .MutateState((recordId) => _key = recordId)
+        .ExecuteFunctionOnException(_entityProvider.RecordRequestAsync)
         .TaskSideEffectAsync(success: (record) => this.Item)
         .MapTaskToResultAsync();
 ```

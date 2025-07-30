@@ -12,7 +12,7 @@ Once a `Result` is on the Failure track any derived results are also on the fail
 This is Map:
 
 ```csharp
-public Result<TOut> ApplyTransform<TOut>(Func<T, Result<TOut>> success)
+public Result<TOut> ExecuteFunction<TOut>(Func<T, Result<TOut>> success)
 {
     if (_exception is null)
         return success(_value!);
@@ -28,9 +28,9 @@ We examine the following function - `GetRecordItemAsync` from the `ReadUiBroker`
 ```csharp
 private async Task<Result> GetRecordItemAsync(TKey id)
     => await Result<TKey>.Create(id)
-        .ApplyTransformOnException(id.IsDefault, "The record Id is default.  Mo record retrieved.")
-        .UpdateState((recordId) => _key = recordId)
-        .ApplyTransformOnException(_entityProvider.RecordRequestAsync)
+        .ExecuteFunctionOnException(id.IsDefault, "The record Id is default.  Mo record retrieved.")
+        .MutateState((recordId) => _key = recordId)
+        .ExecuteFunctionOnException(_entityProvider.RecordRequestAsync)
         .TaskSideEffectAsync(success: (record) => this.Item = record)
         .MapTaskToResultAsync();
 ```
@@ -49,14 +49,14 @@ public static Result<T> Create(T? value) =>
 This converts the `TKey` value to a `Result<TKey>`.  In the process it does a null check and switches to the failure track if necessary.
 
 
-### ApplyTransformOnException(id.IsDefault, "...")
+### ExecuteFunctionOnException(id.IsDefault, "...")
 
 Result is a `Result<TKey>`.
 
 The next step is to check that `id` is a valid `Tkey`.  `TKey` implements `IEntityId` which provides `IsDefault`.    
 
 ```csharp
-public Result<T> ApplyTransformOnException(bool test, string message)
+public Result<T> ExecuteFunctionOnException(bool test, string message)
 {
     if (_exception is null && test)
         return Result<T>.Failure(message);
@@ -66,14 +66,14 @@ public Result<T> ApplyTransformOnException(bool test, string message)
 ```
 `test` is only applied in the sucess state, and shifts to the fsilure state if `test` is true.
 
-### UpdateState((recordId) => _key = recordId)
+### MutateState((recordId) => _key = recordId)
 
 Result is a `Result<TKey>`.
 
 The next step is to write the `id` to the parent object using a lambda expression.  This is an intended side effect.    
 
 ```csharp
-public Result<T> UpdateState(Action<T>? success = null, Action<Exception>? failure = null)
+public Result<T> MutateState(Action<T>? success = null, Action<Exception>? failure = null)
 {
     if (_exception is null && success != null)
         success(_value!);
@@ -87,7 +87,7 @@ public Result<T> UpdateState(Action<T>? success = null, Action<Exception>? failu
 
 `success` or `failure` are executed based on state.
 
-### ApplyTransformOnException(_entityProvider.RecordRequestAsync)
+### ExecuteFunctionOnException(_entityProvider.RecordRequestAsync)
 
 Result is a `Result<TKey>`.
 
@@ -96,7 +96,7 @@ The next step is to get the record.  The function is provided by the specific En
 The important bit is the data pipeline is written in the functional programming paradigm and flows any errors up through the returned `Result<TRecord>`. 
 
 ```csharp
-public async Task<Result<TOut>> ApplyTransformOnException<TOut>(Func<T, Task<Result<TOut>>> success)
+public async Task<Result<TOut>> ExecuteFunctionOnException<TOut>(Func<T, Task<Result<TOut>>> success)
 {
     if (_exception is null)
         return await success(_value!);

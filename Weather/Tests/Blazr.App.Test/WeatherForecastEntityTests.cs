@@ -54,7 +54,7 @@ public partial class WeatherForecastEntityTests
         await uiBroker.SaveItemAsync(true);
 
         // Output the result of the save
-        uiBroker.LastResult.UpdateState(
+        uiBroker.LastResult.MutateState(
             hasNoException: () => result = true,
             hasException: (ex) => result = false);
 
@@ -113,7 +113,7 @@ public partial class WeatherForecastEntityTests
         await uiBroker.SaveItemAsync(true);
 
         result = false;
-        uiBroker.LastResult.UpdateState(
+        uiBroker.LastResult.MutateState(
             hasNoException: () => result = true);
 
         // check the update was successful
@@ -137,7 +137,7 @@ public partial class WeatherForecastEntityTests
                 PageSize = 1,
                 StartIndex = 0,
             })
-            .ApplyTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .ExecuteFunctionAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
             .OutputAsync(hasValue: (provider) =>
             {
                 listItemsProvider = provider;
@@ -177,7 +177,7 @@ public partial class WeatherForecastEntityTests
 
         await uiBroker.SaveItemAsync();
 
-        uiBroker.LastResult.UpdateState(
+        uiBroker.LastResult.MutateState(
             hasNoException: () => result = true);
 
         WeatherForecastId newId = uiBroker.Id;
@@ -224,7 +224,7 @@ public partial class WeatherForecastEntityTests
                 PageSize = 1,
                 StartIndex = 0,
             })
-            .ApplyTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .ExecuteFunctionAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
             .OutputAsync(hasValue: (provider) =>
             {
                 listItemsProvider = provider;

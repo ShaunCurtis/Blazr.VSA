@@ -31,7 +31,7 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
                     Cancellation = cancellationToken
                 }
             )
-            .ApplyTransformAsync((provider) =>
+            .ExecuteFunctionAsync((provider) =>
                 Result<ListItemsProvider<DmoWeatherForecast>>
                     .Create(new ListItemsProvider<DmoWeatherForecast>(
                         Items: provider.Items.Select(item => WeatherForecastMap.Map(item)),

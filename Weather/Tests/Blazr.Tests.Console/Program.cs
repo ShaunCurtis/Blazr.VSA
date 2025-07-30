@@ -13,15 +13,15 @@ Console.WriteLine(
 //Console
 //    .ReadLine()
 //    .ParseForInt()
-//    .ApplyTransform((value) => Math.Sqrt(value))
-//    .ApplyTransform((value) => Math.Round(value, 2))
-//    //  Handle the transforms
+//    .ExecuteFunction((value) => Math.Sqrt(value))
+//    .ExecuteFunction((value) => Math.Round(value, 2))
+//    //  Handle the functions
 //    .Output(
-//        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value is: {value}"),
+//        hasValue: (value) => Console.WriteLine($"Parsed successfully: The functioned value is: {value}"),
 //        hasException: (ex) => Console.WriteLine($"Failed to parse input: {ex.Message}")
 //    );
 
-//... transforms
+//... functions
 
 
 
@@ -44,9 +44,9 @@ Console.WriteLine(
 
 //if (parseResult.HasValue)
 //{
-//    double transformedValue = Math.Sqrt(parseResult.Value);
-//    transformedValue = Math.Round(transformedValue, 2);
-//    Console.WriteLine($"Parsed successfully: The transformed value is: {transformedValue}");
+//    double functionedValue = Math.Sqrt(parseResult.Value);
+//    functionedValue = Math.Round(functionedValue, 2);
+//    Console.WriteLine($"Parsed successfully: The functioned value is: {functionedValue}");
 //}
 //else
 //{
@@ -61,22 +61,22 @@ Console.WriteLine(
 
 //double doubleValue = 0;
 
-//await Console
-//    .ReadLine()
-//    .ToResult()
-//    .ApplyTransformAsync(Utils.StringToDoubleAsync)
-//    .MutateStateAsync((value) => doubleValue = value)
-//    .ApplyTransformAsync(Math.Sqrt)
-//    .ApplyTransformAsync((value) => Math.Round(value, 2))
-//    .OutputAsync(
-//        hasValue: (value) => Console.WriteLine($"Parsed successfully: The transformed value of {doubleValue} is: {value}"),
-//        hasException: (ex) => Console.WriteLine($"Failed: {ex.Message}")
-//    );
+await Console
+    .ReadLine()
+    .ToResult()
+    .ExecuteFunctionAsync(Utils.StringToDoubleAsync)
+    .MutateStateAsync((value) => doubleValue = value)
+    .ExecuteFunctionAsync(Math.Sqrt)
+    .ExecuteFunctionAsync((value) => Math.Round(value, 2))
+    .OutputAsync(
+        hasValue: (value) => Console.WriteLine($"Parsed successfully: The functioned value of {doubleValue} is: {value}"),
+        hasException: (ex) => Console.WriteLine($"Failed: {ex.Message}")
+    );
 
 //if (result.HasValue)
 //{
 //    //...
-//    Console.WriteLine($"Parsed successfully: The transformed value is: {result.Value}");
+//    Console.WriteLine($"Parsed successfully: The functioned value is: {result.Value}");
 //}
 //else
 //{
@@ -114,7 +114,7 @@ Result<int> ParseForInt(string input)
 
 //        var result = Math.Sqrt(value);
 //        result = Math.Round(result, 2);
-//        Console.WriteLine($"Parsed successfully: The transformed value of {value} is: {result}");
+//        Console.WriteLine($"Parsed successfully: The functioned value of {value} is: {result}");
 //    }
 //    catch (Exception ex)
 //    {
@@ -205,7 +205,7 @@ public static class stringExtensions
 
 
 //var xresult = Result<string>.Create(input)
-//  .ApplyTransform<string>(ToUpper)
+//  .ExecuteFunction<string>(ToUpper)
 //  .ToResult;
 
 //DisplayError(xresult);
