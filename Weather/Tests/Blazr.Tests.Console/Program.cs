@@ -15,9 +15,76 @@
 
 
 
-//var input = Console.ReadLine();
+var input = Console.ReadLine();
 
-//var parseResult = ParseForInt(input);
+if(double.TryParse(input, out double value))
+{
+    value = Math.Sqrt(value);
+    Console.WriteLine($"The square root is: {Math.Round(value, 2)}");
+}
+else
+{
+    Console.WriteLine($"The input is not a valid");
+}
+
+
+public record Result<T>
+{
+    public T? Value { get; private init; }
+    public Exception? Exception { get; private init; }
+
+    public Result(T value) : this(value, null) { }
+    public Result(Exception exception) : this(default, exception) { }
+
+    private Result(T? value, Exception? exception)
+    {
+        Value = value;
+        Exception = exception;
+    }
+
+    public Result<TOut> ExecuteResult<TOut>(Func<T, Result<TOut>> function)
+        => this.Exception is null
+            ? function(Value!)
+            : new Result<TOut>(this.Exception);
+
+}
+    //public Result<TOut> ExecuteResult<TOut>(Func<T, TOut> function)
+    //{
+    //    if (HasValue)
+    //    {
+    //        try
+    //        {
+    //            return Result<TOut>.Create(mapFunction(Value!));
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            return Result<TOut>.Failure(new ResultException(ex.Message));
+    //        }
+    //    }
+    //    else
+    //    {
+    //        return Result<TOut>.Failure(Exception!);
+    //    }
+    //}
+
+
+public class ResultException : Exception
+{
+    public ResultException() : base("The Result is Failure.") { }
+    public ResultException(string message) : base(message) { }
+}
+
+//if (input is null)
+//     Console.WriteLine($"The input was null");
+//else if(!input.All(char.IsNumber))
+//    Console.WriteLine($"The input isnot a numberl");
+//else
+//{
+
+
+//}
+
+
 
 //if (int.TryParse(input, out int value))
 //{
@@ -49,19 +116,19 @@
 //    : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
 
 
-double doubleValue = 0;
+//double doubleValue = 0;
 
-await Console
-    .ReadLine()
-    .ToResult()
-    .ExecuteFunctionAsync(Utils.StringToDoubleAsync)
-    .MutateStateAsync((value) => doubleValue = value)
-    .ExecuteFunctionAsync(Math.Sqrt)
-    .ExecuteFunctionAsync((value) => Math.Round(value, 2))
-    .OutputAsync(
-        hasValue: (value) => Console.WriteLine($"Parsed successfully: The functioned value of {doubleValue} is: {value}"),
-        hasException: (ex) => Console.WriteLine($"Failed: {ex.Message}")
-    );
+//await Console
+//    .ReadLine()
+//    .ToResult()
+//    .ExecuteFunctionAsync(Utils.StringToDoubleAsync)
+//    .MutateStateAsync((value) => doubleValue = value)
+//    .ExecuteFunctionAsync(Math.Sqrt)
+//    .ExecuteFunctionAsync((value) => Math.Round(value, 2))
+//    .OutputAsync(
+//        hasValue: (value) => Console.WriteLine($"Parsed successfully: The functioned value of {doubleValue} is: {value}"),
+//        hasException: (ex) => Console.WriteLine($"Failed: {ex.Message}")
+//    );
 
 //if (result.HasValue)
 //{
@@ -73,28 +140,28 @@ await Console
 //    Console.WriteLine($"Failed to parse input: {result.Exception!.Message}");
 //}
 
-Result<int> ParseForInt(string input)
-{
-    if (!string.IsNullOrEmpty(input))
-    {
-        try
-        {
-            var value = int.Parse(input!);
+//Result<int> ParseForInt(string input)
+//{
+//    if (!string.IsNullOrEmpty(input))
+//    {
+//        try
+//        {
+//            var value = int.Parse(input!);
 
-            var result = Math.Sqrt(value);
-            result = Math.Round(result, 2);
-            return Result<int>.Create((int)result);
-        }
-        catch (Exception ex)
-        {
-            return Result<int>.Failure(ex);
-        }
-    }
-    else
-    {
-        return Result<int>.Failure("Input cannot be null or empty.");
-    }
-}
+//            var result = Math.Sqrt(value);
+//            result = Math.Round(result, 2);
+//            return Result<int>.Create((int)result);
+//        }
+//        catch (Exception ex)
+//        {
+//            return Result<int>.Failure(ex);
+//        }
+//    }
+//    else
+//    {
+//        return Result<int>.Failure("Input cannot be null or empty.");
+//    }
+//}
 
 //if (!string.IsNullOrEmpty(input))
 //{

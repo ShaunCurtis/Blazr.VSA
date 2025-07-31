@@ -1,41 +1,94 @@
 # Monads
 
-Monads are a rich topic for conversation: the Internet is awash with Monad articles.  This is another: but I'll show you what one is, by build one.
+Type *Monad* into your search bar.  The Internet is awash with articles.  There are even articles about the aeticles tryig to explain why the original articles fail!
 
-As C# OOP programmers we have less than satisfactory solutions for some thorny coding challenges.  We're stuck in the OOP paradigm. Functional programming [**FP**] has better answers for many of these challenges.
 
-Consider this ugly, horrible piece of platform code:
+Here's another: but hopefully one that succeeds.
 
-```csharp
-public static bool TryParse(string? s, IFormatProvider? provider, out int result);
+Here's why they fail:
+
+> A *Monad* is just a *Monoid* in the *Category* of *EndOfFunctors*.
+
+The statement is mathmatically correct (or so I'm informed), but if you understand it you're in a serious minority.
+
+Articles fail to enlighten us because they try to explain that statement in plain language.
+
+I know you can't.
+
+So, lets come at this from a different angle.
+
+Here's a C# base level Monad:
+
+```
+public record Monad<T>(T value) 
+{
+    Monad<TOut> ExecuteFunction(Func<T, Monad<TOut>> f);
+}
 ```
 
-Is spouting results at both ends good practice?  Not in my book.
+It:
+1. Has a constructor - `new(value)` 
+1. A generic method to execute a function with the `Func<T, Monad<TOut>>` pattern: known as a *Manadic Function*.
 
-Here's a classically coded console app using it:
+Now let'a look at a coding problem that the Monad Pattern helps us solve.
 
 ```csharp
 var input = Console.ReadLine();
 
-bool isInt = int.TryParse(input, out int value);
-
-// apply some functions to the result of the parsing
-double result = 0;
-if (isInt)
+if(double.TryParse(input, out double value))
 {
-    result = Math.Sqrt(value);
-    result = Math.Round(result, 2);
-}
-//... later
-if (isInt)
-{
-    Console.WriteLine($"Parsed successfully: The functioned value is: {result}");
+    value = Math.Sqrt(value);
+    Console.WriteLine($"The square root is: {Math.Round(value, 2)}");
 }
 else
 {
-    Console.WriteLine($"Failed to parse input: {input}");
+    Console.WriteLine($"The input is not a valid");
 }
 ```
+
+It works, but it's ugly.  `TryParse` spouts results at both ends: it returns a `bool` and outputs the parsed value via an `out` parameter.  You have to really look at thiscode to see what's going on.
+
+Let's refactor it to use a *Result Monad*.
+
+First, we need our Monad.
+
+```csharp
+public record Result<T>
+{
+    public T? Value { get; private init; }
+    public Exception? Exception { get; private init; }
+
+    public Result(T value) : this(value, null) { }
+    public Result(Exception exception) : this(default, exception) { }
+
+    private Result(T? value, Exception? exception)
+    {
+        Value = value;
+        Exception = exception;
+    }
+
+    public Result<TOut> ExecuteResult<TOut>(Func<T, Result<TOut>> function)
+        => this.Exception is null
+            ? function(Value!)
+            : new Result<TOut>(this.Exception);
+}
+```
+
+A little more code to provide the constructors and state.  `Result<T>` can be in one of two states:
+
+- **HasValue**: The operation completed successfully and produced a Value.
+- **HasException**: The operation failed, and the result contains an exception.
+
+The `ExecuteResult` method executes a function that takes a `T` and returns a new `Result<TOut>`.  If the input `Result<T>`:
+
+ - Is in the *HasValue* state, it executes the function and returns the result.  
+ - Is in the *HasException* state, it short-circuits, returning a new `Result<TOut>` with the exception from the input `Result<T>`.  It doesn't execute the function.
+
+ Note: it's important the state check is on the `Exception` property.  `T` is not necessarily a `Nullable`: `int` will be set to `0`.
+
+
+
+
 
 And the FP version we'll develop:
 
