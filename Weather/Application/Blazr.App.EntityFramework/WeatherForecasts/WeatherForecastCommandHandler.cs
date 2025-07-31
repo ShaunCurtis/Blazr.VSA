@@ -32,6 +32,6 @@ public sealed record WeatherForecastCommandHandler : IRequestHandler<WeatherFore
             .ExecuteFunctionAsync((record) => Result<WeatherForecastId>
                .Create(new WeatherForecastId(record.WeatherForecastID))
             )
-            .MutateStateAsync((id) => _messageBus.Publish<DmoWeatherForecast>(id));
+            .OutputAsync((id) => _messageBus.Publish<DmoWeatherForecast>(id));
     
 }

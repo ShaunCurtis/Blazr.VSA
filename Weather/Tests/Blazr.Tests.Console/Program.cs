@@ -1,4 +1,14 @@
 ﻿using Blazr.Manganese;
+using System;
+
+Console.WriteLine(
+    Result<string>
+        .CreateFromTransform(Console.ReadLine)
+        .OutputValue<string>(
+            hasValue: (value) => $"Success: The transformed value is: {value}",
+            hasException: (ex) => $"Failure: {ex.Message}"
+        )
+    );
 
 //Console
 //    .ReadLine()
