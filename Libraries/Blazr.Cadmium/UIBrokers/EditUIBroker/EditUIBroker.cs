@@ -93,7 +93,7 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
     private async Task<Result> UpdateRecordAsync(bool refreshOnNew)
         => await Result.Success()
             // Check we're loaded
-            .ExecuteFunctionOnException(!_isLoaded, "No record is loaded.")
+            .SwitchToException(!_isLoaded, "No record is loaded.")
             // Get the record item from the EditMutator
             .ExecuteFunction<TRecord>(() => EditMutator.ToResult)
              // Set the broker state to dirty
@@ -108,7 +108,7 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
     private Result ResetItem()
         => Result.Success()
             // Check we're loaded
-            .ExecuteFunctionOnException(!_isLoaded, "No record is loaded.")
+            .SwitchToException(!_isLoaded, "No record is loaded.")
             // Set the broker state
             .MutateState(() =>
                 {
@@ -120,7 +120,7 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
     private async ValueTask<Result> DeleteItemAsync()
         => await Result.Success()
             // Check we're loaded
-            .ExecuteFunctionOnException(!_isLoaded, "No record is loaded.")
+            .SwitchToException(!_isLoaded, "No record is loaded.")
             // Set the broker state
             .MutateState(() => this.State = EditState.Deleted)
             // Delete the record item from the datastore

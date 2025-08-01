@@ -9,4 +9,7 @@ public class ResultException : Exception
 {
     public ResultException() : base("The Result is Failure.") { }
     public ResultException(string message) : base(message) { }
+
+    public static ResultException Create(string message)
+        => new ResultException(message);
 }

@@ -14,9 +14,9 @@ namespace Blazr.Manganese;
 public partial record Result
 {
     public static Result<TOut> CreateFromFunction<TOut>(Func<TOut> function)
-        => Result.Success().ApplyTransform(function);
+        => Result.Success().ExecuteFunction(function);
 
-    public Result ApplyTransform( Func<Result> transform)
+    public Result ExecuteFunction( Func<Result> function)
     => this.Exception is null
         ? function()
         : this;
@@ -36,14 +36,14 @@ public partial record Result
         ? HasException(this.Exception!)
         : HasNoException();
 
-    public Result<TOut> ApplyTransform<TOut>(Func<TOut> transform)
+    public Result<TOut> ExecuteFunction<TOut>(Func<TOut> function)
     {
         if (this.Exception is not null)
             return Result<TOut>.Failure(this.Exception!);
 
         try
         {
-            var value = transform.Invoke();
+            var value = function.Invoke();
             return (value is null)
                 ? Result<TOut>.Failure(new ResultException("The transform function returned a null value."))
                 : Result<TOut>.Create(value);
@@ -54,12 +54,12 @@ public partial record Result
         }
     }
 
-    public Result ApplyTransformOnException( bool test, string message)
+    public Result SwitchToException( bool test, string message)
         => this.HasException && test
             ? Result.Failure(message)
             : this;
 
-    public  Result ExecuteFunctionOnException( bool test, Exception exception)
+    public  Result SwitchToException( bool test, Exception exception)
         => this.HasException && test
                 ? Result.Failure(exception)
                 : this;

@@ -1,14 +1,16 @@
-﻿using Blazr.Manganese;
+﻿//using Blazr.Manganese;
 using System;
+using System.Data.SqlTypes;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
-Console.WriteLine(
-    Result<string>
-        .CreateFromTransform(Console.ReadLine)
-        .OutputValue<string>(
-            hasValue: (value) => $"Success: The transformed value is: {value}",
-            hasException: (ex) => $"Failure: {ex.Message}"
-        )
-    );
+//Console.WriteLine(
+//    Result<string>
+//        .ExecuteFunction<string>(Console.ReadLine)
+//        .OutputValue<string>(
+//            hasValue: (value) => $"Success: The transformed value is: {value}",
+//            hasException: (ex) => $"Failure: {ex.Message}"
+//        )
+//    );
 
 //Console
 //    .ReadLine()
@@ -25,17 +27,18 @@ Console.WriteLine(
 
 
 
-var input = Console.ReadLine();
+new Result<string?>(Console.ReadLine())
+    .ExecuteFunction<double>(double.Parse);
 
-if(double.TryParse(input, out double value))
-{
-    value = Math.Sqrt(value);
-    Console.WriteLine($"The square root is: {Math.Round(value, 2)}");
-}
-else
-{
-    Console.WriteLine($"The input is not a valid");
-}
+//if(double.TryParse(input, out double value))
+//{
+//    value = Math.Sqrt(value);
+//    Console.WriteLine($"The square root is: {Math.Round(value, 2)}");
+//}
+//else
+//{
+//    Console.WriteLine($"The input is not a valid");
+//}
 
 
 public record Result<T>
@@ -44,6 +47,7 @@ public record Result<T>
     public Exception? Exception { get; private init; }
 
     public Result(T value) : this(value, null) { }
+
     public Result(Exception exception) : this(default, exception) { }
 
     private Result(T? value, Exception? exception)
@@ -52,30 +56,55 @@ public record Result<T>
         Exception = exception;
     }
 
-    public Result<TOut> ExecuteResult<TOut>(Func<T, Result<TOut>> function)
+    public Result<TOut> ExecuteFunction<TOut>(Func<T, Result<TOut>> function)
         => this.Exception is null
             ? function(Value!)
             : new Result<TOut>(this.Exception);
 
+    public Result<TOut> ExecuteFunction<TOut>(Func<T, TOut> function)
+    {
+        if (this.Exception is not null)
+            return new Result<TOut>(this.Exception!);
+
+        try
+        {
+            var value = function.Invoke(this.Value!);
+            return (value is null)
+                ? new Result<TOut>(new ResultException("The function returned a null value."))
+                : new Result<TOut>(value);
+        }
+        catch (Exception ex)
+        {
+            return new Result<TOut>(ex);
+        }
+    }
+
+    public T OutputValue(Func<Exception, T> hasException)
+    {
+        if (this.Exception is not null)
+            return hasException.Invoke(Exception!);
+
+        return this.Value!;
+    }
 }
-    //public Result<TOut> ExecuteResult<TOut>(Func<T, TOut> function)
-    //{
-    //    if (HasValue)
-    //    {
-    //        try
-    //        {
-    //            return Result<TOut>.Create(mapFunction(Value!));
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            return Result<TOut>.Failure(new ResultException(ex.Message));
-    //        }
-    //    }
-    //    else
-    //    {
-    //        return Result<TOut>.Failure(Exception!);
-    //    }
-    //}
+//public Result<TOut> ExecuteResult<TOut>(Func<T, TOut> function)
+//{
+//    if (HasValue)
+//    {
+//        try
+//        {
+//            return Result<TOut>.Create(mapFunction(Value!));
+//        }
+//        catch (Exception ex)
+//        {
+//            return Result<TOut>.Failure(new ResultException(ex.Message));
+//        }
+//    }
+//    else
+//    {
+//        return Result<TOut>.Failure(Exception!);
+//    }
+//}
 
 
 public class ResultException : Exception
