@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 /// ============================================================
 /// Author: Shaun Curtis, Cold Elm Coders

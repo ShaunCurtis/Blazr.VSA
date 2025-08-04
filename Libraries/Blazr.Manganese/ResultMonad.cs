@@ -35,6 +35,7 @@ public partial record Result
 
         return this;
     }
+
     public ValueTask<Result> CompletedValueTask
         => ValueTask.FromResult(this);
 

@@ -34,7 +34,7 @@ public sealed class WeatherForecastListHandler : IRequestHandler<WeatherForecast
             .ExecuteFunctionAsync((provider) =>
                 Result<ListItemsProvider<DmoWeatherForecast>>
                     .Create(new ListItemsProvider<DmoWeatherForecast>(
-                        Items: provider.Items.Select(item => WeatherForecastMap.Map(item)),
+                        Items: provider.Items.Select(item => DvoWeatherForecast.Map(item)),
                         TotalCount: provider.TotalCount))
             );
 

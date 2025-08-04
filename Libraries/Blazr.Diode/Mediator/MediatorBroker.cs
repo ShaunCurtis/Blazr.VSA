@@ -13,9 +13,6 @@ public class MediatorBroker : IMediatorBroker
     {
         _serviceProvider = serviceProvider;
     }
-
-    public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
-        => DispatchAsync(request, cancellationToken);
     
     public Task<TResponse> DispatchAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {

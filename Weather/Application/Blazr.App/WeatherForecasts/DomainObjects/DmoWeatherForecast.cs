@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public sealed record DmoWeatherForecast : ICommandEntity
+public sealed record DmoWeatherForecast
 {
     public WeatherForecastId Id { get; init; } = new(Guid.Empty);
     public string Owner { get; init; } = string.Empty;

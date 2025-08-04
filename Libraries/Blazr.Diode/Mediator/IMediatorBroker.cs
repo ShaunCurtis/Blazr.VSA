@@ -8,7 +8,5 @@ namespace Blazr.Diode.Mediator;
 
 public interface IMediatorBroker
 {
-    Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default);
-    
     Task<TResponse> DispatchAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default);
 }

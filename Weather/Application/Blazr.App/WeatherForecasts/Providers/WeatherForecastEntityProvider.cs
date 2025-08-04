@@ -31,16 +31,16 @@ public class WeatherForecastEntityProvider
         => (id) => id.IsDefault ? NewEntityRequestAsync(id) : ExistingEntityRequestAsync(id);
 
     public Func<WeatherForecastEntity, Task<Result<WeatherForecastId>>> EntityCommandAsync
-        => (record) => _mediator.Send(new WeatherForecastEntityCommandRequest(record));
+        => (record) => _mediator.DispatchAsync(new WeatherForecastEntityCommandRequest(record));
 
     public Func<WeatherForecastId, Task<Result<DmoWeatherForecast>>> RecordRequestAsync
         => (id) => id.IsDefault ? NewRecordRequestAsync(id) : ExistingRecordRequestAsync(id);
 
     public Func<StateRecord<DmoWeatherForecast>, Task<Result<WeatherForecastId>>> RecordCommandAsync
-        => (record) => _mediator.Send(new WeatherForecastCommandRequest(record));
+        => (record) => _mediator.DispatchAsync(new WeatherForecastCommandRequest(record));
 
     public Func<GridState<DmoWeatherForecast>, Task<Result<ListItemsProvider<DmoWeatherForecast>>>> GridItemsRequestAsync
-        => (state) => _mediator.Send(new WeatherForecastListRequest()
+        => (state) => _mediator.DispatchAsync(new WeatherForecastListRequest()
         {
             PageSize = state.PageSize,
             StartIndex = state.StartIndex,
@@ -49,11 +49,11 @@ public class WeatherForecastEntityProvider
         });
 
     public Func<WeatherForecastListRequest, Task<Result<ListItemsProvider<DmoWeatherForecast>>>> ListItemsRequestAsync
-        => (request) => _mediator.Send(request);
+        => (request) => _mediator.DispatchAsync(request);
 
     public async ValueTask<Result<WeatherForecastEntity>> GetEntityAsync(WeatherForecastId id)
     {
-        var result = (await _mediator.Send(new WeatherForecastRecordRequest(id)))
+        var result = (await _mediator.DispatchAsync(new WeatherForecastRecordRequest(id)))
             .ExecuteFunction<WeatherForecastEntity>((record) =>
             {
                 WeatherForecastEntity.Load(record);
@@ -79,13 +79,13 @@ public class WeatherForecastEntityProvider
     private readonly IServiceProvider _serviceProvider;
 
     private Func<WeatherForecastId, Task<Result<DmoWeatherForecast>>> ExistingRecordRequestAsync
-        => (id) => _mediator.Send(new WeatherForecastRecordRequest(id));
+        => (id) => _mediator.DispatchAsync(new WeatherForecastRecordRequest(id));
 
     private Func<WeatherForecastId, Task<Result<DmoWeatherForecast>>> NewRecordRequestAsync
         => (id) => Task.FromResult(Result<DmoWeatherForecast>.Create(new DmoWeatherForecast { Id = WeatherForecastId.Default }));
 
     private Func<WeatherForecastId, Task<Result<WeatherForecastEntity>>> ExistingEntityRequestAsync
-        => (id) => _mediator.Send(new WeatherForecastEntityRequest(id));
+        => (id) => _mediator.DispatchAsync(new WeatherForecastEntityRequest(id));
 
     private Func<WeatherForecastId, Task<Result<WeatherForecastEntity>>> NewEntityRequestAsync
         => (id) => Task.FromResult(Result<WeatherForecastEntity>.Create(WeatherForecastEntity.Create()));

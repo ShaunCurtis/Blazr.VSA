@@ -28,7 +28,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 new Result<string?>(Console.ReadLine())
-    .ExecuteFunction<double>(double.Parse);
+    .ExecuteFunction<double>(double.Parse!);
 
 //if(double.TryParse(input, out double value))
 //{
@@ -258,46 +258,46 @@ public class ResultException : Exception
 //    );
 
 
-public static class Utils
-{
-    public static Func<string?, Task<Result<double>>> StringToDoubleAsync = async (input)
-        =>
-    {
-        await Task.Yield();
-        return double.TryParse(input, out double value)
-        ? Result<double>.Create(value)
-        : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-    };
+//public static class Utils
+//{
+//    public static Func<string?, Task<Result<double>>> StringToDoubleAsync = async (input)
+//        =>
+//    {
+//        await Task.Yield();
+//        return double.TryParse(input, out double value)
+//        ? Result<double>.Create(value)
+//        : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
+//    };
 
-    public static async Task<Result<double>> ParseForDoubleAsync(this string? input)
-    {
-        await Task.Yield();
-        return double.TryParse(input, out double value)
-        ? Result<double>.Create(value)
-        : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-    }
-}
+//    public static async Task<Result<double>> ParseForDoubleAsync(this string? input)
+//    {
+//        await Task.Yield();
+//        return double.TryParse(input, out double value)
+//        ? Result<double>.Create(value)
+//        : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
+//    }
+//}
 
 
-public static class stringExtensions
-{
-    public static Result<string> ToResult(this string? input) =>
-        Result<string>.Create(input);
+//public static class stringExtensions
+//{
+//    public static Result<string> ToResult(this string? input) =>
+//        Result<string>.Create(input);
 
-    public static async Task<Result<double>> ParseForDouble(this string? input)
-    {
-        await Task.Yield();
-        return double.TryParse(input, out double value)
-        ? Result<double>.Create(value)
-        : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-    }
+//    public static async Task<Result<double>> ParseForDouble(this string? input)
+//    {
+//        await Task.Yield();
+//        return double.TryParse(input, out double value)
+//        ? Result<double>.Create(value)
+//        : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
+//    }
 
-    public static Result<int> ParseForInt(this string? input) =>
-        int.TryParse(input, out int value)
-        ? Result<int>.Create(value)
-        : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-    //    : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-}
+//    public static Result<int> ParseForInt(this string? input) =>
+//        int.TryParse(input, out int value)
+//        ? Result<int>.Create(value)
+//        : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
+//    //    : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
+//}
 
 
 //var xresult = Result<string>.Create(input)

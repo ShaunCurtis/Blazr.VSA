@@ -7,10 +7,10 @@ namespace Blazr.Manganese;
 
 public partial record Result<T>
 {
-    public Result<T> ExecuteFunction(Func<T, Result<T>> function)
-        => this.HasValue
-            ? function(this.Value!)
-            : Result<T>.Failure(this.Exception!);
+    //public Result<T> ExecuteFunction(Func<T, Result<T>> function)
+    //    => this.HasValue
+    //        ? function(this.Value!)
+    //        : Result<T>.Failure(this.Exception!);
 
     public Result<TOut> ExecuteFunction<TOut>(Func<T, Result<TOut>> function)
         => this.HasValue

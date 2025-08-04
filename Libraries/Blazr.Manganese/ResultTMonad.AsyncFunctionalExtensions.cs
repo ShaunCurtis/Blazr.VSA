@@ -8,7 +8,7 @@ namespace Blazr.Manganese;
 public partial record Result<T>
 {
     public static Result<TOut> CreateFromFunction<TOut>(Func<TOut> function)
-        => Result.Success().ApplyTransform(function);
+        => Result.Success().ExecuteFunction(function);
 
     public async  Task<Result<TOut>> ExecuteFunctionAsync<TOut>( Func<T, Task<Result<TOut>>> function)
         => this.HasException

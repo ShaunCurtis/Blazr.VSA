@@ -1,6 +1,6 @@
 # CQS and the Data Pipeline
 
-The Blazor.Antimony package provides the basic infrastructure for impkementing CQS.  You can read up about CQS elsewhere, so I'll assume you either alreeady know what CQS is, or have now acquainted yourself.
+The Blazor.Diode package provides the basic infrastructure for impkementing CQS.  You can read up about CQS elsewhere, so I'll assume you either alreeady know what CQS is, or have now acquainted yourself.
 
 The data pipeline has three distinct pathways:
 
@@ -8,105 +8,155 @@ The data pipeline has three distinct pathways:
 2. Item Query - a request for a single item based on their unique identifier
 3. List Query - a request for a paged collection of items with optional sorting and filtering.
 
-## Entity Mapping
+## Entities
 
-When you design your domain entities correctly, you will often need to map between the domain entity and the database object.
+This is the `DmoWeatherForecast` domain object:
 
-There are various ways to so this.  You can use a library, or build your own.  I prefer to do my own.  It's not difficult and you are in full control.
+> Dmo = Domain Objects
 
-In the application the database mapped object is `DboWeatherForecast`.  We've back to primitives.
+```csharp
+public sealed record DmoWeatherForecast
+{
+    public WeatherForecastId Id { get; init; } = new(Guid.Empty);
+    public string Owner { get; init; } = string.Empty;
+    public Date Date { get; init; }
+    public Temperature Temperature { get; init; }
+    public string Summary { get; init; } = "Not Defined";
+}
+```
+
+Note it's immutable and uses of value objects rather than primitiies.
+
+Here are the two data store objects with built-in mappers.  This is **Command/Query Separation**, so there are two objects.
+
+`DvoWeatherForecast` is the query object for getting data from the data store.
+
+> Dvo = Data View Object.  Normally accessed through views in the data store
+
+```csharp
+public sealed record DvoWeatherForecast
+{
+    [Key] public Guid WeatherForecastID { get; init; } = Guid.Empty;
+    public DateTime Date { get; init; }
+    public decimal Temperature { get; set; }
+    public string? Summary { get; set; }
+
+    public static DmoWeatherForecast Map(DvoWeatherForecast item)
+        => new()
+        {
+            Id = new(item.WeatherForecastID),
+            Date = new(item.Date),
+            Temperature = new(item.Temperature),
+            Summary = item.Summary ?? "Not Defined"
+        };
+}
+```
+
+`DboWeatherForecast` is the command object for writing data back to the data store.
+
+> Dbo = Database Object.  Normally direct table acceas for Insert/Update/Delete operations.
 
 ```csharp
 public sealed record DboWeatherForecast : ICommandEntity
 {
-    [Key] public Guid ID { get; init; } = Guid.Empty;
-    public DateTime Date { get; init; } = DateTime.MinValue; 
-    public Decimal TemperatureC { get; init; } = decimal.MinValue;
-    public string Summary { get; init; } = string.Empty;
-}
-```
-
-Blazr.Antimony defines a mapping interface `IEntityMap` that you can implement to map between the domain entity and the database entity.
-
-```csharp
-public interface IDboEntityMap<TDboEntity, TDomainEntity>
-{
-    public TDomainEntity MapTo(TDboEntity item);
-    public TDboEntity MapTo(TDomainEntity item);
-}
-```
-
-The `DboWeatherForecastMap` implements the `IDboEntityMap` interface.  Note implementation of both instance and static maps.  Also note that the doamin entity to database object map detects a new record with a default ID and creates a new ID. 
-
-```csharp
-public class DboWeatherForecastMap : IDboEntityMap<DboWeatherForecast, DmoWeatherForecast>
-{
-    public DmoWeatherForecast MapTo(DboWeatherForecast item)
-        => Map(item);
-
-    public DboWeatherForecast MapTo(DmoWeatherForecast item)
-        => Map(item);
-
-    public static DmoWeatherForecast Map(DboWeatherForecast item)
-        => new()
-        {
-            Id = new(item.ID),
-            Date = new Date(item.Date),
-            Temperature = new(item.TemperatureC),
-            Summary = item.Summary
-        };
+    [Key] public Guid WeatherForecastID { get; init; } = Guid.Empty;
+    public DateTime Date { get; init; }
+    public decimal Temperature { get; init; }
+    public string? Summary { get; init; }
 
     public static DboWeatherForecast Map(DmoWeatherForecast item)
         => new()
         {
-            ID = item.Id.IsDefault ? WeatherForecastId.Create.Value  : item.Id.Value,
-            Date = item.Date.ToDateTime,
-            TemperatureC = item.Temperature.TemperatureC,
+            WeatherForecastID = item.Id.ValidatedId.Value,
+            Date = item.Date.Value.ToDateTime(TimeOnly.MinValue),
+            Temperature = item.Temperature.TemperatureC,
             Summary = item.Summary
         };
 }
 ```
 
-## Mediatr
+## Mediator
 
-Mediatr provides the link between the front end and the CQS backend.
+*Blazr.Diode* contains a Mediator Pattern implementation with the necessary request and result objects.   
 
-The Mediatr request for getting a single item is defined as:
+`IMedaitorBroker` defines the DI Mediator service interface: which defines a single `DispatchAsync` method.
 
 ```csharp
-public readonly record struct WeatherForecastItemRequest(
-        WeatherForecastId Id) 
-    : IRequest<ItemQueryResult<DmoWeatherForecast>>;
+Task<TResponse> DispatchAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default);
 ```
 
-And the Mediatr handler is defined as:
+### Mediator Requests
+
+The Mediatr request for getting a record is defined as:
 
 ```csharp
-public record WeatherForecastItemHandler : IRequestHandler<WeatherForecastItemRequest, ItemQueryResult<DmoWeatherForecast>>
+public readonly record struct WeatherForecastRecordRequest(WeatherForecastId Id) 
+    : IRequest<Result<DmoWeatherForecast>>;
+```
+
+Which is used like this:
+
+```csharp
+public async ValueTask<Result<DmoWeatherForecast>> GetRecordAsync(WeatherForecastId id)
 {
-    private IItemRequestHandler _handler;
+    return await _mediator.DispatchAsync(new WeatherForecastRecordRequest(id));
+}
+```
 
-    public WeatherForecastItemHandler(IItemRequestHandler handler)
+## Mediator Handlers
+
+The Mediator handler for `DmoWeatherForecast` is defined in *Blazr.App.EntityFramework*:
+
+```csharp
+public sealed class WeatherForecastRecordHandler : IRequestHandler<WeatherForecastRecordRequest, Result<DmoWeatherForecast>>
+{
+    private IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
+
+    public WeatherForecastRecordHandler(IDbContextFactory<InMemoryWeatherTestDbContext> dbContextFactory)
     {
-        _handler = handler;
+        _factory = dbContextFactory;
     }
 
-    public async Task<ItemQueryResult<DmoWeatherForecast>> Handle(WeatherForecastItemRequest request, CancellationToken cancellationToken)
-    {
-        Expression<Func<DboWeatherForecast, bool>> findExpression = (item) =>
-            item.ID == request.Id.Value;
+    public Task<Result<DmoWeatherForecast>> HandleAsync(WeatherForecastRecordRequest request, CancellationToken cancellationToken)
+        => _factory.CreateDbContext()
+                .GetRecordAsync<DvoWeatherForecast>(new RecordQueryRequest<DvoWeatherForecast>(item => item.WeatherForecastID == request.Id.Value))
+                .ExecuteFunctionAsync(DvoWeatherForecast.Map);
 
-        var query = new ItemQueryRequest<DboWeatherForecast>(findExpression);
+}
+```
 
-        var result = await _handler.ExecuteAsync<DboWeatherForecast>(query);
+It:
 
-        if (!result.Successful)
-            return ItemQueryResult<DmoWeatherForecast>.Failure(result.Exception!);
+1. Gets a transaction based `DbContext` from the factory.
+1. Executes the `GetRecordAsync` method on the context to get the `DvoWeatherForecast`.
+1. Maps the `Dvo` to the `Dmo` object and returns it in a `Result<DmoWeatherForecast>`.
 
-        var returnItem = DboWeatherForecastMap.Map(result.Item!);
+`GetRecordAsync`, along with `GetItemsAsync` and `ExecuteCommandAsync` are extension methods added to the `DbContext`.
 
-        return ItemQueryResult<DmoWeatherForecast>.Success(returnItem);
-    }
+This is `GetRecordAsync`:
+
+```csharp
+public static async Task<Result<TRecord>> GetRecordAsync<TRecord>(this DbContext dbContext, RecordQueryRequest<TRecord> request)
+    where TRecord : class
+        => await CQSEFBroker<DbContext>.GetRecordAsync(dbContext, request).ConfigureAwait(ConfigureAwaitOptions.None);
+```
+
+And this is `CQSEFBroker<DbContext>.GetRecordAsync`
+
+```csharp
+public static async Task<Result<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
+    where TRecord : class
+{
+    dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
+    var record = await dbContext.Set<TRecord>()
+        .FirstOrDefaultAsync(request.FindExpression)
+        .ConfigureAwait(ConfigureAwaitOptions.None);
+
+    if (record is null)
+        return Result<TRecord>.Failure($"No record retrieved with the Key provided");
+
+    return Result<TRecord>.Success(record);
 }
 ```
 
