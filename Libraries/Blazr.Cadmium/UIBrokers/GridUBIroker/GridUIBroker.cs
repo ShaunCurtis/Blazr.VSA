@@ -41,7 +41,7 @@ public partial class GridUIBroker<TRecord, TKey>
     {
         this.StateContextUid = context;
 
-        return this.Dispatch(resetGridRequest).ToResult;
+        return this.Dispatch(resetGridRequest).ToResult();
     }
 
     public Result SetContext(Guid context)
@@ -51,9 +51,9 @@ public partial class GridUIBroker<TRecord, TKey>
         // Check to see if we have a saved grid state for this context.
         // If so load and apply it
         return _gridStateStore.GetState<GridState<TRecord>>(context)
-            .MutateState(hasValue: (state) => this.GridState = state,
+            .ExecuteAction(hasValue: (state) => this.GridState = state,
                 hasException: (ex) => this.GridState = new GridState<TRecord>())
-            .ToResult;
+            .ToResult();
     }
 
     public Result<GridState<TRecord>> Dispatch(UpdateGridRequest<TRecord> request)
@@ -72,8 +72,8 @@ public partial class GridUIBroker<TRecord, TKey>
         => await Result<UpdateGridRequest<TRecord>>
             .Create(UpdateGridRequest<TRecord>.Create(gridRequest))
             .Dispatch(this.Dispatch)
-            .ExecuteFunctionAsync(_entityProvider.GetItemsAsync)
-            .MutateStateAsync((result) => this.LastResult = result)
+            .ExecuteTransformAsync(_entityProvider.GetItemsAsync)
+            .ExecuteActionAsync((result) => this.LastResult = result)
             .OutputValueAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 
     // Services
@@ -83,6 +83,5 @@ public partial class GridUIBroker<TRecord, TKey>
 
     private void OnStateChanged(object? message)
         => this.StateChanged?.Invoke(this, EventArgs.Empty);
-
 }
 

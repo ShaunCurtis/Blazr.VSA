@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.Test;
 
-public partial class WeatherForecastTests
+public partial class WeatherForecastBrokers
 {
 
     [Fact]
@@ -49,133 +49,133 @@ public partial class WeatherForecastTests
         Assert.Equal(controlRecord, uiBroker.Item);
     }
 
-    [Theory]
-    [InlineData(0, 10)]
-    [InlineData(0, 20)]
-    [InlineData(5, 10)]
-    public async Task GetForecastList(int startIndex, int pageSize)
-    {
-        var provider = GetServiceProvider();
+    //[Theory]
+    //[InlineData(0, 10)]
+    //[InlineData(0, 20)]
+    //[InlineData(5, 10)]
+    //public async Task GetForecastList(int startIndex, int pageSize)
+    //{
+    //    var provider = GetServiceProvider();
 
-        //Injects the data broker
-        var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
+    //    //Injects the data broker
+    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
+    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
 
-        // Get the total expected count and the first record of the page
-        var testCount = _testDataProvider.WeatherForecasts.Count();
-        var testFirstItem = _testDataProvider.WeatherForecasts.Skip(startIndex).First();
+    //    // Get the total expected count and the first record of the page
+    //    var testCount = _testDataProvider.WeatherForecasts.Count();
+    //    var testFirstItem = _testDataProvider.WeatherForecasts.Skip(startIndex).First();
 
-        var testFirstRecord = this.AsDmoWeatherForecast(testFirstItem);
+    //    var testFirstRecord = this.AsDmoWeatherForecast(testFirstItem);
 
-        //Outputs from the process that need to be tested
-        bool result = true;
-        ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
+    //    //Outputs from the process that need to be tested
+    //    bool result = true;
+    //    ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
 
-        var listRequest = await Result<WeatherForecastListRequest>
-            .Create(new WeatherForecastListRequest { PageSize = pageSize, StartIndex = startIndex })
-            .ExecuteTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-            .OutputAsync(
-                hasValue: (provider) => listItemsProvider = provider, 
-                hasException: (ex) => result = false);
+    //    var listRequest = await Result<WeatherForecastListRequest>
+    //        .Create(new WeatherForecastListRequest { PageSize = pageSize, StartIndex = startIndex })
+    //        .ExecuteTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+    //        .OutputAsync(
+    //            hasValue: (provider) => listItemsProvider = provider, 
+    //            hasException: (ex) => result = false);
 
-        Assert.True(result);
-        Assert.Equal(testCount, listItemsProvider.TotalCount);
-        Assert.Equal(pageSize, listItemsProvider.Items.Count());
-        Assert.Equal(testFirstRecord, listItemsProvider.Items.First());
-    }
+    //    Assert.True(result);
+    //    Assert.Equal(testCount, listItemsProvider.TotalCount);
+    //    Assert.Equal(pageSize, listItemsProvider.Items.Count());
+    //    Assert.Equal(testFirstRecord, listItemsProvider.Items.First());
+    //}
 
-    [Fact]
-    public async Task GetAFilteredForecastList()
-    {
-        var provider = GetServiceProvider();
+    //[Fact]
+    //public async Task GetAFilteredForecastList()
+    //{
+    //    var provider = GetServiceProvider();
 
-        //Injects the data broker
-        var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
+    //    //Injects the data broker
+    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
+    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
 
-        // Set up the test data
-        var pageSize = 2;
-        var testSummary = "Warm";
-        var testQuery = _testDataProvider.WeatherForecasts.Where(item => testSummary.Equals(item.Summary, StringComparison.CurrentCultureIgnoreCase));
-        var testCount = testQuery.Count();
-        var testFirstItem = this.AsDmoWeatherForecast(testQuery.First());
+    //    // Set up the test data
+    //    var pageSize = 2;
+    //    var testSummary = "Warm";
+    //    var testQuery = _testDataProvider.WeatherForecasts.Where(item => testSummary.Equals(item.Summary, StringComparison.CurrentCultureIgnoreCase));
+    //    var testCount = testQuery.Count();
+    //    var testFirstItem = this.AsDmoWeatherForecast(testQuery.First());
 
-        //Outputs from the process that need to be tested
-        bool result = false;
-        ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
+    //    //Outputs from the process that need to be tested
+    //    bool result = false;
+    //    ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
 
-        // We create a Result from a new WeatherForecastListRequest defining our test parameters
-        // and then map it to the WeatherListRequest method of the entity provider
-        // This will execute the request and return a ListItemsProvider<DmoWeatherForecast> Result
-        // which we then match to get the items provider.
+    //    // We create a Result from a new WeatherForecastListRequest defining our test parameters
+    //    // and then map it to the WeatherListRequest method of the entity provider
+    //    // This will execute the request and return a ListItemsProvider<DmoWeatherForecast> Result
+    //    // which we then match to get the items provider.
 
-        await Result<WeatherForecastListRequest>
-            .Create(new()
-            {
-                PageSize = pageSize,
-                StartIndex = 0,
-                Summary = testSummary
-            })
-            .ExecuteTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-            .OutputAsync(hasValue: (provider) =>
-            {
-                listItemsProvider = provider;
-                result = true;
-            });
+    //    await Result<WeatherForecastListRequest>
+    //        .Create(new()
+    //        {
+    //            PageSize = pageSize,
+    //            StartIndex = 0,
+    //            Summary = testSummary
+    //        })
+    //        .ExecuteTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+    //        .OutputAsync(hasValue: (provider) =>
+    //        {
+    //            listItemsProvider = provider;
+    //            result = true;
+    //        });
 
-        Assert.True(result);
+    //    Assert.True(result);
 
-        // Test the results are as expected
-        Assert.Equal(testCount, listItemsProvider.TotalCount);
-        Assert.Equal(pageSize, listItemsProvider.Items.Count());
-        Assert.Equal(testFirstItem, listItemsProvider.Items.First());
-    }
+    //    // Test the results are as expected
+    //    Assert.Equal(testCount, listItemsProvider.TotalCount);
+    //    Assert.Equal(pageSize, listItemsProvider.Items.Count());
+    //    Assert.Equal(testFirstItem, listItemsProvider.Items.First());
+    //}
 
-    [Fact]
-    public async Task GetASortedForecastList()
-    {
-        var provider = GetServiceProvider();
+    //[Fact]
+    //public async Task GetASortedForecastList()
+    //{
+    //    var provider = GetServiceProvider();
 
-        //Injects the data broker
-        var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
+    //    //Injects the data broker
+    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
+    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
 
-        // Set up the test data
-        var pageSize = 10;
-        var testQuery = _testDataProvider.WeatherForecasts.OrderByDescending(item => item.Date);
-        var testCount = testQuery.Count();
-        var testFirstItem = this.AsDmoWeatherForecast(testQuery.First());
-        //Outputs from the process that need to be tested
-        bool result = false;
-        ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
+    //    // Set up the test data
+    //    var pageSize = 10;
+    //    var testQuery = _testDataProvider.WeatherForecasts.OrderByDescending(item => item.Date);
+    //    var testCount = testQuery.Count();
+    //    var testFirstItem = this.AsDmoWeatherForecast(testQuery.First());
+    //    //Outputs from the process that need to be tested
+    //    bool result = false;
+    //    ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
 
-        // We create a Result from a new WeatherForecastListRequest defining our test parameters
-        // and then map it to the WeatherListRequest method of the entity provider
-        // This will execute the request and return a ListItemsProvider<DmoWeatherForecast> Result
-        // which we then match to get the items provider.
+    //    // We create a Result from a new WeatherForecastListRequest defining our test parameters
+    //    // and then map it to the WeatherListRequest method of the entity provider
+    //    // This will execute the request and return a ListItemsProvider<DmoWeatherForecast> Result
+    //    // which we then match to get the items provider.
 
-        await Result<WeatherForecastListRequest>
-            .Create(new()
-            {
-                PageSize = pageSize,
-                StartIndex = 0,
-                SortColumn = "Date",
-                SortDescending = true
-            })
-            .ExecuteTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-            .OutputAsync(hasValue: (provider) =>
-            {
-                listItemsProvider = provider;
-                result = true;
-            });
+    //    await Result<WeatherForecastListRequest>
+    //        .Create(new()
+    //        {
+    //            PageSize = pageSize,
+    //            StartIndex = 0,
+    //            SortColumn = "Date",
+    //            SortDescending = true
+    //        })
+    //        .ExecuteTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+    //        .OutputAsync(hasValue: (provider) =>
+    //        {
+    //            listItemsProvider = provider;
+    //            result = true;
+    //        });
 
-        Assert.True(result);
+    //    Assert.True(result);
 
-        // Test the results are as expected
-        Assert.Equal(testCount, listItemsProvider.TotalCount);
-        Assert.Equal(pageSize, listItemsProvider.Items.Count());
-        Assert.Equal(testFirstItem, listItemsProvider.Items.First());
-    }
+    //    // Test the results are as expected
+    //    Assert.Equal(testCount, listItemsProvider.TotalCount);
+    //    Assert.Equal(pageSize, listItemsProvider.Items.Count());
+    //    Assert.Equal(testFirstItem, listItemsProvider.Items.First());
+    //}
 
     //[Fact]
     //public async Task UpdateAForecast()

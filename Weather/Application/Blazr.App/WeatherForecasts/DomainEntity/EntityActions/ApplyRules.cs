@@ -9,32 +9,15 @@ public sealed partial class WeatherForecastEntity
 {
     private bool _processing;
 
-    private Result ApplyRules(object? sender)
-        => SetProcessing()
-            .ExecuteFunction(RunRules)
-            .Output(() => this.StateHasChanged?.Invoke(sender ?? this, this.Id)
-        );
+    private static Result<WeatherForecastEntity> ApplyRules(WeatherForecastEntity entity)
+     => entity._processing
+            ? Result<WeatherForecastEntity>.Failure("Rules already running.")
+            : Result<WeatherForecastEntity>.Success(entity)
+        .ExecuteAction((WeatherForecastEntity entity) => entity._processing = true)
+        .ExecuteTransaction(NewDateNotInTheFutureRule);
 
-    private Result RunRules()
-    {
-        var result = NewDateNotInTheFutureRule();
-        _processing = false;
-
-        return result;
-    }
-
-    private Result SetProcessing()
-    {
-        var result = _processing
-            ? Result.Failure("Rules already running.")
-            : Result.Success();
-
-        _processing = true;
-        return result;
-    }
-
-    private Result NewDateNotInTheFutureRule()
-        => (_weatherForecast.State == EditState.New && _weatherForecast.Record.Date.Value > DateOnly.FromDateTime(DateTime.Now))
-            ? Result.Failure(new ValidationException("A new weather forecast must have a future date."))
-            : Result.Success();
+    private static Result<WeatherForecastEntity> NewDateNotInTheFutureRule(WeatherForecastEntity entity)
+        => (entity._weatherForecast.State == EditState.New && entity._weatherForecast.Record.Date.Value > DateOnly.FromDateTime(DateTime.Now))
+            ? Result<WeatherForecastEntity>.Failure(new ValidationException("A new weather forecast must have a future date."))
+            : Result<WeatherForecastEntity>.Success(entity);
 }

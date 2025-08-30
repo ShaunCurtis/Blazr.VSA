@@ -9,7 +9,7 @@ public record StateRecord<T>
 {
     public T Record { get; init; }
     public EditState State { get; init; }
-    public readonly Guid TransactionId = Guid.CreateVersion7();
+    public Guid TransactionId { get; init; } = Guid.CreateVersion7();
 
     public StateRecord(T record, EditState state)
     {
@@ -26,6 +26,9 @@ public record StateRecord<T>
 
     public bool IsDirty
         => this.State != EditState.Clean;
+
+    public Result<StateRecord<T>> AsResult
+        => Result<StateRecord<T>>.Create(this);
 
     public static StateRecord<T> Create(T record, EditState state, Guid? transactionId = null)
         => new(record, state, transactionId ?? Guid.CreateVersion7());

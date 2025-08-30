@@ -30,7 +30,7 @@ public class WeatherForecastEntityProvider
     public Func<WeatherForecastId, Task<Result<WeatherForecastEntity>>> EntityRequestAsync
         => (id) => id.IsDefault ? NewEntityRequestAsync(id) : ExistingEntityRequestAsync(id);
 
-    public Func<WeatherForecastEntity, Task<Result<WeatherForecastId>>> EntityCommandAsync
+    public Func<WeatherForecastEntity, Task<Result<WeatherForecastEntity>>> EntityCommandAsync
         => (record) => _mediator.DispatchAsync(new WeatherForecastEntityCommandRequest(record));
 
     public Func<WeatherForecastId, Task<Result<DmoWeatherForecast>>> RecordRequestAsync
@@ -54,12 +54,8 @@ public class WeatherForecastEntityProvider
     public async ValueTask<Result<WeatherForecastEntity>> GetEntityAsync(WeatherForecastId id)
     {
         var result = (await _mediator.DispatchAsync(new WeatherForecastRecordRequest(id)))
-            .ExecuteFunction<WeatherForecastEntity>((record) =>
-            {
-                WeatherForecastEntity.Load(record);
-                return Result<WeatherForecastEntity>.Failure($"No entity exists for Id{id}.  Created default entity.");
-            });
-
+            .ExecuteFunction<WeatherForecastEntity>((record) => WeatherForecastEntity.Load(record));
+    
         return result;
     }
 
@@ -72,6 +68,7 @@ public class WeatherForecastEntityProvider
             _ => Result<WeatherForecastId>.Failure($"Could not convert the provided key - {obj?.ToString()}")
         };
 
+    
     public DmoWeatherForecast NewRecord
         => new DmoWeatherForecast { Id = WeatherForecastId.Default };
 

@@ -52,6 +52,9 @@ public abstract partial class ViewerModalFormBase<TRecord, TKey> : ComponentBase
 
     public void Dispose()
     {
+        if(UIBroker is null)
+            return;
+
         this.UIBroker.RecordChanged -= OnRecordChanged;
         this.UIBroker.Dispose();
     }

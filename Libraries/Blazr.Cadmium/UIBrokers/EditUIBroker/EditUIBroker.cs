@@ -65,19 +65,19 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
     private async Task<Result> LoadRecordAsync(TKey recordId)
         => await Result<TKey>.Create(recordId)
             // Set the broker state
-            .MutateState(
+            .ExecuteAction(
                 test: recordId.IsDefault,
                 trueAction: id => this.State = EditState.New,
                 falseAction: id => this.State = EditState.Clean)
             // Check if the broker has already been loaded
-            .ExecuteFunction<TKey>(
+            .ExecuteConditionalTransform<TKey>(
                 test: _isLoaded,
                 truefunction: id => Result<TKey>.Failure("The UIBroker has already been loaded."),
                 falsefunction: id => Result<TKey>.Create(id))
             // Get the record item.  This will return a new record if the id is default
-            .ExecuteFunctionAsync<TRecord>(_entityProvider.RecordRequestAsync)
+            .ExecuteTransformAsync<TRecord>(_entityProvider.RecordRequestAsync)
             // Set up the EditMutator and EditContext
-            .MutateStateAsync<TRecord>(
+            .ExecuteActionAsync<TRecord>(
                 hasValue: record =>
                 {
                     this.EditMutator = new();
@@ -85,7 +85,7 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
                     this.EditContext = new EditContext(EditMutator);
                     _isLoaded = true;
                 })
-            .AsResultAsync();
+            .ToResultAsync();
 
     private async Task<Result> UpdateRecordAsync()
         => await UpdateRecordAsync(refreshOnNew: true);
@@ -97,20 +97,20 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
             // Get the record item from the EditMutator
             .ExecuteFunction<TRecord>(() => EditMutator.ToResult)
              // Set the broker state to dirty
-             .MutateState(hasValue: (value) => this.State = this.State.AsDirty)
+             .ExecuteAction(hasValue: (value) => this.State = this.State.AsDirty)
              // Save the record item to the datastore
-             .ExecuteFunctionAsync<TKey>((record) => _entityProvider.RecordCommandAsync(StateRecord<TRecord>.Create(record, this.State)))
+             .ExecuteTransformAsync<TKey>((record) => _entityProvider.RecordCommandAsync(StateRecord<TRecord>.Create(record, this.State)))
              // Set the broker state to not loaded
-             .MutateStateAsync(test: refreshOnNew, trueAction: (id) => _isLoaded = false)
+             .ExecuteActionOnTrueAsync(test: refreshOnNew, trueAction: (id) => _isLoaded = false)
              // Refresh the record if refreshOnNew is set
-             .ExecuteFunctionAsync(test: refreshOnNew, truefunction: LoadRecordAsync);
+             .ExecuteTransformOnTrueAsync(test: refreshOnNew, truefunction: LoadRecordAsync);
 
     private Result ResetItem()
         => Result.Success()
             // Check we're loaded
             .SwitchToException(!_isLoaded, "No record is loaded.")
             // Set the broker state
-            .MutateState(() =>
+            .ExecuteAction(() =>
                 {
                     EditMutator.Reset();
                     // Create a new EditContext - will reset and rebuild the whole Edit Form
@@ -122,7 +122,7 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
             // Check we're loaded
             .SwitchToException(!_isLoaded, "No record is loaded.")
             // Set the broker state
-            .MutateState(() => this.State = EditState.Deleted)
+            .ExecuteAction(() => this.State = EditState.Deleted)
             // Delete the record item from the datastore
             .ExecuteFunctionAsync(this.UpdateRecordAsync);
 }

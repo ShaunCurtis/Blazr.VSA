@@ -1,4 +1,6 @@
-﻿/// ============================================================
+﻿using Blazr.Diode;
+
+/// ============================================================
 /// Author: Shaun Curtis, Cold Elm Coders
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
@@ -12,16 +14,12 @@ public sealed partial class WeatherForecastEntity
 {
     public record DeleteWeatherForecastAction : BaseAction<DeleteWeatherForecastAction>
     {
-        private DeleteWeatherForecastAction() { }
-
         public Result<WeatherForecastEntity> ExecuteAction(WeatherForecastEntity entity)
             => entity._weatherForecast
-                .MarkAsDeleted(this.TransactionId)
-                .MutateState(
-                    hasNoException: () => entity.StateHasChanged?.Invoke(this, entity.WeatherForecast.Id),
-                    hasException: ex => entity._weatherForecast.RollBackLastUpdate(this.TransactionId)
-                    )
-                .ExecuteFunction<WeatherForecastEntity>(() => Result<WeatherForecastEntity>.Success(entity));
+            .MarkAsDeleted(this.TransactionId)
+            .ToResult<WeatherForecastEntity>(entity)
+            .NotifyOnSuccess((entity) => entity.StateHasChanged?.Invoke(this.Sender, entity.Id))
+            .RollbackOnFailure(() => entity._weatherForecast.RollBackLastUpdate(this.TransactionId));
 
         public static DeleteWeatherForecastAction CreateAction()
             => new() { TransactionId = Guid.NewGuid() };

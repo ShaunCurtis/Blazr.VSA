@@ -29,7 +29,7 @@ public sealed record WeatherForecastCommandHandler : IRequestHandler<WeatherFore
                     State: request.Item.State
                 ),
                 cancellationToken)
-            .ExecuteFunctionAsync((record) => Result<WeatherForecastId>
+            .ExecuteTransformAsync((record) => Result<WeatherForecastId>
                .Create(new WeatherForecastId(record.WeatherForecastID))
             )
             .OutputAsync((id) => _messageBus.Publish<DmoWeatherForecast>(id));

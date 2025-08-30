@@ -23,7 +23,7 @@ public Task<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderReq
         .Create(UpdateGridRequest<TRecord>.Create(gridRequest))
         .Dispatch(this.DispatchGridStateChange)
         .ExecuteFunctionAsync(_entityProvider.GetItemsAsync)
-        .MutateStateAsync((result) => this.LastResult = result)
+        .ExecuteActionAsync((result) => this.LastResult = result)
         .OutputAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 ```
 

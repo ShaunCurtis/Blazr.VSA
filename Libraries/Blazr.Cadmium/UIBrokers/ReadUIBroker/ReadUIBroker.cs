@@ -6,6 +6,7 @@
 using Blazr.Cadmium.Core;
 using Blazr.Diode;
 using Blazr.Gallium;
+using System.ComponentModel.DataAnnotations;
 
 namespace Blazr.Cadmium.Presentation;
 
@@ -46,16 +47,16 @@ public partial class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>,
     private async Task<Result> GetRecordItemAsync(TKey id)
         => await Result<TKey>.Create(id)
             .ApplyExceptionOnTrue(id.IsDefault, "The record Id is default.  Mo record retrieved.")
-            .MutateState((recordId) => _key = recordId)
-            .ExecuteFunctionAsync(_entityProvider.RecordRequestAsync)
-            .MutateStateAsync(hasValue: (record) => this.Item = record)
+            .ExecuteAction((recordId) => _key = recordId)
+            .ExecuteTransformAsync(_entityProvider.RecordRequestAsync)
+            .ExecuteActionAsync(hasValue: (record) => this.Item = record)
             .ToResultAsync();
 
     private async void OnRecordChanged(object? obj)
     {
         // Get the key and update the record and trigger a RecordChanged event which will update the UI
         var result = await _entityProvider.GetKey(obj)
-            .ExecuteFunctionAsync(this.GetRecordItemAsync)
-            .MutateStateAsync(hasValue: () => this.RecordChanged?.Invoke(this, EventArgs.Empty));
+            .ExecuteTransformAsync(this.GetRecordItemAsync)
+            .ExecuteActionAsync(hasValue: () => this.RecordChanged?.Invoke(this, EventArgs.Empty));
     }
 }

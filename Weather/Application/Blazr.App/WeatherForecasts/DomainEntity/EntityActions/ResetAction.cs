@@ -13,13 +13,14 @@ public sealed partial class WeatherForecastEntity
     /// <returns></returns>
     public record ResetAction : BaseAction<ResetAction>
     {
-        private ResetAction() { }
-
         public static ResetAction CreateAction()
             => new() { Sender = null, TransactionId = Guid.CreateVersion7() };
 
-        public Result ExecuteAction(WeatherForecastEntity entity)
-            => entity._weatherForecast.Reset(entity._baseWeatherForecast)
-                .MutateState(() => entity.ApplyRules(this.Sender));
+        public Result<WeatherForecastEntity> ExecuteAction(WeatherForecastEntity entity)
+            => entity._weatherForecast.Reset()
+            .ToResult<WeatherForecastEntity>(entity)
+            .ExecuteTransaction(WeatherForecastEntity.ApplyRules)
+            .NotifyOnSuccess((value) => entity.StateHasChanged?.Invoke(this.Sender, entity.Id))
+            .RollbackOnFailure(() => entity._weatherForecast.RollBackLastUpdate(this.TransactionId));
     }
 }

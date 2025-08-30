@@ -15,19 +15,18 @@ public sealed partial class WeatherForecastEntity
     {
         public DmoWeatherForecast Item { get; private init; } = default!;
 
-        private UpdateWeatherForecastAction() { }
+        public UpdateWeatherForecastAction(DmoWeatherForecast item)
+            => this.Item = item;
 
         public Result<WeatherForecastEntity> ExecuteAction(WeatherForecastEntity entity)
-            =>  entity._weatherForecast
-                .Update(this.Item, this.TransactionId)
-                .ExecuteFunction(() => entity.ApplyRules(this.Sender))
-                .MutateState(
-                    hasNoException: () => entity.StateHasChanged?.Invoke(this.Sender, this.Item.Id),
-                    hasException: ex => entity._weatherForecast.RollBackLastUpdate(this.TransactionId)
-                )
-                .ExecuteFunction<WeatherForecastEntity>(() => Result<WeatherForecastEntity>.Success(entity));
+            => entity._weatherForecast
+            .Update(this.Item, this.TransactionId)
+            .ToResult<WeatherForecastEntity>(entity)
+            .ExecuteTransaction(WeatherForecastEntity.ApplyRules)
+            .NotifyOnSuccess((entity) => entity.StateHasChanged?.Invoke(this.Sender, this.Item.Id))
+            .RollbackOnFailure(() => entity._weatherForecast.RollBackLastUpdate(this.TransactionId));
 
         public static UpdateWeatherForecastAction CreateAction(DmoWeatherForecast item)
-            => new() { Item = item, TransactionId = Guid.NewGuid() };
+            => new(item) { TransactionId = Guid.NewGuid() };
     }
 }

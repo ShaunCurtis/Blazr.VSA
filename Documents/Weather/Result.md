@@ -245,7 +245,7 @@ public async Task<Result<TOut>> MapAsync<TOut>(Func<T, Task<Result<TOut>>> succe
 Side Effects provide a mechanism to effect mutate data within edit and aggregate objects.
 
 ```csharp
-public Result<T> MutateState(Action<T>? success = null, Action<Exception>? failure = null)
+public Result<T> ExecuteAction(Action<T>? success = null, Action<Exception>? failure = null)
 {
     if (_value is not null && success != null)
         success(_value!);

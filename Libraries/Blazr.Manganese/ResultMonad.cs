@@ -26,6 +26,13 @@ public partial record Result
     public static Result Failure(Exception? exception) => new(exception);
     public static Result Failure(string message) => new(new ResultException(message));
 
+    public static Result Success(bool test, Exception failureException)
+        => test ? Result.Success() : Result.Failure(failureException);
+    public static Result Success(bool test, string failureMessage)
+        => test ? Result.Success() : Result.Failure(failureMessage);
+    public static Result Failure(bool test, string failureMessage)
+        => test ? Result.Failure(failureMessage) : Result.Success();
+
     public Result Output(Action? hasNoException = null, Action<Exception>? hasException = null)
     {
         if (HasException)
@@ -35,6 +42,11 @@ public partial record Result
 
         return this;
     }
+    
+    public Result<T> OutputToResult<T>(Func<Result<T>> map)
+        => HasException
+            ? Result<T>.Failure(this.Exception!)
+            : map.Invoke();  
 
     public ValueTask<Result> CompletedValueTask
         => ValueTask.FromResult(this);

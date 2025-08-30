@@ -6,76 +6,87 @@
 namespace Blazr.Diode;
 
 public sealed class EntityState<T>
+    where T : notnull
 {
-    private StateRecord<T>? _lastState;
-
-    public EditState State { get; private set; }
-        = EditState.Clean;
-
-    public T Record { get; private set; }
+    public EditState State => _currentState.State;
+    public T Record => _currentState.Record;
 
     public bool IsDirty
-        => this.State != EditState.Clean;
+        => _currentState.State != EditState.Clean;
 
-    public StateRecord<T> AsRecord
-        => new(this.Record, this.State);
+    public StateRecord<T> AsStateRecord
+        => _currentState;
 
     public EntityState(T item, bool isNew = false)
     {
-        this.Record = item;
-        this.State = isNew
+        _currentState = StateRecord<T>.Create(item, isNew
             ? EditState.New
-            : EditState.Clean;
+            : EditState.Clean);
+        _baseState = _currentState;
     }
 
-    public Result Reset(StateRecord<T> stateRecord)
+    public Result Reset()
     {
-        this.Record = stateRecord.Record;
-        this.State = stateRecord.State;
+        _currentState = _baseState;
         _lastState = null;
         return Result.Success();
     }
 
     public Result Update(T record, Guid transactionId)
-    {
-        this.SaveState(transactionId);
-
-        this.Record = record;
-        this.State = this.State.AsDirty;
-        return Result.Success();
-    }
+        => this.SaveState(transactionId)
+            .ExecuteActionWithResult(() => UpdateState(record));
 
     public Result MarkAsDeleted(Guid transactionId)
-    {
-        this.SaveState(transactionId);
-
-        this.State = EditState.Deleted;
-        return Result.Success();
-    }
+        => this.SaveState(transactionId)
+            .ExecuteActionWithResult(DeleteState);
 
     public Result MarkAsPersisted()
-    {
-        this.State = EditState.Clean;
-        return Result.Success();
-    }
-
-    private void SaveState(Guid? transactionId = null)
-        => _lastState = new(this.Record, this.State, transactionId ?? Guid.NewGuid());
-
+            => this.PersistedState();
     public Result RollBackLastUpdate(Guid transactionId)
+        => RollBackState(transactionId);
+
+    //==============================================================
+
+    private StateRecord<T>? _lastState;
+    private StateRecord<T> _currentState;
+    private StateRecord<T> _baseState;
+
+    private Result PersistedState()
     {
-        if (this._lastState is null)
-            return Result.Failure("No rollback state available.");
-
-        if (_lastState?.TransactionId != transactionId)
-            return Result.Failure("There is no rollback data for the transaction.");
-
-
-        this.Record = _lastState.Record;
-        this.State = _lastState.State;
-        _lastState = null;
-
+        _currentState = _currentState with { State = EditState.Clean };
         return Result.Success();
     }
+
+    private Result DeleteState()
+    {
+        _currentState = _currentState with { State = EditState.Deleted };
+        return Result.Success();
+    }
+
+    private Result SaveState(Guid transactionId)
+    {
+        _lastState = this.AsStateRecord with { TransactionId = transactionId };
+        return Result.Success();
+    }
+
+    private Result UpdateState(T record)
+    {
+        if (!this.Record.Equals(record))
+            _currentState = new StateRecord<T>(record, this.State.AsDirty);
+        return Result.Success();
+    }
+
+    private Result RollBackState(Guid transactionId)
+        => Result<StateRecord<T>>.Create(_lastState)
+        .ExecuteConditionalTransaction(
+            conditionalTest: (state) => state.TransactionId != transactionId,
+            function: (state) => Result<StateRecord<T>>.Failure("There is no rollback data for the transaction.")
+            )
+            .ExecuteAction((state) =>
+            {
+                _currentState = state;
+                _lastState = null;
+            })
+            .ToResult();
 }
 

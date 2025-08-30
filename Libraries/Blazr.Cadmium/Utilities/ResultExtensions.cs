@@ -3,10 +3,11 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.Diode;
 
-public class ResultException : Exception
+namespace Blazr.Cadmium;
+
+public static class ResultExtensions
 {
-    public ResultException() : base("The Result is Failure.") { }
-    public ResultException(string message) : base(message) { }
+    public static Result<TOut> Dispatch<T, TOut>(this Result<T> result, Func<T, Result<TOut>> function)
+        => result.ExecuteTransform<TOut>(function);
 }

@@ -7,102 +7,125 @@ namespace Blazr.Manganese;
 
 public static class TaskFunctionalExtensions
 {
-    public static Task<Result<T>> OutputAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.Output(hasValue: hasValue, hasException: hasException));
-
-    public static Task<Result<T>> OutputAsync<T>(this Task<Result<T>> task, Action<T> hasValue)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.Output(hasValue: hasValue));
-
-    public static Task<T> OutputValueAsync<T>(this Task<Result<T>> task, Func<Exception, T> ExceptionOutput)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.OutputValue(hasException: ExceptionOutput));
-
-    public static async Task<Result<TOut>> ExecuteFunctionAsync<TOut, T>(this Task<Result<T>> task, Func<T, Task<Result<TOut>>> function)
+    public async static Task<Result<T>> OutputAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
     {
-        var result = await task.ContinueWith(CheckForTaskException);
-        return await result.ExecuteFunctionAsync<TOut>(function);
+        var result = await task;
+        return result.ExecuteTransaction((value) => CheckForTaskException(task))
+            .Output(hasValue: hasValue, hasException: hasException);
     }
 
-    public static Task<Result<TOut>> ExecuteFunctionAsync<T, TOut>(this Task<Result<T>> task, Func<T, TOut> function)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ExecuteFunction<TOut>(function));
-
-    public static async Task<Result<T>> ExecuteFunctionAsync<T>(this Task<Result<T>> task, Func<T, Result<T>> function)
+    public async static Task<Result> OutputAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
     {
-        var result = await task.ContinueWith(CheckForTaskException);
-        return result.ExecuteFunction<T>(function);
+        var result = await task;
+        return result.ExecuteFunction(() => CheckForTaskException(task))
+         .Output(hasValue, hasException);
     }
 
-    public static async Task<Result<TOut>> ExecuteFunctionAsync<TOut, T>(this Task<Result<T>> task, Func<T, Result<TOut>> function)
+    public async static Task<Result<T>> OutputAsync<T>(this Task<Result<T>> task, Action<T> hasValue)
+    {
+        var result = await task;
+        return result.ExecuteTransaction((value) => CheckForTaskException(task))
+       .Output(hasValue: hasValue);
+    }
+    public async static Task<T> OutputValueAsync<T>(this Task<Result<T>> task, Func<Exception, T> ExceptionOutput)
+    {
+        var result = await task;
+        return result.ExecuteTransaction((value) => CheckForTaskException(task))
+        .OutputValue(hasException: ExceptionOutput);
+    }
+    public static async Task<Result<TOut>> ExecuteTransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Task<Result<TOut>>> function)
     {
         var result = await task.ContinueWith(CheckForTaskException);
-        return result.ExecuteFunction<TOut>(function);
+        return await result.ExecuteTransformAsync<TOut>(function);
     }
 
-    public static async Task<Result<T>> ExecuteFunctionAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> truefunction, Func<T, Task<Result<T>>> falsefunction)
+    public static async Task<Result<TOut>> ExecuteTransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Result<TOut>> function)
+    {
+        var result = await task.ContinueWith(CheckForTaskException);
+        return result.ExecuteTransform<TOut>(function);
+    }
+
+    public static async Task<Result<T>> ExecuteTransactionAsync<T>(this Task<Result<T>> task, Func<T, Result<T>> function)
+    {
+        var result = await task.ContinueWith(CheckForTaskException);
+        return result.ExecuteTransaction(function);
+    }
+
+    public static async Task<Result<TOut>> ExecuteFunctionAsync<T, TOut>(this Task<Result<T>> task, Func<T, TOut> function)
+    {
+        var result = await task;
+        return result.ExecuteTransform((value) => CheckForTaskException(task))
+            .ExecuteFunction<TOut>(function);
+    }
+
+    public static async Task<Result<T>> ExecuteConditionalTransactionAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> truefunction, Func<T, Task<Result<T>>> falsefunction)
     {
         var result = await task.ContinueWith(CheckForTaskException);
         return await result.ExecuteFunctionAsync<T>(test, truefunction, falsefunction);
     }
 
-    public static async Task<Result<T>> ExecuteFunctionAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> truefunction)
+    public static async Task<Result<T>> ExecuteTransactionOnAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result<T>>> truefunction)
     {
         var result = await task.ContinueWith(CheckForTaskException);
         return await result.ExecuteFunctionAsync(test, truefunction);
     }
 
-    public static async Task<Result> ExecuteFunctionAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result>> truefunction)
+    public static async Task<Result> ExecuteTransformOnTrueAsync<T>(this Task<Result<T>> task, bool test, Func<T, Task<Result>> truefunction)
     {
         var result = await task.ContinueWith(CheckForTaskException);
         return await result.ExecuteFunctionAsync(test, truefunction);
     }
 
-    public async static Task<Result> ExecuteFunctionAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> function)
+    public async static Task<Result> ExecuteTransformAsync<T>(this Task<Result<T>> task, Func<T, Task<Result>> function)
     {
         var result = await task.ContinueWith(CheckForTaskException);
-        return await result.ExecuteFunctionAsync(function);
+        return await result.ExecuteTransformAsync(function);
     }
 
-    public static Task<Result> ExecuteFunctionAsync<T>(this Task<Result<T>> task, Func<T, Result> function)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ExecuteFunction(function));
+    public async static Task<Result> ExecuteTransformAsync<T>(this Task<Result<T>> task, Func<T, Result> function)
+    {
+        var result = await task;
+        return result.ExecuteTransform((value) => CheckForTaskException(task))
+        .ExecuteTransform(function);
+    }
+    public async static Task<Result> ToResultAsync<T>(this Task<Result<T>> task)
+    {
+        var result = await task;
+        return result.ExecuteTransaction((value) => CheckForTaskException(task))
+            .ToResult();
+    }
+    public async static Task<Result<TOut>> ToResultAsync<T, TOut>(this Task<Result<T>> task, TOut value)
+    {
+        var result = await task;
+        return result.ExecuteTransaction((value) => CheckForTaskException(task))
+            .ToResult<TOut>(value);
+    }
 
-    public static Task<Result> ToResultAsync<T>(this Task<Result<T>> task)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ToResult);
+    public async static Task<Result<T>> ExecuteActionAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
+        => (await task)
+            .ExecuteTransaction((value) => CheckForTaskException(task))
+            .ExecuteAction(hasValue, hasException);
 
-    public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.MutateState(hasValue, hasException));
+    public async static Task<Result<T>> ExecuteActionOnSuccessAsync<T>(this Task<Result<T>> task, Action<T> successAction)
+        => (await task)
+            .ExecuteTransaction((value) => CheckForTaskException(task))
+            .ExecuteAction(successAction, null);
 
-    public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, bool test, Action<T> trueAction)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.MutateState(test, trueAction));
+    public async static Task<Result> ExecuteActionOnSuccessAsync(this Task<Result> task, Action successAction)
+        => (await task)
+            .ExecuteFunction(() => CheckForTaskException(task))
+            .ExecuteAction(successAction, null);
 
-    public static Task<Result> MutateStateAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.MutateState(hasValue, hasException));
+    public static Task<Result<T>> ExecuteActionOnTrueAsync<T>(this Task<Result<T>> task, bool test, Action<T> trueAction)
+        => task.OutputAsync(trueAction);
 
-    public static Task<Result<T>> MutateStateAsync<T>(this Task<Result<T>> task, Action<Result> action)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.MutateState(action));
+    public static Task<Result> ExecuteActionAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
+        => task.OutputAsync(hasValue, hasException);
 
-    public static Task<Result> AsResultAsync<T>(this Task<Result<T>> task)
-        => task
-            .ContinueWith(CheckForTaskException)
-            .ContinueWith((t) => t.Result.ToResult);
+    public async static Task<Result<T>> ExecuteActionAsync<T>(this Task<Result<T>> task, Action<Result> action)
+         => (await task)
+            .ExecuteTransaction((value) => CheckForTaskException(task))
+            .ExecuteAction(action);
 
     private static Result<T> CheckForTaskException<T>(Task<Result<T>> task)
         => task.IsCompletedSuccessfully

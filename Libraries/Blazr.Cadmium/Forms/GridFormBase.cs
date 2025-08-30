@@ -9,9 +9,6 @@ using Blazr.Diode;
 using Blazr.Uranium;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
-using Microsoft.Extensions.Logging;
-using System.Linq.Expressions;
-using Blazr.Cadmium.Core;
 
 namespace Blazr.Cadmium.UI;
 
@@ -106,6 +103,7 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
 
     public void Dispose()
     {
-        this.UIBroker.StateChanged -= OnStateChanged;
+        if (this.UIBroker is not null)
+            this.UIBroker.StateChanged -= OnStateChanged;
     }
 }

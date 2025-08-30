@@ -3,6 +3,34 @@ using System;
 using System.Data.SqlTypes;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
+//var value = Console.ReadLine();
+
+//if (value is null)
+//    Console.WriteLine("Value is Null.");
+//else
+//{
+//    try
+//    {
+//        var output = double.Parse(value!);
+//        Console.WriteLine($"Value is {output}.");
+//    }
+//    catch (Exception ex)
+//    {
+//        Console.WriteLine($"Value was not a number. Error: {ex.Message}.");
+//    }
+//}
+
+Console.WriteLine(
+    Console.ReadLine()
+    .ToResult()
+    .MapFunction(Double.Parse)
+    .MapFunction(Math.Sqrt)
+    .BindFunction((value) => Result<double>.Create(Math.Round(value, 2)))
+    .OutputValue<string>(
+        hasValue: (value) => $"Success: The transformed value is: {value}",
+        hasException: (ex) => $"Failure: {ex.Message}"
+    ));
+
 //Console.WriteLine(
 //    Result<string>
 //        .ExecuteFunction<string>(Console.ReadLine)
@@ -26,29 +54,37 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 //... functions
 
 
+//Console.ReadLine()
+//   .ToResult()
+//   .ExecuteFunction<double>(double.Parse)
+//   .Output(
+//        hasValue: (value) => Console.WriteLine($"Value is: {value}"),
+//        hasException: (exception) => Console.WriteLine($"Error: {exception.Message}")
+//    );
 
-new Result<string?>(Console.ReadLine())
-    .ExecuteFunction<double>(double.Parse!);
+//Console.WriteLine(
+//    Console.ReadLine()
+//   .ToResult()
+//   .ExecuteFunction<double>(double.Parse)
+//   .ExecuteFunction(Math.Sqrt)
+//   .ExecuteFunction((value) => Math.Round(value, 2))
+//   .OutputValue<string>(
+//        hasValue: (value) => $"Value is: {value}",
+//        hasException: (exception) => $"Error: {exception.Message}"
+//    ));
 
-//if(double.TryParse(input, out double value))
-//{
-//    value = Math.Sqrt(value);
-//    Console.WriteLine($"The square root is: {Math.Round(value, 2)}");
-//}
-//else
-//{
-//    Console.WriteLine($"The input is not a valid");
-//}
-
+public static class ResultExtensions
+{
+    public static Result<string> ToResult(this string? value)
+        => value is null
+            ? new Result<string>(ResultException.Create("Value can'tbe null."))
+            : new Result<string>(value);
+}
 
 public record Result<T>
 {
-    public T? Value { get; private init; }
-    public Exception? Exception { get; private init; }
-
-    public Result(T value) : this(value, null) { }
-
-    public Result(Exception exception) : this(default, exception) { }
+    private T? Value { get; init; }
+    private Exception? Exception { get; init; }
 
     private Result(T? value, Exception? exception)
     {
@@ -56,12 +92,24 @@ public record Result<T>
         Exception = exception;
     }
 
-    public Result<TOut> ExecuteFunction<TOut>(Func<T, Result<TOut>> function)
+    public Result(T value) : this(value, null) { }
+
+    public Result(Exception exception) : this(default, exception) { }
+
+    public static Result<T> Create(T? value)
+        => value is null
+            ? new(default, ResultException.Create("Value was null"))
+            : new(value);
+
+    public static Result<T> Error(string message)
+        => new(default, ResultException.Create(message));
+
+    public Result<TOut> BindFunction<TOut>(Func<T, Result<TOut>> function)
         => this.Exception is null
             ? function(Value!)
             : new Result<TOut>(this.Exception);
 
-    public Result<TOut> ExecuteFunction<TOut>(Func<T, TOut> function)
+    public Result<TOut> MapFunction<TOut>(Func<T, TOut> function)
     {
         if (this.Exception is not null)
             return new Result<TOut>(this.Exception!);
@@ -79,244 +127,32 @@ public record Result<T>
         }
     }
 
-    public T OutputValue(Func<Exception, T> hasException)
+    public Result<T> Output(Action<T> hasValue, Action<Exception> hasException)
     {
         if (this.Exception is not null)
-            return hasException.Invoke(Exception!);
+            hasException.Invoke(Exception!);
+        else
+            hasValue.Invoke(this.Value!);
 
-        return this.Value!;
+        return this;
     }
-}
-//public Result<TOut> ExecuteResult<TOut>(Func<T, TOut> function)
-//{
-//    if (HasValue)
-//    {
-//        try
-//        {
-//            return Result<TOut>.Create(mapFunction(Value!));
-//        }
-//        catch (Exception ex)
-//        {
-//            return Result<TOut>.Failure(new ResultException(ex.Message));
-//        }
-//    }
-//    else
-//    {
-//        return Result<TOut>.Failure(Exception!);
-//    }
-//}
 
+    public T OutputValue(Func<Exception, T> hasException)
+        => this.Exception is null
+            ? this.Value!
+            : hasException.Invoke(Exception!);
+
+    public TOut OutputValue<TOut>(Func<T, TOut> hasValue, Func<Exception, TOut> hasException)
+        => this.Exception is null
+            ? hasValue.Invoke(this.Value!)
+            : hasException.Invoke(Exception!);
+}
 
 public class ResultException : Exception
 {
     public ResultException() : base("The Result is Failure.") { }
     public ResultException(string message) : base(message) { }
+
+    public static ResultException Create(string message)
+        => new ResultException(message);
 }
-
-//if (input is null)
-//     Console.WriteLine($"The input was null");
-//else if(!input.All(char.IsNumber))
-//    Console.WriteLine($"The input isnot a numberl");
-//else
-//{
-
-
-//}
-
-
-
-//if (int.TryParse(input, out int value))
-//{
-//    parseResult = Result<int>.Create(value);
-//}
-//else
-//{
-//    parseResult = Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-//}
-
-//var parseResult = int.TryParse(input, out int value)
-//    ? Result<int>.Create(value)
-//    : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-
-//if (parseResult.HasValue)
-//{
-//    double functionedValue = Math.Sqrt(parseResult.Value);
-//    functionedValue = Math.Round(functionedValue, 2);
-//    Console.WriteLine($"Parsed successfully: The functioned value is: {functionedValue}");
-//}
-//else
-//{
-//    Console.WriteLine(parseResult.Exception!.Message);
-//}
-
-//Result<int> ParseForInt(string? input) =>
-//    int.TryParse(input, out int value)
-//    ? Result<int>.Create(value)
-//    : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-
-
-//double doubleValue = 0;
-
-//await Console
-//    .ReadLine()
-//    .ToResult()
-//    .ExecuteFunctionAsync(Utils.StringToDoubleAsync)
-//    .MutateStateAsync((value) => doubleValue = value)
-//    .ExecuteFunctionAsync(Math.Sqrt)
-//    .ExecuteFunctionAsync((value) => Math.Round(value, 2))
-//    .OutputAsync(
-//        hasValue: (value) => Console.WriteLine($"Parsed successfully: The functioned value of {doubleValue} is: {value}"),
-//        hasException: (ex) => Console.WriteLine($"Failed: {ex.Message}")
-//    );
-
-//if (result.HasValue)
-//{
-//    //...
-//    Console.WriteLine($"Parsed successfully: The functioned value is: {result.Value}");
-//}
-//else
-//{
-//    Console.WriteLine($"Failed to parse input: {result.Exception!.Message}");
-//}
-
-//Result<int> ParseForInt(string input)
-//{
-//    if (!string.IsNullOrEmpty(input))
-//    {
-//        try
-//        {
-//            var value = int.Parse(input!);
-
-//            var result = Math.Sqrt(value);
-//            result = Math.Round(result, 2);
-//            return Result<int>.Create((int)result);
-//        }
-//        catch (Exception ex)
-//        {
-//            return Result<int>.Failure(ex);
-//        }
-//    }
-//    else
-//    {
-//        return Result<int>.Failure("Input cannot be null or empty.");
-//    }
-//}
-
-//if (!string.IsNullOrEmpty(input))
-//{
-//    try
-//    {
-//        var value = int.Parse(input!);
-
-//        var result = Math.Sqrt(value);
-//        result = Math.Round(result, 2);
-//        Console.WriteLine($"Parsed successfully: The functioned value of {value} is: {result}");
-//    }
-//    catch (Exception ex)
-//    {
-//        Console.WriteLine($"An exception occurred: {ex.Message}");
-//    }
-//}
-//else
-//{
-//    Console.WriteLine("Input cannot be null or empty.");
-//}
-
-
-
-//Result<string>.Create(value)
-//    .Output(
-//        success: (v) => Console.WriteLine($"Success: {v}"),
-//        failure: (ex) => Console.WriteLine($"Failure: {ex.Message}")
-//    );
-
-//Result<string>.Create(value)
-//    .Output(
-//        failure: (ex) => Console.WriteLine($"Failure: {ex.Message}")
-//    );
-
-//value = null;
-
-//Result<string>.Create(value)
-//    .Output(
-//        success: (v) => Console.WriteLine($"Success: {v}"),
-//        failure: (ex) => Console.WriteLine($"Failure: {ex.Message}")
-//    );
-
-//Result<string>.Create(value)
-//    .Map((v) => Result<string>.Create(v.ToUpper()))
-//    .Output(
-//        success: (v) => Console.WriteLine($"Success: {v}"),
-//        failure: (ex) => Console.WriteLine($"Failure: {ex.Message}")
-//    );
-
-//Result<string>.Create(value)
-//    .Map(ToUpper)
-//    .Output(
-//        success: (v) => Console.WriteLine($"Success: {v}"),
-//        failure: (ex) => Console.WriteLine($"Failure: {ex.Message}")
-//    );
-
-
-//public static class Utils
-//{
-//    public static Func<string?, Task<Result<double>>> StringToDoubleAsync = async (input)
-//        =>
-//    {
-//        await Task.Yield();
-//        return double.TryParse(input, out double value)
-//        ? Result<double>.Create(value)
-//        : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-//    };
-
-//    public static async Task<Result<double>> ParseForDoubleAsync(this string? input)
-//    {
-//        await Task.Yield();
-//        return double.TryParse(input, out double value)
-//        ? Result<double>.Create(value)
-//        : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-//    }
-//}
-
-
-//public static class stringExtensions
-//{
-//    public static Result<string> ToResult(this string? input) =>
-//        Result<string>.Create(input);
-
-//    public static async Task<Result<double>> ParseForDouble(this string? input)
-//    {
-//        await Task.Yield();
-//        return double.TryParse(input, out double value)
-//        ? Result<double>.Create(value)
-//        : Result<double>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-//    }
-
-//    public static Result<int> ParseForInt(this string? input) =>
-//        int.TryParse(input, out int value)
-//        ? Result<int>.Create(value)
-//        : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-//    //    : Result<int>.Failure(new ResultException($"{input ?? "Null"} was not a valid integer"));
-//}
-
-
-//var xresult = Result<string>.Create(input)
-//  .ExecuteFunction<string>(ToUpper)
-//  .ToResult;
-
-//DisplayError(xresult);
-
-
-
-//Result<string> ToUpper(string value)
-//     => string.IsNullOrEmpty(value)
-//         ? Result<string>.Failure("Value cannot be null or empty")
-//         : Result<string>.Create(value.ToUpper());
-
-//void DisplayError(Result result)
-//{
-//    result.Output(
-//        hasException: (ex) => Console.WriteLine($"Failure: {ex.Message}")
-//    );
-//}
-

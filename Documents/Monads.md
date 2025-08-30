@@ -1,6 +1,6 @@
 # Monads
 
-Type *Monad* into your search bar.  The Internet is awash with articles.  There are even articles about the aeticles tryig to explain why the original articles fail!
+Type *Monad* into your search bar.  The Internet is awash with articles.  There are even articles about the articles trying to explain why the original articles fail!
 
 
 Here's another: but hopefully one that succeeds.
@@ -9,11 +9,9 @@ Here's why they fail:
 
 > A *Monad* is just a *Monoid* in the *Category* of *EndOfFunctors*.
 
-The statement is mathmatically correct (or so I'm informed), but if you understand it you're in a serious minority.
+This statement is mathmatically correct (or so I'm informed), but if you understand it you're in a serious minority.
 
-Articles fail to enlighten us because they try to explain that statement in plain language.
-
-I know you can't.
+The majority of articles try to explain that statement in plain language: you can't.
 
 So, lets come at this from a different angle.
 
@@ -27,10 +25,11 @@ public record Monad<T>(T value)
 ```
 
 It:
+
 1. Has a constructor - `new(value)` 
 1. A generic method to execute a function with the `Func<T, Monad<TOut>>` pattern: known as a *Manadic Function*.
 
-Now let'a look at a coding problem that the Monad Pattern helps us solve.
+Now let'a look at a coding problem that the Monad pattern helps us solve.
 
 ```csharp
 var input = Console.ReadLine();
@@ -108,7 +107,7 @@ new Result<string?>(Console.ReadLine())
     .ExecuteFunction<double>((value) =>
     {
         if (value is null)
-            return new Result<double>(ResultException.Create("The imput value was null"));
+            return new Result<double>(ResultException.Create("The input value was null"));
 
         try
         {
@@ -125,13 +124,9 @@ new Result<string?>(Console.ReadLine())
 );
 ```
 
-If we look at the code above there are three common patterns we use:
+If we look at the code above there are two common patterns:
 
-1. `T -> apply function TOut`
-1. `exception -> apply function -> TOut`
-1. `T? -> Result<T>`
-
-We can code both of these into our Nomad:
+1. `T -> apply function TOut` which we can boilerplate like this:
 
 ```csharp
 public Result<TOut> ExecuteFunction<TOut>(Func<T, TOut> function)
@@ -153,34 +148,120 @@ public Result<TOut> ExecuteFunction<TOut>(Func<T, TOut> function)
 }
 ```
 
+2. `T? -> Result<T>` which we can code like this:
+
 ```csharp
-public T OutputValue(Func<Exception, T> hasException)
+    public static Result<T> Create(T? value)
+        => value is null
+            ? new( default, ResultException.Create("Value was null"))
+            : new(value) ;
+```
+
+We can also add a local extension to `string?` like this:
+
+```csharp
+public static class Extensions
+{
+    public static Result<string> ToResult(this string? value)
+        => value is null
+            ? new Result<string>(ResultException.Create("Value can'tbe null."))
+            : new Result<string>(value);
+}
+```
+
+Finally we need a mechanism to interact with I/O, such as writing to the console.  
+
+Two method singatures are provided here.
+
+`Output` will run pass through the result [return itself], and execute the relevant `Action`.
+
+```csharp
+    public Result<T> Output(Action<T> hasValue, Action<Exception> hasException)
     {
         if (this.Exception is not null)
-            return hasException.Invoke(Exception!);
+            hasException.Invoke(Exception!);
+        else
+            hasValue.Invoke(this.Value!);
 
-        return this.Value!;
+        return this;
     }
 ```
 
+`OutputValue` will return the value or return the value provided by the `Func`.
+
+```csharp
+    public T OutputValue(Func<Exception, T> hasException)
+        => this.Exception is null
+            ? this.Value!
+            : hasException.Invoke(Exception!);
+
+    public TOut OutputValue<TOut>(Func<T, TOut> hasValue, Func<Exception, TOut> hasException)
+        => this.Exception is null
+            ? hasValue.Invoke(this.Value!)
+            : hasException.Invoke(Exception!);
+```
+
+We can now refactor our code.
+
+This version uses `Output` to write the I/O.
+```csharp
+Console.ReadLine()
+   .ToResult()
+   .ExecuteFunction<double>(double.Parse)
+   .Output(
+        hasValue: (value) => Console.WriteLine($"Value is: {value}"),
+        hasException: (exception) => Console.WriteLine($"Error: {exception.Message}")
+    );
+```
+
+The second version uses `OutputValue` to provide a value to the I/O.
+
+```csharp
+Console.WriteLine(
+    Console.ReadLine()
+   .ToResult()
+   .ExecuteFunction<double>(double.Parse)
+   .OutputValue<string>(
+        hasValue: (value) => $"Value is: {value}",
+        hasException: (exception) => $"Error: {exception.Message}"
+    ));
+```
+
+Adding more processes is simple.  Lets get the square root to two decimal places.
+
+```csharp
+Console.WriteLine(
+    Console.ReadLine()
+   .ToResult()
+   .ExecuteFunction<double>(double.Parse)
+   .ExecuteFunction(Math.Sqrt)
+   .ExecuteFunction((value) => Math.Round(value, 2))
+   .OutputValue<string>(
+        hasValue: (value) => $"Value is: {value}",
+        hasException: (exception) => $"Error: {exception.Message}"
+    ));
+```
 
 
+## So What [Hopefully] Have You Learnt from this Exercise
 
-## So What Have We Learnt from this Exercise
+*Monads* are wrappers/containers: an implementation of the **Decorator Pattern** with some specific *functional* methods.  They provide high level generic functions abstracting underlying standard C# coded functionality. 
 
-*Monads* are wrappers/containers: just an implementation of the **Decorator Pattern** with some specific *functional* methods.  They provide high level coding functionality, abstracting underlying standard C# coded functionality. 
+I find this the best definition I've seen:
+
+> A monad is a design pattern that structures computations. It encapsulate values and operations, enabling: chaining; composition; and handling of side effects such as null values and errors.
 
 ### Functions
 
-In FP you will hear the phrase "Functions are first class citizens" a lot.  C# has delegates and `Func` and `Action` implementations.  In OOP you will rarely see them used.
+In FP the phrase "Functions are first class citizens" is used a lot.  C# has delegates and `Func` and `Action` implementations.  In OOP you will rarely see them used.
 
-In FP, *Functions* are methods that take an input, apply one or more functions to that input, and produce an output.  *Functions* are the building blocks of FP.
+*Functions* are methods that take an input, apply one or more functions to that input, and produce an output.  *Functions* are the building blocks of FP.
 
-In functional programming you apply functions to data and produce a result.  In OOP you pass data into methods to mutate the state of objects.
+In FP you apply functions to data and produce a result.  In OOP you pass data into methods to mutate state.
 
 ### Railway Orientated Programming
 
-Whether you realised it or not, FP patterns implement *Railway Orientated Programming*.  If the input `Result<T>` is in *Exception* state, any function short-circuits, passing the exception to the output `Result<TOut>`: the function function is not executed.  Once on the *Exception* track, you stay there..
+Whether you realised it or not, the FP patterns I've used implement *Railway Orientated Programming*.  If the input `Result<T>` is in *Exception* state, any function short-circuits, passing the exception to the output `Result<TOut>`: the function function is not executed.  Once on the *Exception* track, you stay there..
 
 ### High Level Features
 

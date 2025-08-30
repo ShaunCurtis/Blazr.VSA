@@ -29,43 +29,44 @@ public partial class WeatherForecastEntityEditUIBroker
 
     public async ValueTask LoadAsync(WeatherForecastId id)
     {
-        LastResult = await Result<WeatherForecastId>.Create(id)
-            .ExecuteFunctionAsync((id) => _isLoaded ? Task.FromResult(LoadedResult) : this.LoadEntityAsync(id));
+        LastResult = await this.IsNotLoaded
+            .ExecuteFunction(id.ToResult)
+            .ExecuteTransformAsync<WeatherForecastEntity>(_entityProvider.EntityRequestAsync)
+            .ExecuteTransformAsync(this.LoadBroker);
     }
 
-    public ValueTask ResetItemAsync()
-    {
-        LastResult = Result.Success()
-            .ExecuteFunction(() => _isLoaded ? Result.Success() : NotLoadedResult)
-            .ExecuteFunction(this.ResetEntity)
-            .MutateState(hasNoException: () =>
-                    {
-                        // Reset the EditMutator and create a new EditContext to rebuild the whole Edit Form
-                        EditMutator.Reset();
-                        this.EditContext = new EditContext(EditMutator);
-                    });
 
-        return ValueTask.CompletedTask;
-    }
-
-    public async ValueTask SaveItemAsync(bool refreshOnNew = true)
+    public void Reset()
     {
-        LastResult = await Result.Success()
-            // check if the UIBroker is loaded and only update if it is
-            .ExecuteFunctionAsync(() => _isLoaded ? this.UpdateEntityAsync(refreshOnNew) : Task.FromResult(NotLoadedResult))
-            .MutateStateAsync(hasValue: () =>
-            {
-                WeatherForecastEntity.MarkAsPersistedAction
+        LastResult = this.IsLoaded
+            .ExecuteFunction(() => WeatherForecastEntity.ResetAction
                     .CreateAction()
                     .AddSender(this)
-                    .ExecuteAction(_entity);
-            });
+                    .ExecuteAction(_entity))
+            .ExecuteActionOnSuccess((entity) => 
+            {
+                EditMutator.Reset();
+                this.EditContext = new EditContext(EditMutator);
+            })
+            .ToResult();
     }
 
-    public async ValueTask DeleteItemAsync()
+    public async ValueTask SaveAsync(bool refreshOnNew = true)
     {
-        LastResult = await Result.Success()
-            .ExecuteFunctionAsync(() => _isLoaded ? this.DeleteEntityAsync() : Task.FromResult(NotLoadedResult));
+        LastResult = await this.IsLoaded
+            .ExecuteFunction(this.UpdateWeatherForecast)
+            .ExecuteFunctionAsync(this.SaveEntityAsync);
+    }
+
+    public async ValueTask DeleteAsync()
+    {
+        LastResult = await this.IsLoaded
+            .ExecuteFunction(() => WeatherForecastEntity.DeleteWeatherForecastAction
+                .CreateAction()
+                .AddSender(this)
+                .ExecuteAction(_entity))
+            .ExecuteTransformAsync(_entityProvider.EntityCommandAsync)
+            .ToResultAsync();
     }
 }
 
@@ -75,52 +76,34 @@ public partial class WeatherForecastEntityEditUIBroker
     private WeatherForecastEntity _entity = default!;
     private bool _isLoaded;
 
-    private static Result NotLoadedResult
-        => Result.Failure("The UIBroker has not been loaded. There is nothing to save.");
+    private Result IsLoaded
+        => Result.Success(_isLoaded, "The UIBroker has not been loaded. There is nothing to save.");
 
-    private static Result LoadedResult
-        => Result.Failure("The UIBroker has already been loaded. You can not reload it.");
+    private Result IsNotLoaded
+        => Result.Failure(_isLoaded, "The UIBroker has already been loaded. You can not reload it.");
 
-    private async Task<Result> LoadEntityAsync(WeatherForecastId id)
-        => await Result<WeatherForecastId>.Create(id)
-            .ExecuteFunctionAsync<WeatherForecastEntity>(_entityProvider.EntityRequestAsync)
-            .MutateStateAsync(
-                hasValue: (entity) =>
-                {
-                    _entity = entity;
-                    this.EditMutator = new();
-                    this.EditMutator.Load(entity.WeatherForecast);
-                    this.EditContext = new EditContext(EditMutator);
-                    _isLoaded = true;
-                })
-            .ToResultAsync();
+    private Result LoadBroker(WeatherForecastEntity entity)
+    {
+        _entity = entity;
+        this.EditMutator = new();
+        this.EditMutator.Load(entity.WeatherForecast);
+        this.EditContext = new EditContext(EditMutator);
+        _isLoaded = true;
+        return Result.Success();
+    }
 
-    private async Task<Result> UpdateEntityAsync(bool refreshOnNew = true)
-         => await WeatherForecastEntity.UpdateWeatherForecastAction
+    private Result UpdateWeatherForecast()
+         => WeatherForecastEntity.UpdateWeatherForecastAction
             // Update the entity with the values from the EditMutator
             .CreateAction(EditMutator.AsRecord)
             .AddSender(this)
             .ExecuteAction(_entity)
-            // Persist the update to the data store
-            .ExecuteFunctionAsync(_entityProvider.EntityCommandAsync)
-            // If the update was successful, we need to reload the entity
-            //.MapTaskAsync<WeatherForecastId, WeatherForecastEntity>(_entityProvider.EntityRequestAsync)
-            .ToResultAsync();
+            .ToResult();
 
-    private Result ResetEntity()
-        => WeatherForecastEntity.ResetAction
-            // Set the entity as deleted
-            .CreateAction()
-            .AddSender(this)
-            .ExecuteAction(_entity);
-
-    private async Task<Result> DeleteEntityAsync()
-        => await WeatherForecastEntity.DeleteWeatherForecastAction
-            // Set the entity as deleted
-            .CreateAction()
-            .AddSender(this)
-            .ExecuteAction(_entity)
-            // Persist the deletion to the data store
-            .ExecuteFunctionAsync(_entityProvider.EntityCommandAsync)
-            .ToResultAsync();
+    private async Task<Result> SaveEntityAsync()
+         => await WeatherForecastEntity.SaveEntityAction
+        .CreateAction(_entityProvider.EntityCommandAsync)
+        .AddSender(this)
+        .ExecuteActionAsync(_entity)
+        .ToResultAsync();
 }

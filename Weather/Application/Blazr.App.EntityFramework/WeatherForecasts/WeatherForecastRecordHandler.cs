@@ -22,4 +22,15 @@ public sealed class WeatherForecastRecordHandler : IRequestHandler<WeatherForeca
                 .GetRecordAsync<DvoWeatherForecast>(new RecordQueryRequest<DvoWeatherForecast>(item => item.WeatherForecastID == request.Id.Value))
                 .ExecuteFunctionAsync(DvoWeatherForecast.Map);
 
+
+    //public async Task<Result<DmoWeatherForecast>> HandleAsync(WeatherForecastRecordRequest request, CancellationToken cancellationToken)
+    //{
+    //    var a = await _factory.CreateDbContext()
+    //             .GetRecordAsync<DvoWeatherForecast>(new RecordQueryRequest<DvoWeatherForecast>(item => item.WeatherForecastID == request.Id.Value))
+    //                .ExecuteFunctionAsync(DvoWeatherForecast.Map);
+
+    //    return a;
+    //    //return a.ExecuteFunction<DmoWeatherForecast>(DvoWeatherForecast.Map);
+    //}
 }
+

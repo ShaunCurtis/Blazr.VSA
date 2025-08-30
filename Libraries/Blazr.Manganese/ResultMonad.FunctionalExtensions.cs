@@ -64,19 +64,24 @@ public partial record Result
                 ? Result.Failure(exception)
                 : this;
 
-    public Result MutateState(Action? hasNoException = null, Action<Exception>? hasException = null)
+    public Result ExecuteAction(Action? hasNoException = null, Action<Exception>? hasException = null)
     {
         this.Output(hasNoException, hasException);
         return this;
     }
 
-    public Result MutateState(Action hasNoException)
+    public Result ExecuteActionWithResult(Func<Result> function)
+        => this.HasException
+            ? this
+            : function();
+
+    public Result ExecuteAction(Action hasNoException)
     {
         this.Output(hasNoException, null);
         return this;
     }
 
-    public Result MutateState(bool test, Action? trueAction = null, Action? falseAction = null)
+    public Result ExecuteAction(bool test, Action? trueAction = null, Action? falseAction = null)
     {
 
         if (!this.HasException)
@@ -87,4 +92,41 @@ public partial record Result
 
         return this;
     }
+
+    public Result ExecuteOnSuccess(Action hasNoException)
+    {
+        if (!HasException)
+            hasNoException.Invoke();
+
+        return this;
+    }
+
+    public Result ExecuteOnFailure(Action hasException)
+    {
+        if (!HasException)
+            hasException.Invoke();
+
+        return this;
+    }
+
+    public Result OutputOnSuccess(Action hasNoException)
+    {
+        if (!HasException)
+            hasNoException.Invoke();
+
+        return this;
+    }
+
+    public Result OutputOnFailure(Action hasException)
+    {
+        if (!HasException)
+            hasException.Invoke();
+
+        return this;
+    }
+
+    public Result<T> ToResult<T>(T? value)
+        => this.HasException
+            ? Result<T>.Failure(this.Exception!)
+                : Result<T>.Create(value);
 }

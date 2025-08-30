@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
-
-/// ============================================================
+﻿/// ============================================================
 /// Author: Shaun Curtis, Cold Elm Coders
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
@@ -12,9 +9,9 @@ public partial record Result<T>
 {
     public readonly Exception? Exception;
     public readonly T? Value;
- 
+
     private ResultException _defaultException => new ResultException("An error occurred. No specific exception provided.");
-    
+
     public bool HasException => Exception is not null;
 
     public bool HasValue => Exception is null;
@@ -39,7 +36,7 @@ public partial record Result<T>
 
     public static Result<T> Failure(string message) => new(new ResultException(message));
 
-    public Result ToResult => this.Exception is null
+    public Result ToResult() => this.Exception is null
             ? Result.Success()
             : Result.Failure(Exception);
 

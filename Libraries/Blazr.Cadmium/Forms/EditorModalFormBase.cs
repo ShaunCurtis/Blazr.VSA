@@ -72,6 +72,9 @@ public abstract class EditorModalFormBase<TRecord, TKey, TEditContext>
 
     public void Dispose()
     {
+        if (UIBroker is null)
+            return;
+
         this.UIBroker.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
     }
 }

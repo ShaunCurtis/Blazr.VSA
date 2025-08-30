@@ -13,6 +13,8 @@ public readonly record struct WeatherForecastId(Guid Value) : IEntityId
 
     public WeatherForecastId ValidatedId => this.IsDefault ? Create : this;
 
+    public Result<WeatherForecastId> ToResult() => Result<WeatherForecastId>.Create(this);
+
     public override string ToString()
     {
         return this.IsDefault ? "Default" : Value.ToString();

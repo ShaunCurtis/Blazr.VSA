@@ -29,7 +29,7 @@ We examine the following function - `GetRecordItemAsync` from the `ReadUiBroker`
 private async Task<Result> GetRecordItemAsync(TKey id)
     => await Result<TKey>.Create(id)
         .ExecuteFunctionOnException(id.IsDefault, "The record Id is default.  Mo record retrieved.")
-        .MutateState((recordId) => _key = recordId)
+        .ExecuteAction((recordId) => _key = recordId)
         .ExecuteFunctionOnException(_entityProvider.RecordRequestAsync)
         .TaskSideEffectAsync(success: (record) => this.Item = record)
         .MapTaskToResultAsync();
@@ -66,14 +66,14 @@ public Result<T> ExecuteFunctionOnException(bool test, string message)
 ```
 `test` is only applied in the sucess state, and shifts to the fsilure state if `test` is true.
 
-### MutateState((recordId) => _key = recordId)
+### ExecuteAction((recordId) => _key = recordId)
 
 Result is a `Result<TKey>`.
 
 The next step is to write the `id` to the parent object using a lambda expression.  This is an intended side effect.    
 
 ```csharp
-public Result<T> MutateState(Action<T>? success = null, Action<Exception>? failure = null)
+public Result<T> ExecuteAction(Action<T>? success = null, Action<Exception>? failure = null)
 {
     if (_exception is null && success != null)
         success(_value!);

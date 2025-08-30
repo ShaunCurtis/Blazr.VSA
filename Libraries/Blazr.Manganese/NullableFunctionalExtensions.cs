@@ -13,7 +13,7 @@ public static class NullableFunctionalExtensions
             ? value
             : throw new ResultException("T was null.");
 
-    public static Nullable<T> MutateState<T>(this Nullable<T> value, Action<T>? IsNotNull = null, Action? IsNull = null)
+    public static Nullable<T> ExecuteAction<T>(this Nullable<T> value, Action<T>? IsNotNull = null, Action? IsNull = null)
         where T : struct
     {
         if (value.HasValue && IsNotNull != null)
