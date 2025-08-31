@@ -16,12 +16,13 @@ public class MediatorBroker : IMediatorBroker
     
     public Task<TResponse> DispatchAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
+        // Get the handler tyoe based on the request
         var handlerType = typeof(IRequestHandler<,>).MakeGenericType(request.GetType(), typeof(TResponse));
+        // Get the handler from DI
         dynamic? handler = _serviceProvider.GetService(handlerType);
+
         if (handler == null)
-        {
             throw new InvalidOperationException($"Handler for {request.GetType().Name} not found.");
-        }
 
         return handler.HandleAsync((dynamic)request, cancellationToken);
     }

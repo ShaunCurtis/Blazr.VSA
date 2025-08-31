@@ -77,7 +77,11 @@ public static class FieldFormatting
 
     public static string ToDisplayId(this Guid value)
     {
-        // There are 4 hyphens in ToString!
-        return value.ToString().Substring(28, 8);
+        if (value == Guid.Empty)
+            return "-- New Record --";
+
+        // The lowest 8 numbers of the timestamp section
+        //return value.ToString();
+        return value.ToString().Substring(6, 18).Replace("-", "");
     }
 }

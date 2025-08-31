@@ -46,7 +46,10 @@ public partial record Result
     public Result<T> OutputToResult<T>(Func<Result<T>> map)
         => HasException
             ? Result<T>.Failure(this.Exception!)
-            : map.Invoke();  
+            : map.Invoke();
+
+    public bool OutputValue()
+        => !this.HasException;
 
     public ValueTask<Result> CompletedValueTask
         => ValueTask.FromResult(this);

@@ -17,7 +17,7 @@ public static class TaskFunctionalExtensions
     public async static Task<Result> OutputAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
     {
         var result = await task;
-        return result.ExecuteFunction(() => CheckForTaskException(task))
+        return result.ExecuteTransaction(() => CheckForTaskException(task))
          .Output(hasValue, hasException);
     }
 
@@ -113,7 +113,7 @@ public static class TaskFunctionalExtensions
 
     public async static Task<Result> ExecuteActionOnSuccessAsync(this Task<Result> task, Action successAction)
         => (await task)
-            .ExecuteFunction(() => CheckForTaskException(task))
+            .ExecuteTransaction(() => CheckForTaskException(task))
             .ExecuteAction(successAction, null);
 
     public static Task<Result<T>> ExecuteActionOnTrueAsync<T>(this Task<Result<T>> task, bool test, Action<T> trueAction)
@@ -136,6 +136,6 @@ public static class TaskFunctionalExtensions
     private static Result CheckForTaskException(Task<Result> task)
         => task.IsCompletedSuccessfully
             ? task.Result
-            : Result.Failure(task.Exception
+                : Result.Failure(task.Exception
                 ?? new Exception("The Task failed to complete successfully"));
 }

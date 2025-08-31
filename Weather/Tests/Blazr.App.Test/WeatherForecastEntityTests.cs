@@ -51,17 +51,13 @@ public partial class WeatherForecastEntityTests
         Assert.Equal(updatedRecord, uiBroker.EditMutator.AsRecord);
 
         //Execute the Save - the method linked to the save button in the UI
-        await uiBroker.SaveItemAsync(true);
+        await uiBroker.SaveAsync(true);
 
         // Output the result of the save
-        uiBroker.LastResult.MutateState(
-            hasNoException: () => result = true,
-            hasException: (ex) => result = false);
+        result = uiBroker.LastResult.OutputValue();
 
         // And check the update was successful
         Assert.True(result);
-
-
 
         DmoWeatherForecast? dbRecord = null;
 
@@ -107,13 +103,10 @@ public partial class WeatherForecastEntityTests
 
         var uiBroker = await entityUIProvider.GetEntityEditUIBrokerAsync(testId);
 
-        await uiBroker.DeleteItemAsync();
-
-
-        await uiBroker.SaveItemAsync(true);
+        await uiBroker.DeleteAsync();
 
         result = false;
-        uiBroker.LastResult.MutateState(
+        uiBroker.LastResult.Output(
             hasNoException: () => result = true);
 
         // check the update was successful
@@ -137,7 +130,7 @@ public partial class WeatherForecastEntityTests
                 PageSize = 1,
                 StartIndex = 0,
             })
-            .ExecuteFunctionAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .ExecuteTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
             .OutputAsync(hasValue: (provider) =>
             {
                 listItemsProvider = provider;
@@ -175,9 +168,9 @@ public partial class WeatherForecastEntityTests
 
         bool result = false;
 
-        await uiBroker.SaveItemAsync();
+        await uiBroker.SaveAsync();
 
-        uiBroker.LastResult.MutateState(
+        uiBroker.LastResult.Output(
             hasNoException: () => result = true);
 
         WeatherForecastId newId = uiBroker.Id;
@@ -224,7 +217,7 @@ public partial class WeatherForecastEntityTests
                 PageSize = 1,
                 StartIndex = 0,
             })
-            .ExecuteFunctionAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
+            .ExecuteTransformAsync<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
             .OutputAsync(hasValue: (provider) =>
             {
                 listItemsProvider = provider;

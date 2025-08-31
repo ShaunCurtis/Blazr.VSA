@@ -30,7 +30,7 @@ public partial class WeatherForecastEntityEditUIBroker
     public async ValueTask LoadAsync(WeatherForecastId id)
     {
         LastResult = await this.IsNotLoaded
-            .ExecuteFunction(id.ToResult)
+            .ExecuteTransform(id.ToResult)
             .ExecuteTransformAsync<WeatherForecastEntity>(_entityProvider.EntityRequestAsync)
             .ExecuteTransformAsync(this.LoadBroker);
     }
@@ -39,7 +39,7 @@ public partial class WeatherForecastEntityEditUIBroker
     public void Reset()
     {
         LastResult = this.IsLoaded
-            .ExecuteFunction(() => WeatherForecastEntity.ResetAction
+            .ExecuteTransform(() => WeatherForecastEntity.ResetAction
                     .CreateAction()
                     .AddSender(this)
                     .ExecuteAction(_entity))
@@ -54,14 +54,14 @@ public partial class WeatherForecastEntityEditUIBroker
     public async ValueTask SaveAsync(bool refreshOnNew = true)
     {
         LastResult = await this.IsLoaded
-            .ExecuteFunction(this.UpdateWeatherForecast)
+            .ExecuteTransaction(this.UpdateWeatherForecast)
             .ExecuteFunctionAsync(this.SaveEntityAsync);
     }
 
     public async ValueTask DeleteAsync()
     {
         LastResult = await this.IsLoaded
-            .ExecuteFunction(() => WeatherForecastEntity.DeleteWeatherForecastAction
+            .ExecuteTransform(() => WeatherForecastEntity.DeleteWeatherForecastAction
                 .CreateAction()
                 .AddSender(this)
                 .ExecuteAction(_entity))

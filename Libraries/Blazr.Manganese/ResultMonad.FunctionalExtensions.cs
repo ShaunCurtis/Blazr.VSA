@@ -13,23 +13,20 @@ namespace Blazr.Manganese;
 
 public partial record Result
 {
-    public static Result<TOut> CreateFromFunction<TOut>(Func<TOut> function)
-        => Result.Success().ExecuteFunction(function);
-
-    public Result ExecuteFunction(Func<Result> function)
+    public Result ExecuteTransaction(Func<Result> function)
     => this.Exception is null
         ? function()
         : this;
 
-    public Result<T> ExecuteFunction<T>(Func<Result<T>> function)
+    public Result<T> ExecuteTransform<T>(Func<Result<T>> function)
         => this.Exception is null
             ? function()
             : Result<T>.Failure(this.Exception);
 
-    public Result ExecuteFunction(bool test, Func<Result> truefunction, Func<Result> falsefunction)
+    public Result ExecuteConditionalTransaction(bool test, Func<Result> truefunction, Func<Result> falsefunction)
         => test
-            ? this.ExecuteFunction(truefunction)
-            : this.ExecuteFunction(falsefunction);
+            ? this.ExecuteTransaction(truefunction)
+            : this.ExecuteTransaction(falsefunction);
 
     public Result<T> ExecuteFunction<T>(Func<Result<T>> HasNoException, Func<Exception, Result<T>> HasException)
     => this.HasException

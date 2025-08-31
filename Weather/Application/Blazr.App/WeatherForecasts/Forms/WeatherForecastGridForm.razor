@@ -39,7 +39,6 @@
 
         <TemplateColumn Class="nowrap-column no-max-width" Align="Align.End">
             <UIButtonGroup>
-                <UIButton type="button" class="btn btn-sm btn-danger" ClickEvent="() => OnDeleteAsync(context.Id)">Delete</UIButton>
                 <UIButton type="button" class="btn btn-sm btn-primary" ClickEvent="() => OnEditAsync(context.Id)">Edit</UIButton>
                 <UIButton type="button" class="btn btn-sm btn-secondary" ClickEvent="() => OnViewAsync(context.Id)">View</UIButton>
             </UIButtonGroup>
@@ -50,9 +49,3 @@
 
 <BsModalDialog @ref=modalDialog />
 
-@code {
-    private Task OnDeleteAsync(WeatherForecastId id)
-    {
-        return Task.CompletedTask;
-    }
-}

@@ -95,7 +95,7 @@ public partial class EditUIBroker<TRecord, TRecordEditContext, TKey> : IEditUIBr
             // Check we're loaded
             .SwitchToException(!_isLoaded, "No record is loaded.")
             // Get the record item from the EditMutator
-            .ExecuteFunction<TRecord>(() => EditMutator.ToResult)
+            .ExecuteTransform<TRecord>(() => EditMutator.ToResult)
              // Set the broker state to dirty
              .ExecuteAction(hasValue: (value) => this.State = this.State.AsDirty)
              // Save the record item to the datastore
