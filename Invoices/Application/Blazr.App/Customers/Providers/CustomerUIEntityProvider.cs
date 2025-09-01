@@ -7,6 +7,7 @@ using Blazr.App.Core;
 using Blazr.Cadmium;
 using Blazr.Cadmium.Core;
 using Blazr.Cadmium.Presentation;
+using Blazr.Cadmium.QuickGrid;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.App.UI;
@@ -30,14 +31,12 @@ public sealed record CustomerUIEntityProvider : IUIEntityProvider<DmoCustomer, C
     {
         var presenter = ActivatorUtilities.CreateInstance<ReadUIBroker<DmoCustomer, CustomerId>>(_serviceProvider);
         await presenter.LoadAsync(id);
-
         return presenter;
     }
 
     public ValueTask<IGridUIBroker<DmoCustomer>> GetGridUIBrokerAsync()
     {
         var presenter = ActivatorUtilities.CreateInstance<GridUIBroker<DmoCustomer, CustomerId>>(_serviceProvider);
-
         return ValueTask.FromResult<IGridUIBroker<DmoCustomer>>(presenter);
     }
 
@@ -48,4 +47,10 @@ public sealed record CustomerUIEntityProvider : IUIEntityProvider<DmoCustomer, C
         await presenter.LoadAsync(id);
         return presenter;
     }
+
+    public ValueTask<IGridUIBroker<DmoCustomer>> GetGridUIBrokerAsync(Guid contextId)
+        => throw new NotImplementedException();
+
+    public ValueTask<IGridUIBroker<DmoCustomer>> GetGridUIBrokerAsync(Guid contextId, UpdateGridRequest<DmoCustomer> resetGridRequest)
+        => throw new NotImplementedException();
 }

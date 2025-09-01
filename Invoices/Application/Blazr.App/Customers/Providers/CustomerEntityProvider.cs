@@ -21,27 +21,20 @@ public class CustomerEntityProvider
         _serviceProvider = serviceProvider;
     }
 
-    public async Task<Result<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
-    {
-        var asyncResult = await _mediator.Send(new CustomerListRequest()
-        {
-            PageSize = state.PageSize,
-            StartIndex = state.StartIndex,
-            SortColumn = state.SortField,
-            SortDescending = state.SortDescending
-        });
-
-        return asyncResult.ApplyTransform<GridItemsProviderResult<DmoCustomer>>(FromListItemsProvider);
-    }
+    public Task<Result<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
+        => CustomerListRequest.Create(state)
+            .DispatchAsync((request) => _mediator.DispatchAsync(request))
+            .ExecuteFunctionAsync((itemsProvider) => GridItemsProviderResult
+                .From<DmoCustomer>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
 
     public Func<CustomerId, Task<Result<DmoCustomer>>> RecordRequestAsync
         => (id) => id.IsDefault ? NewRecordRequestAsync(id) : ExistingRecordRequestAsync(id);
 
     public Func<StateRecord<DmoCustomer>, Task<Result<CustomerId>>> RecordCommandAsync
-        => (record) => _mediator.Send(new CustomerCommandRequest(record));
+        => (record) => _mediator.DispatchAsync(new CustomerCommandRequest(record));
 
     public Func<GridState<DmoCustomer>, Task<Result<ListItemsProvider<DmoCustomer>>>> GridItemsRequestAsync
-        => (state) => _mediator.Send(new CustomerListRequest()
+        => (state) => _mediator.DispatchAsync(new CustomerListRequest()
         {
             PageSize = state.PageSize,
             StartIndex = state.StartIndex,
@@ -50,7 +43,7 @@ public class CustomerEntityProvider
         });
 
     public Func<CustomerListRequest, Task<Result<ListItemsProvider<DmoCustomer>>>> ListItemsRequestAsync
-        => (request) => _mediator.Send(request);
+        => (request) => _mediator.DispatchAsync(request);
 
     public Result<CustomerId> GetKey(object? obj)
         => obj switch
@@ -68,7 +61,7 @@ public class CustomerEntityProvider
     private readonly IServiceProvider _serviceProvider;
 
     private Func<CustomerId, Task<Result<DmoCustomer>>> ExistingRecordRequestAsync
-        => (id) => _mediator.Send(new CustomerRecordRequest(id));
+        => (id) => _mediator.DispatchAsync(new CustomerRecordRequest(id));
 
     private Func<CustomerId, Task<Result<DmoCustomer>>> NewRecordRequestAsync
         => (id) => Task.FromResult(Result<DmoCustomer>.Create(new DmoCustomer { Id = CustomerId.Default }));
