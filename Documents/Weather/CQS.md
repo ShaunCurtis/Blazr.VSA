@@ -1,6 +1,8 @@
 # CQS and the Data Pipeline
 
-The Blazor.Diode package provides the basic infrastructure for impkementing CQS.  You can read up about CQS elsewhere, so I'll assume you either alreeady know what CQS is, or have now acquainted yourself.
+The Blazor.Diode package provides the basic infrastructure for impkementing CQS.  You can read about CQS elsewhere: I'll assume you either alreeady know what CQS is, or have now acquainted yourself.
+
+CQS is a pathway to a more functional approach to coding the dta pipeline.
 
 The data pipeline has three distinct pathways:
 
@@ -18,16 +20,46 @@ This is the `DmoWeatherForecast` domain object:
 public sealed record DmoWeatherForecast
 {
     public WeatherForecastId Id { get; init; } = new(Guid.Empty);
-    public string Owner { get; init; } = string.Empty;
     public Date Date { get; init; }
     public Temperature Temperature { get; init; }
     public string Summary { get; init; } = "Not Defined";
 }
 ```
 
-Note it's immutable and uses of value objects rather than primitiies.
+It's immutable and uses value objects rather than primitiies.
 
-Here are the two data store objects with built-in mappers.  This is **Command/Query Separation**, so there are two objects.
+## Demo Data Store
+
+The demo data store is an *In Memory* SQL Database.  It, and it's data store objects, are in *Blazr.App.EntityFramework*.    
+
+The implementation looks like this:
+
+```csharp
+public sealed class InMemoryWeatherTestDbContext : DbContext
+{
+    public DbSet<DboWeatherForecast> DboWeatherForecasts { get; set; } = default!;
+    public DbSet<DvoWeatherForecast> DvoWeatherForecasts { get; set; } = default!;
+
+    public InMemoryWeatherTestDbContext(DbContextOptions<InMemoryWeatherTestDbContext> options) : base(options) { }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<DboWeatherForecast>().ToTable("WeatherForecasts");
+        modelBuilder.Entity<DvoWeatherForecast>()
+            .ToInMemoryQuery(()
+                => from w in this.DboWeatherForecasts
+                   select new DvoWeatherForecast
+                   {
+                       WeatherForecastID = w.WeatherForecastID,
+                       Summary = w.Summary,
+                       Temperature = w.Temperature,
+                       Date = w.Date,
+                   }).HasKey(x => x.WeatherForecastID);
+    }
+}
+```
+
+This is **Command/Query Separation**, so there are two objects, with built in mappers.
 
 `DvoWeatherForecast` is the query object for getting data from the data store.
 
@@ -75,11 +107,12 @@ public sealed record DboWeatherForecast : ICommandEntity
 }
 ```
 
+
 ## Mediator
 
-*Blazr.Diode* contains a Mediator Pattern implementation with the necessary request and result objects.   
+*Blazr.Diode* provides a *no frills* Mediator Pattern implementation with the necessary request and result objects.   
 
-`IMedaitorBroker` defines the DI Mediator service interface: which defines a single `DispatchAsync` method.
+`IMedaitorBroker` defines the DI Mediator service interface: which provides a single `DispatchAsync` method.
 
 ```csharp
 Task<TResponse> DispatchAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default);
@@ -87,14 +120,14 @@ Task<TResponse> DispatchAsync<TResponse>(IRequest<TResponse> request, Cancellati
 
 ### Mediator Requests
 
-The Mediatr request for getting a record is defined as:
+A Mediatr record request is defined like this:
 
 ```csharp
 public readonly record struct WeatherForecastRecordRequest(WeatherForecastId Id) 
     : IRequest<Result<DmoWeatherForecast>>;
 ```
 
-Which is used like this:
+And used like this:
 
 ```csharp
 public async ValueTask<Result<DmoWeatherForecast>> GetRecordAsync(WeatherForecastId id)

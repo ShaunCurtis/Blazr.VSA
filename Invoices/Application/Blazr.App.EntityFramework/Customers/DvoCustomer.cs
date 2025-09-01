@@ -11,4 +11,11 @@ public sealed record DvoCustomer
 {
     [Key] public Guid CustomerID { get; init; } = Guid.Empty;
     public string? CustomerName { get; set; }
+
+    public static DmoCustomer Map(DvoCustomer item)
+        => new()
+        {
+            Id = new(item.CustomerID),
+            Name = new (item.CustomerName ?? string.Empty)
+        };
 }

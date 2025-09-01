@@ -20,7 +20,7 @@
     <QuickGrid Theme="None" TGridItem="DmoWeatherForecast" ItemsProvider="UIBroker.GetItemsAsync" Pagination="Pagination" @ref="this.quickGrid" Class="@this.TableCss">
 
         <SortedPropertyColumn SortField="Id" Class="nowrap-column" Sortable="true" Title="ID">
-            @context.Id.Value.ToDisplayId()
+            @context.Id.ToString()
         </SortedPropertyColumn>
 
         <PropertyColumn Title="Date" Property="@(c => c!.Date.Value)" Format="dd-MMM-yy" Sortable="true" IsDefaultSortColumn InitialSortDirection="SortDirection.Ascending" Align=Align.Start />

@@ -1,12 +1,14 @@
 # Result
 
-All actions in **Diode** return a result.
+All actions return a result.
 
-Any method that returns a `T`, returns a `Result<T>` and any method that returns a `void`, returns a `Result`.
+Any method that:
+    - returns a `T`, returns a `Result<T>` 
+    - returns a `void`, returns a `Result`.
 
 A result has two possible states:
-- **Success**: The operation completed successfully
-- **Failure**: The operation failed, and the result contains an error message. 
+- **Success** or **HasValue**: The operation completed successfully
+- **Failure** or **HasException**: The operation failed, and the result contains an error message. 
 
 Result implements *Railway-Orientated Programming*.  Any error/exception flows up the chain bypassing executing any of steps beyond the exception/error source.
 
@@ -20,21 +22,25 @@ public record Result<T>
     private readonly Exception? _exception;
     private readonly T? _value;
     private ResultException _defaultException => new ResultException("An error occurred. No specific exception provided.");
-
-    private Result(T? value) 
-        => _value = value;
-
-    private Result(Exception? exception) 
-        => _exception = exception ?? _defaultException;
-
-    private Result() 
-        => _exception = _defaultException;
 }
 ```
 
-Everything is private to provide strict control over usage.
+And three constructors:
 
-### Constructors
+```csharp
+private Result(T? value) 
+    => _value = value;
+
+private Result(Exception? exception) 
+    => _exception = exception ?? _defaultException;
+
+private Result() 
+    => _exception = _defaultException;
+```
+
+All private to provide strict control over usage.
+
+### Static Constructors
 
 There are four static constructors:
 
@@ -53,7 +59,7 @@ public static Result<T> Failure(string message) => new(new ResultException(messa
 
 ### Output
 
-The result is accessed through an `Output` method.
+Resulta are accessed through an `Output` method.
 
 ```csharp
 
@@ -67,7 +73,7 @@ The result is accessed through an `Output` method.
     }
 ```
 
-Note that this method returns a `void`.  It's an endpoint.
+This method returns a `void`: It's an endpoint.
 
 Demo Code:
 
@@ -96,9 +102,9 @@ Result<string>.Create(value)
 
 ### Mapping
 
-Mapping is the process of applying a function to the value of a `Result<T>`.
+Mapping is the process of applying a function to the value of a `Result<T>` to produce a new `Result<T>`.
 
-It's important to note that mappings only execute the provided function if the source result state is success i.e. it has a valid `T` value.  If the source result is in failure state, it either passes the source result as the output result, or passes a new result (with the source exception) in failure state. 
+A mapping i.e. executing the function, only occurs if the Result has a valid value. 
 
 There are three basic functions we can apply.
 

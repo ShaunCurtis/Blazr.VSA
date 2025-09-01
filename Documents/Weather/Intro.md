@@ -2,7 +2,7 @@
 
 > **This set of documentation is in-the-making.  Some are rough-and-ready complete, others are still being written when I get time.**
 
-Blazr.Weather is a demonstration project that showcases how to build a data centric application.
+Blazr.Weather is a demonstration project that showcases a set of patterns and methodologies you can use to build data centric applications.
 
 It applies and uses various technologies and concepts such as:
 

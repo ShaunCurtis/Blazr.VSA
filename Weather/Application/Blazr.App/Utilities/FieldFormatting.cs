@@ -4,7 +4,6 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
-using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Blazr.App.Core;
@@ -14,46 +13,6 @@ namespace Blazr.App.Core;
 /// </summary>
 public static class FieldFormatting
 {
-    public static string AsGlobalDateFormat(this Date Date)
-    {
-        return Date.Value.ToString("dd-MMM-yyyy");
-    }
-
-    public static string AsGlobalDateFormat(this DateTime Date)
-    {
-        return Date.ToString("dd-MMM-yyyy");
-    }
-
-    public static string AsGlobalDateFormat(this DateOnly Date)
-    {
-        return Date.ToString("dd-MMM-yyyy");
-    }
-
-    public static string AsTemperature(this decimal value)
-    {
-        return string.Format("{0}", value.ToString("#0"));
-    }
-
-    public static string AsPercentage(this decimal value)
-    {
-        return string.Format("{0}%", value.ToString("#0.##"));
-    }
-
-    public static string AsMoney(this decimal value)
-    {
-        return string.Format("£{0}", value.ToString("#0.00"));
-    }
-
-    public static string AsWeight(this decimal value)
-    {
-        return value.ToString("#0.000", CultureInfo.CurrentCulture);
-    }
-
-    public static string AsYesNo(this bool value)
-    {
-        return value ? "Yes" : "No";
-    }
-
     public static string AsSizedString(this string value, bool dotting, int size = 50)
     {
         if (value != null)
@@ -73,15 +32,5 @@ public static class FieldFormatting
     public static string TextToHtmlNewLines(this string text)
     {
         return text.Replace(System.Environment.NewLine, "<br />");
-    }
-
-    public static string ToDisplayId(this Guid value)
-    {
-        if (value == Guid.Empty)
-            return "-- New Record --";
-
-        // The lowest 8 numbers of the timestamp section
-        //return value.ToString();
-        return value.ToString().Substring(6, 18).Replace("-", "");
     }
 }

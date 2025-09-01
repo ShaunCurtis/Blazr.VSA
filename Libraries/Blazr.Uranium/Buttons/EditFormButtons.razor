@@ -11,7 +11,7 @@
 
 <div class="@this.ColumnCss">
     <div class="text-end">
-        <UIButton Type="button" Hidden="!this.AllowDelete" ButtonSize="UIButtonSize.Small" ButtonColourType="UIButtonColourType.Delete" ClickEvent="this.OnDelete">@Options.DeleteText</UIButton>
+        <UIButton Type="button" Hidden="_hideDelete" ButtonSize="UIButtonSize.Small" ButtonColourType="UIButtonColourType.Delete" ClickEvent="this.OnDelete">@Options.DeleteText</UIButton>
             <UIButton Type="button" Hidden="_isClean" ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Reset ClickEvent=this.OnReset>@Options.ResetText</UIButton>
             <UIButton Type="button" Hidden=@_isDirty ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnDirtyExit>@Options.ExitText</UIButton>
             <UIButton Type="button" Hidden=@_isClean ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.ExitWithoutSave ClickEvent=this.OnExit>@Options.ExitWithoutSaveText</UIButton>
@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    @code {
+@code {
     [CascadingParameter] private EditContext _editContext { get; set; } = default!;
     [Parameter] public EventCallback Exit { get; set; }
     [Parameter] public EventCallback DirtyExit { get; set; }
@@ -29,13 +29,13 @@
     [Parameter] public string ColumnCss { get; set; } = "col-12 mb-3 text-end";
     [Parameter] public bool SaveOnSubmit { get; set; }
     [Parameter] public bool IsNewRecord { get; set; }
-    [Parameter] public bool AllowDelete { get; set; }
     [Parameter] public EditFormButtonsOptions Options { get; set; } = new();
 
     private bool _isDirty;
     private bool _isClean => !_isDirty;
     private string _saveButtonType => this.SaveOnSubmit ? "submit" : "button";
     private string _saveButtonText => this.IsNewRecord ? Options.SaveText : Options.UpdateText;
+    private bool _hideDelete => !this.Delete.HasDelegate; 
 
     protected override Task OnParametersSetAsync()
     {
@@ -59,12 +59,7 @@
     }
 
     private Task OnDelete()
-    {
-        if (this.AllowDelete)
-            return this.Delete.InvokeAsync();
-
-        return Task.CompletedTask;
-    }
+        => this.Delete.InvokeAsync();
 
 
     private Task OnSaveAndExit()

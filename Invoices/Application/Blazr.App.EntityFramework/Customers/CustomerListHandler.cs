@@ -13,13 +13,10 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
     private readonly IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
 
     public CustomerListHandler(IDbContextFactory<InMemoryWeatherTestDbContext> factory)
-    {
-        _factory = factory;
-    }
+        => _factory = factory;
 
     public async Task<Result<ListItemsProvider<DmoCustomer>>> HandleAsync(CustomerListRequest request, CancellationToken cancellationToken)
-    {
-        var result = await _factory
+        => await _factory
             .CreateDbContext()
             .GetItemsAsync<DvoCustomer>(
                 new ListQueryRequest<DvoCustomer>()
@@ -31,16 +28,13 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
                     FilterExpression = this.GetFilter(request),
                     Cancellation = cancellationToken
                 }
+            )
+           .ExecuteTransformAsync((provider) =>
+                Result<ListItemsProvider<DmoCustomer>>
+                    .Create(new ListItemsProvider<DmoCustomer>(
+                        Items: provider.Items.Select(item => DvoCustomer.Map(item)),
+                        TotalCount: provider.TotalCount))
             );
-
-        return result.ApplyTransform<ListItemsProvider<DmoCustomer>>(  
-            success: items =>
-            {
-                var mappedItems = items.Items.Select(item => CustomerMap.Map(item));
-                return Result<ListItemsProvider<DmoCustomer>>.Create(new ListItemsProvider<DmoCustomer>(mappedItems, items.TotalCount));
-            }
-        );
-    }
 
     private Expression<Func<DvoCustomer, object>> GetSorter(string? field)
         => field switch

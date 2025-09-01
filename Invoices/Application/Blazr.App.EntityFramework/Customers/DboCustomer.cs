@@ -3,18 +3,14 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Core;
+using System.ComponentModel.DataAnnotations;
 
 namespace Blazr.App.Infrastructure;
 
-public sealed class CustomerMap
+public sealed record DboCustomer : ICommandEntity
 {
-    public static DmoCustomer Map(DvoCustomer item)
-        => new()
-        {
-            Id = new(item.CustomerID),
-            Name = new(item.CustomerName ?? string.Empty)
-        };
+    [Key] public Guid CustomerID { get; init; } = Guid.Empty;
+    public string CustomerName { get; init; } = string.Empty;
 
     public static DboCustomer Map(DmoCustomer item)
         => new()
@@ -22,10 +18,4 @@ public sealed class CustomerMap
             CustomerID = item.Id.ValidatedId.Value,
             CustomerName = item.Name.Value
         };
-
-    public static Result<DmoCustomer> ApplyTransform(DvoCustomer item)
-        => Result<DmoCustomer>.Create(Map(item));
-
-    public static Result<DboCustomer> MapResult(DmoCustomer item)
-        => Result<DboCustomer>.Create(Map(item));
 }

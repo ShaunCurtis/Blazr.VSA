@@ -6,11 +6,33 @@
 
 namespace Blazr.App.Core;
 
-public readonly record struct CustomerName(string Value)
+public readonly record struct CustomerName
 {
-    public bool IsValid => !string.IsNullOrWhiteSpace(Value);
+    public string Value { get; private init; }
+    public bool IsValid { get; private init; }
+
+    public CustomerName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            this.Value = string.Empty;
+            this.IsValid = false;
+            return;
+        }
+
+        if (name.Length > 100)
+        {
+            this.Value = string.Empty;
+            this.IsValid = false;
+            return;
+        }
+
+        this.Value = name.Trim();
+        this.IsValid = true;
+    }
+
     public override string ToString()
     {
-        return IsValid ? Value! : "Not Valid";
+        return this.IsValid ? Value.ToString() : "No Valid Name";
     }
 }

@@ -10,6 +10,10 @@ An aggregate is a black box.  All changes are submitted to the black box, not th
 
 An invoice is a good example of an aggregate. Delete a line item, and the aggregate needs to track the deletion of the item, calculate the new total amount and update the invoice.  Persist the aggregate to the data store, and the aggregate needs to hold the necessary state information to apply the appropriate update/add/delete actions as a *Unit of Work* to the data store.
 
+## The Problems with Aggregates
+
+It's important to undertand that aggregates are not all plain sailing.  It's easy to slip the boundary.  Include more related objects.  It'a also easy to grow thw aggregate into  a monster class. 
+
 ## The Classic Aggregate
 
 The classic version of the Invoice aggregate looks something like this:

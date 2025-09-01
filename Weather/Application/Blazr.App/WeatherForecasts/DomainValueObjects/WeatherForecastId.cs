@@ -17,6 +17,11 @@ public readonly record struct WeatherForecastId(Guid Value) : IEntityId
 
     public override string ToString()
     {
-        return this.IsDefault ? "Default" : Value.ToString();
+        if (Value == Guid.Empty)
+            return "-- New Record --";
+
+        // The lowest 8 numbers of the timestamp section
+        //return value.ToString();
+        return Value.ToString().Substring(6, 18).Replace("-", "");
     }
 }

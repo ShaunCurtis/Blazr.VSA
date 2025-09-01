@@ -5,19 +5,17 @@ Type *Monad* into your search bar.  The Internet is awash with articles.  There 
 
 Here's another: but hopefully one that succeeds.
 
-Here's why they fail:
+Why do they fail?  Perhaps because they try to explain this:
 
 > A *Monad* is just a *Monoid* in the *Category* of *EndOfFunctors*.
 
-This statement is mathmatically correct (or so I'm informed), but if you understand it you're in a serious minority.
+Mathmatically correct (or so I'm informed), but not for mere mortals.
 
-The majority of articles try to explain that statement in plain language: you can't.
+Lets come at this from a different angle.
 
-So, lets come at this from a different angle.
+Here's a C# skeleton Monad:
 
-Here's a C# base level Monad:
-
-```
+```csharp
 public record Monad<T>(T value) 
 {
     Monad<TOut> ExecuteFunction(Func<T, Monad<TOut>> f);
