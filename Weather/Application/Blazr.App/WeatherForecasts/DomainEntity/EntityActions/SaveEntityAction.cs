@@ -1,8 +1,4 @@
-﻿using Blazr.Diode;
-using System;
-using System.Reflection;
-
-/// ============================================================
+﻿/// ============================================================
 /// Author: Shaun Curtis, Cold Elm Coders
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
@@ -14,7 +10,8 @@ public partial class WeatherForecastEntity
     public record SaveEntityAction : BaseAction<SaveEntityAction>
     {
         private Func<WeatherForecastEntity, Task<Result<WeatherForecastEntity>>> _persistFunction;
-        public SaveEntityAction(Func<WeatherForecastEntity, Task<Result<WeatherForecastEntity>>> persistFunction) 
+        
+        public SaveEntityAction(Func<WeatherForecastEntity, Task<Result<WeatherForecastEntity>>> persistFunction)
         {
             _persistFunction = persistFunction;
         }
