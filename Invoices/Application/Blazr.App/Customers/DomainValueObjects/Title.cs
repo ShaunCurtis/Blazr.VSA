@@ -6,12 +6,12 @@
 
 namespace Blazr.App.Core;
 
-public readonly record struct CustomerName
+public readonly record struct Title
 {
     public string Value { get; private init; }
     public bool IsValid { get; private init; }
 
-    public CustomerName(string name)
+    public Title(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -30,6 +30,8 @@ public readonly record struct CustomerName
         this.Value = name.Trim();
         this.IsValid = true;
     }
+
+    public static Title Default => new() { Value = "No Valid Name", IsValid = false };
 
     public override string ToString()
     {

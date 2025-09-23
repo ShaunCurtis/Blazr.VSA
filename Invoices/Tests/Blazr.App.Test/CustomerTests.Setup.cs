@@ -58,7 +58,7 @@ public partial class CustomerTests
         => new DmoCustomer
         {
             Id = new CustomerId(customer.CustomerID),
-            Name = new CustomerName(customer.CustomerName ?? string.Empty)
+            Name = new Title(customer.CustomerName ?? string.Empty)
         };
 
 }

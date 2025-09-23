@@ -3,9 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Core;
-
-namespace Blazr.App.Invoice.Core;
+namespace Blazr.App.Core;
 
 public readonly record struct InvoiceId(Guid Value) : IEntityId
 {

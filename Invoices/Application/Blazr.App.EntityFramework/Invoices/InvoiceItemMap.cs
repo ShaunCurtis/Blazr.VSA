@@ -14,8 +14,8 @@ public sealed class InvoiceItemMap
        {
            Id = new(item.InvoiceItemID),
            InvoiceId = new(item.InvoiceID),
-           Amount = item.Amount,
-           Description = item.Description,
+           Amount = new(item.Amount),
+           Description = new(item.Description),
        };
 
     public static DboInvoiceItem Map(DmoInvoiceItem item)
@@ -23,8 +23,8 @@ public sealed class InvoiceItemMap
         {
             InvoiceItemID = item.Id.Value,
             InvoiceID = item.InvoiceId.Value,
-            Amount = item.Amount,
-            Description = item.Description
+            Amount = item.Amount.Value,
+            Description = item.Description.Value
         };
 }
 

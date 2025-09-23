@@ -14,9 +14,9 @@ public sealed class InvoiceMap
         {
             Id = new(item.InvoiceID),
             CustomerId = new(item.CustomerID),
-            CustomerName = item.CustomerName,
-            TotalAmount = item.TotalAmount,
-            Date = DateOnly.FromDateTime(item.Date)
+            CustomerName = new(item.CustomerName),
+            TotalAmount = new(item.TotalAmount),
+            Date = new(item.Date)
         };
 
     public static DboInvoice Map(DmoInvoice item)
@@ -24,8 +24,8 @@ public sealed class InvoiceMap
         {
             InvoiceID = item.Id.Value,
             CustomerID = item.CustomerId.Value,
-            TotalAmount = item.TotalAmount,
-            Date = item.Date.ToDateTime(TimeOnly.MinValue)
+            TotalAmount = item.TotalAmount.Value,
+            Date = item.Date.ToDateTime
         };
 }
 

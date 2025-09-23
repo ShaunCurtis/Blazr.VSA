@@ -8,5 +8,5 @@ namespace Blazr.App.Core;
 public sealed record DmoCustomer : ICommandEntity
 {
     public CustomerId Id { get; init; }
-    public CustomerName Name { get; init; }
+    public Title Name { get; init; }
 }
