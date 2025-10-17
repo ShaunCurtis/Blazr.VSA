@@ -30,6 +30,11 @@ public partial record Result<T>
             ? new(new ResultException("T was null."))
             : new(value);
 
+    public static Result<T> Create(T? value, string errorMessage) =>
+        value is null
+            ? new(new ResultException(errorMessage))
+            : new(value);
+
     public static Result<T> Success(T value) => new(value);
 
     public static Result<T> Failure(Exception exception) => new(exception);

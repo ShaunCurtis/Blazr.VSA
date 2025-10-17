@@ -17,10 +17,15 @@ public record CollectionRecord<T, TCollection>
         this.Record = record;
         this.Items = items.ToImmutableList();
     }
+    public bool IsDirty(CollectionRecord<T, TCollection> control)
+    {
+        if (control.Record is null || !control.Record.Equals(this.Record))
+            return true;
+        if (control.Items.Count != this.Items.Count)
+            return true;
+        if (control.Items.Except(this.Items).Count() != 0)
+            return true;
 
-    public Result<CollectionRecord<T, TCollection>> AsResult
-        => Result<CollectionRecord<T, TCollection>>.Create(this);
-
-    public static CollectionRecord<T, TCollection> Create(T record, IEnumerable<TCollection> items)
-        => new(record, items);
+        return false;
+    }
 }

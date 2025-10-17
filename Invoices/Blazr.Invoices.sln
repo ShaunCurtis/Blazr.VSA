@@ -37,6 +37,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Test", "Tests\Bla
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.Tests.Console", "..\Tests\Blazr.Tests.Console\Blazr.Tests.Console.csproj", "{3A2791F2-DB3A-C48B-1E4A-37D8588BD742}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{BA3B0083-A8B0-4D36-8E1B-87EECCE78EEA}"
+	ProjectSection(SolutionItems) = preProject
+		..\Documents\Monads.md = ..\Documents\Monads.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -5,39 +5,70 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public sealed partial class InvoiceEntity
+public sealed record InvoiceEntity
 {
-    private readonly EntityState<DmoInvoice> _invoice;
-    private List<EntityState<DmoInvoiceItem>> _invoiceItems;
+    private readonly DroInvoice _baseRecord;
+    private readonly DroInvoice _record;
 
-    public InvoiceId Id => _invoice.Record.Id;
-    public DmoInvoice Invoice =>_invoice.Record;
-    public StateRecord<DmoInvoice> StateRecord => _invoice.AsStateRecord;
-    public bool IsDirty => _invoice.IsDirty || _invoiceItems.Any(item => item.IsDirty);
+    public DroInvoice AsRecord => _record;
+    public InvoiceId Id { get; private init; }
+    public DmoInvoice Invoice => _record.Record;
+    public IEnumerable<DmoInvoiceItem> InvoiceItems => _record.Items.AsEnumerable();
+    public bool IsDirty => _record.IsDirty(_baseRecord);
 
-    public IEnumerable<Dmo> ActiveMixFeeds => _mixFeeds.Where(item => item.State != EditState.Deleted).Select(item => item.Record);
-    public IEnumerable<EntityState<DmoMixFeed>> AllMixFeedStateRecords => _mixFeeds.AsEnumerable();
-    public IEnumerable<EntityState<DmoMixFeed>> ActiveMixFeedStateRecords => _mixFeeds.Where(item => item.State != EditState.Deleted);
-
-    public event EventHandler<InvoiceId>? StateHasChanged;
-
-    public decimal MixFeedTotal => this.ActiveMixFeeds.Sum(item => item.Weight.Value);
-
-    public MixEntity(DmoMix mix, IEnumerable<DmoMixFeed> mixFeeds, bool isNew = false)
+    private InvoiceEntity(DroInvoice invoiceRecord)
     {
-        _mix = new EntityState<DmoMix>(mix, isNew);
-        _mixFeeds = mixFeeds.Select(item => new EntityState<DmoMixFeed>(item)).ToList();
+        this.Id = invoiceRecord.Record.Id;
+        _baseRecord = invoiceRecord;
+        _record = invoiceRecord;
     }
 
-    public Result<MixEntity> AsResult
-        => Result<MixEntity>.Create(this);
+    private InvoiceEntity(DroInvoice invoice, DroInvoice baseInvoice)
+    {
+        this.Id = invoice.Record.Id;
+        _baseRecord = baseInvoice;
+        _record = invoice;
+    }
 
-    public static MixEntity Create()
-            => new MixEntity(new DmoMix() { Id = MixId.Default }, Enumerable.Empty<DmoMixFeed>(), true);
+    public Result<InvoiceEntity> ToResult
+        => Result<InvoiceEntity>.Create(this);
 
-    public static MixEntity Load(DmoMix mix, IEnumerable<DmoMixFeed> mixFeeds)
-            => new MixEntity(mix, mixFeeds);
+    public static Result<InvoiceEntity> Create()
+    {
+        var entity = new InvoiceEntity(new DroInvoice(new DmoInvoice(), Enumerable.Empty<DmoInvoiceItem>()));
+        return Result<InvoiceEntity>.Success(entity);
+    }
 
-    public void RaiseStateHasChanged(object? sender, MixId id)
-        => this.StateHasChanged?.Invoke(sender, id);
+    public static Result<InvoiceEntity> Create(DroInvoice invoiceRecord)
+    {
+        return CheckEntityRules(invoiceRecord)
+            .ExecuteFunction<InvoiceEntity>(invoice => new InvoiceEntity(invoice));
+    }
+
+    public static Result<InvoiceEntity> Load(DroInvoice invoiceRecord, InvoiceEntity entity)
+    {
+        return ApplyEntityRules(invoiceRecord)
+            .ExecuteFunction<InvoiceEntity>(invoice => new InvoiceEntity(invoice, entity._baseRecord));
+    }
+
+    private static Result<DroInvoice> ApplyEntityRules(DroInvoice invoiceRecord)
+    {
+        var total = invoiceRecord.Items.Sum(item => item.Amount.Value);
+
+        if (invoiceRecord.Record.TotalAmount.Value == total)
+            return Result<DroInvoice>.Success(invoiceRecord);
+
+        var newInvoice = invoiceRecord.Record with { TotalAmount = new(total) };
+
+        return DroInvoice.CreateAsResult(newInvoice, invoiceRecord.Items);
+    }
+
+    private static Result<DroInvoice> CheckEntityRules(DroInvoice invoiceRecord)
+    {
+        var total = invoiceRecord.Items.Sum(item => item.Amount.Value);
+        
+        return invoiceRecord.Record.TotalAmount.Value == total
+            ? Result<DroInvoice>.Success(invoiceRecord)
+            : Result<DroInvoice>.Failure("The Invoice Total Amount is incorrect.");
+    }
 }

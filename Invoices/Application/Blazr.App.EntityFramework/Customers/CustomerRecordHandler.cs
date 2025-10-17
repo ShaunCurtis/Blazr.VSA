@@ -19,9 +19,10 @@ public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordReques
 
     public async Task<Result<DmoCustomer>> HandleAsync(CustomerRecordRequest request, CancellationToken cancellationToken)
     {
-        var asyncResult = await _factory.CreateDbContext()
-            .GetRecordAsync<DvoCustomer>(new RecordQueryRequest<DvoCustomer>(item => item.CustomerID == request.Id.Value));
+        using var dbContext = _factory.CreateDbContext();
 
-        return asyncResult.ApplyTransform<DmoCustomer>(CustomerMap.Map);
+        return (await dbContext
+            .GetRecordAsync<DvoCustomer>(new RecordQueryRequest<DvoCustomer>(item => item.CustomerID == request.Id.Value)))
+            .ExecuteTransform<DmoCustomer>(DvoCustomer.MapToResult);
     }
 }
