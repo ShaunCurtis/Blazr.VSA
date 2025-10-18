@@ -46,7 +46,7 @@ public partial class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>,
 
     private async Task<Result> GetRecordItemAsync(TKey id)
         => await Result<TKey>.Create(id)
-            .ApplyExceptionOnTrue(id.IsDefault, "The record Id is default.  Mo record retrieved.")
+            .SwitchToExceptionOnTrue(id.IsDefault, "The record Id is default.  Mo record retrieved.")
             .ExecuteAction((recordId) => _key = recordId)
             .ExecuteTransformAsync(_entityProvider.RecordRequestAsync)
             .ExecuteActionAsync(hasValue: (record) => this.Item = record)

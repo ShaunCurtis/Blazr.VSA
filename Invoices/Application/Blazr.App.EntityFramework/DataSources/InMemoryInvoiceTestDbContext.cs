@@ -14,11 +14,12 @@ public sealed class InMemoryInvoiceTestDbContext
 
     //public DbSet<CustomerLookUpItem> CustomerLookUp { get; set; } = default!;
 
-    //public DbSet<DboInvoice> Invoices { get; set; } = default!;
+    public DbSet<DboInvoice> Invoices { get; set; } = default!;
 
-    //public DbSet<DvoInvoice> DvoInvoices { get; set; } = default!;
+    public DbSet<DvoInvoice> DvoInvoices { get; set; } = default!;
 
-    //public DbSet<DboInvoiceItem> InvoiceItems { get; set; } = default!;
+    public DbSet<DboInvoiceItem> InvoiceItems { get; set; } = default!;
+    public DbSet<DvoInvoiceItem> DvoInvoiceItems { get; set; } = default!;
 
     public InMemoryInvoiceTestDbContext(DbContextOptions<InMemoryInvoiceTestDbContext> options) : base(options) { }
 
@@ -43,20 +44,32 @@ public sealed class InMemoryInvoiceTestDbContext
         //                   Name = z.CustomerName,
         //               }).HasNoKey();
 
-        //    modelBuilder.Entity<DboInvoice>().ToTable("Invoices");
-        //    modelBuilder.Entity<DboInvoiceItem>().ToTable("InvoiceItems");
+        modelBuilder.Entity<DboInvoice>().ToTable("Invoices");
 
-        //    modelBuilder.Entity<DvoInvoice>()
-        //        .ToInMemoryQuery(()
-        //            => from i in this.Invoices 
-        //               join c in this.Customers! on i.CustomerID equals c.CustomerID
-        //               select new DvoInvoice
-        //               {
-        //                   CustomerID = i.CustomerID,
-        //                   CustomerName = c.CustomerName,
-        //                   Date = i.Date,
-        //                   InvoiceID = i.InvoiceID,
-        //                   TotalAmount = i.TotalAmount,
-        //               }).HasKey(x => x.InvoiceID);
+        modelBuilder.Entity<DvoInvoice>()
+            .ToInMemoryQuery(()
+                => from i in this.Invoices
+                   join c in this.Customers! on i.CustomerID equals c.CustomerID
+                   select new DvoInvoice
+                   {
+                       CustomerID = i.CustomerID,
+                       CustomerName = c.CustomerName,
+                       Date = i.Date,
+                       InvoiceID = i.InvoiceID,
+                       TotalAmount = i.TotalAmount,
+                   }).HasKey(x => x.InvoiceID);
+
+        modelBuilder.Entity<DboInvoiceItem>().ToTable("InvoiceItems");
+
+        modelBuilder.Entity<DvoInvoiceItem>()
+            .ToInMemoryQuery(()
+                => from i in this.InvoiceItems
+                   select new DvoInvoiceItem
+                   {
+                       Amount = i.Amount,
+                       Description = i.Description,
+                       InvoiceItemID = i.InvoiceItemID,
+                       InvoiceID = i.InvoiceID,
+                   }).HasKey(x => x.InvoiceItemID);
     }
 }

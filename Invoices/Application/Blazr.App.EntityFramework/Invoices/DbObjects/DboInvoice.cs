@@ -5,7 +5,7 @@
 /// ============================================================
 using System.ComponentModel.DataAnnotations;
 
-namespace Blazr.App.Invoice.Core;
+namespace Blazr.App.EntityFramework;
 
 public sealed record DboInvoice 
 {
@@ -13,4 +13,14 @@ public sealed record DboInvoice
     public Guid CustomerID { get; init; }
     public decimal TotalAmount { get; init; }
     public DateTime Date { get; init; }
+
+    public static DboInvoice Map(DmoInvoice item)
+    => new()
+    {
+        InvoiceID = item.Id.Value,
+        CustomerID = item.CustomerId.Value,
+        TotalAmount = item.TotalAmount.Value,
+        Date = item.Date.ToDateTime
+    };
+
 }

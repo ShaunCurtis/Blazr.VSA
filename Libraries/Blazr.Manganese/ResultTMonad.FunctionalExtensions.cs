@@ -117,12 +117,12 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<T> ApplyExceptionOnTrue(bool test, string message)
+    public Result<T> SwitchToExceptionOnTrue(bool test, string message)
         => this.HasValue && test
             ? Result<T>.Failure(message)
             : this;
 
-    public Result<T> ApplyExceptionOnTrue(bool test, Exception exception)
+    public Result<T> SwitchToExceptionOnTrue(bool test, Exception exception)
         => this.HasValue && test
             ? Result<T>.Failure(exception)
             : this;
