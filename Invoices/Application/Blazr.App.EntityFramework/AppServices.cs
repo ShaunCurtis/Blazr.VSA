@@ -17,13 +17,6 @@ public static partial class AppServerServices
 
         // Add any individual entity services
         services.AddCustomerServices();
-    }
-
-    public static void AddWeatherTestData(this IServiceProvider provider)
-    {
-        var factory = provider.GetService<IDbContextFactory<InMemoryWeatherTestDbContext>>();
-
-        if (factory is not null)
-            WeatherTestDataProvider.Instance().LoadDbContext<InMemoryWeatherTestDbContext>(factory);
+        services.AddInvoiceServices();
     }
 }

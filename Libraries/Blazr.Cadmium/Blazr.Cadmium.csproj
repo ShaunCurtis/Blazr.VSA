@@ -13,9 +13,9 @@
 
   <ItemGroup>
 	  <PackageReference Include="Blazr.BaseComponents" Version="1.0.1" />
-	  <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="9.0.6" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="9.0.10" />
 
-	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.6" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.10" />
   </ItemGroup>
 
   <ItemGroup>

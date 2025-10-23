@@ -17,4 +17,4 @@ public readonly record struct InvoiceId(Guid Value) : IEntityId
     {
         return this.IsDefault ? "Default" : Value.ToString();
     }
-}}
+}

@@ -12,16 +12,15 @@ using Blazr.Diode.Mediator;
 using Blazr.Gallium;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.Reflection;
-
+using Microsoft.Extensions.Logging;
 namespace Blazr.Test;
 
-public partial class CustomerTests
+public partial class InvoiceTests
 {
     private InvoiceTestDataProvider _testDataProvider;
 
-    public CustomerTests()
+    public InvoiceTests()
         => _testDataProvider = InvoiceTestDataProvider.Instance();
 
     private ServiceProvider GetServiceProvider()
@@ -55,11 +54,31 @@ public partial class CustomerTests
         return provider!;
     }
 
-    private DmoCustomer AsDmoCustomer(DboCustomer customer)
-        => new DmoCustomer
+    private DmoInvoice AsDmoInvoice(DboInvoice invoice)
+    {
+        var customer = _testDataProvider.Customers.First(item => item.CustomerID == invoice.CustomerID);
+        return new DmoInvoice
+           {
+               Id = new InvoiceId(invoice.InvoiceID),
+               Customer = AsInvoiceCustomer(customer),
+               Date = new Date(invoice.Date),
+               TotalAmount = new Money(invoice.TotalAmount),
+           };
+    }
+
+    private DmoInvoiceItem AsDmoInvoiceItem(DboInvoiceItem invoiceItem)
+        => new DmoInvoiceItem
         {
-            Id = new CustomerId(customer.CustomerID),
-            Name = new Title(customer.CustomerName ?? string.Empty)
+            Id = new InvoiceItemId(invoiceItem.InvoiceItemID),
+            InvoiceId = new InvoiceId(invoiceItem.InvoiceID),
+            Description = new(invoiceItem.Description),
+            Amount = new Money(invoiceItem.Amount),
         };
 
+    private InvoiceCustomer AsInvoiceCustomer(DboCustomer customer)
+        => new InvoiceCustomer
+        (
+             new(customer.CustomerID),
+             new(customer.CustomerName)
+        );
 }

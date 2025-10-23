@@ -17,6 +17,7 @@ public record CollectionRecord<T, TCollection>
         this.Record = record;
         this.Items = items.ToImmutableList();
     }
+    
     public bool IsDirty(CollectionRecord<T, TCollection> control)
     {
         if (control.Record is null || !control.Record.Equals(this.Record))

@@ -11,4 +11,7 @@ public sealed record DmoInvoiceItem
     public InvoiceId InvoiceId { get; init; } = InvoiceId.Default;
     public Title Description { get; init; } = Title.Default;
     public Money Amount { get; init; }
+
+    public static DmoInvoiceItem Create(InvoiceId invoiceId)
+        => new() { Id = InvoiceItemId.Create, InvoiceId = invoiceId };
 }

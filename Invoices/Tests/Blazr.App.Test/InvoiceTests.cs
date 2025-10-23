@@ -4,7 +4,9 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
+using Azure.Core;
 using Blazr.App.Core;
+using Blazr.App.EntityFramework;
 using Blazr.App.Infrastructure;
 using Blazr.App.Presentation;
 using Blazr.App.UI;
@@ -12,104 +14,89 @@ using Blazr.Cadmium;
 using Blazr.Cadmium.Core;
 using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode;
+using Blazr.Diode.Mediator;
 using Blazr.Manganese;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Xunit;
 
 namespace Blazr.Test;
 
-public partial class CustomerTests
+public partial class InvoiceTests
 {
 
     [Fact]
-    public async Task GetACustomer()
+    public async Task GetAnInvoice()
     {
         // Get a fully stocked DI container
         var provider = GetServiceProvider();
 
-        //Injects the data broker
-        var uIEntityProvider = provider.GetRequiredService<IUIEntityProvider<DmoCustomer, CustomerId>>()!;
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 
         // Get the test item and it's Id from the Test Provider
-        var controlItem = _testDataProvider.Customers.Skip(Random.Shared.Next(10)).First();
-        var controlRecord = this.AsDmoCustomer(controlItem);
+        var controlItem = _testDataProvider.Invoices.Skip(Random.Shared.Next(3)).First();
+        var controlRecord = this.AsDmoInvoice(controlItem);
         var controlId = controlRecord.Id;
+        var _controlInvoiceItems = _testDataProvider.InvoiceItems.Where(item => item.InvoiceID == controlItem.InvoiceID);
+        var controlInvoiceItems = _controlInvoiceItems.Select(item => this.AsDmoInvoiceItem(item) ).ToList();
 
-        //Outputs from the process that need to be tested
-        bool result = false;
+        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(controlId));
 
-        var uiBroker = await uIEntityProvider.GetReadUIBrokerAsync(controlId);
-
-        uiBroker.LastResult.Output(
-            hasNoException: () => result = true,
-            hasException: (ex) => result = false);
-
-        // check the query was successful
-        Assert.True(result);
-        // check it matches the test record
-        Assert.Equal(controlRecord, uiBroker.Item);
+        Assert.True(entityResult.HasValue);
+        Assert.Equal(controlInvoiceItems.Count, entityResult.Value!.Items.Count);
+        Assert.Contains(entityResult.Value!.Items.First(), controlInvoiceItems);
     }
 
     [Theory]
-    [InlineData(0, 10)]
+    [InlineData(0, 2)]
     [InlineData(0, 20)]
-    [InlineData(5, 10)]
-    public async Task GetCustomerGrid(int startIndex, int pageSize)
+    [InlineData(1, 2)]
+    public async Task GetInvoiceGrid(int startIndex, int pageSize)
     {
         var provider = GetServiceProvider();
 
-        //Injects the data broker
-        var uIEntityProvider = provider.GetRequiredService<IUIEntityProvider<DmoCustomer, CustomerId>>()!;
-        //var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-        //var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
-
         // Get the total expected count and the first record of the page
-        var testCount = _testDataProvider.Customers.Count();
-        var testFirstItem = _testDataProvider.Customers.Skip(startIndex).First();
-        var testFirstRecord = this.AsDmoCustomer(testFirstItem);
+        var testCount = _testDataProvider.Invoices.Count();
+        var testPageCount = _testDataProvider.Invoices.Skip(startIndex).Take(pageSize).Count();
 
-        var uiBroker = await uIEntityProvider.GetGridUIBrokerAsync(Guid.NewGuid());
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 
-        // Create a GridItemsProviderRequest with the test parameters
-        var gridRequest = new GridItemsProviderRequest<DmoCustomer>
+        var request = new InvoiceListRequest()
         {
-            Count = pageSize,
+            PageSize = pageSize,
             StartIndex = startIndex,
-            SortByAscending = false,
-            SortByColumn = null
+            SortColumn = null,
+            SortDescending = false,
         };
 
-        //// dispatch the request to the UI Broker as done in the UI page using a QuickGrid component
-        //var mutationAction = UpdateGridRequest<DmoCustomer>.Create(gridRequest);
-        //var mutationResult = uiBroker.DispatchGridStateChange(mutationAction);
+        var listResult = await mediator.DispatchAsync(request);
 
-        //var providerResult = await uiBroker.GetItemsAsync();
-
-        //var x = gridState.
-        //uiBroker.
-
-
-        //var listRequest = await Result<CustomerListRequest>
-        //    .Create(new CustomerListRequest { PageSize = pageSize, StartIndex = startIndex })
-        //    .ApplyTransformOnException<ListItemsProvider<DmoCustomer>>(_entityProvider..ListItemsRequestAsync)
-        //    .TaskSideEffectAsync(
-        //        success: (provider) => listItemsProvider = provider,
-        //        failure: (ex) => result = false);
-
-        //Assert.True(result);
-        //Assert.Equal(testCount, listItemsProvider.TotalCount);
-        //Assert.Equal(pageSize, listItemsProvider.Items.Count());
-        //Assert.Equal(testFirstRecord, listItemsProvider.Items.First());
+        Assert.True(listResult.HasValue);
+        Assert.Equal(testCount, listResult.Value!.TotalCount);
+        Assert.Equal(testPageCount, listResult.Value!.Items.Count());
     }
 
-    //[Fact]
-    //public async Task UpdateAForecast()
-    //{
-    //    // Get a fully stocked DI container
-    //    var provider = GetServiceProvider();
+    [Fact]
+    public async Task UpdateAForecast()
+    {
+        // Get a fully stocked DI container
+        var provider = GetServiceProvider();
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 
+        // Get the test item and it's Id from the Test Provider
+        var controlItem = _testDataProvider.Invoices.Skip(Random.Shared.Next(3)).First();
+        var controlRecord = this.AsDmoInvoice(controlItem);
+        var controlId = controlRecord.Id;
+
+        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(controlId));
+
+        Assert.True(entityResult.HasValue);
+
+
+    }
     //    //VGet the providers
     //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
     //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;

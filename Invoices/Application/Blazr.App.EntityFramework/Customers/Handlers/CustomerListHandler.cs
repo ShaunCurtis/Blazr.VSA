@@ -10,14 +10,16 @@ namespace Blazr.App.EntityFramework;
 /// </summary>
 public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, Result<ListItemsProvider<DmoCustomer>>>
 {
-    private readonly IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
+    private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public CustomerListHandler(IDbContextFactory<InMemoryWeatherTestDbContext> factory)
+    public CustomerListHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory)
         => _factory = factory;
 
     public async Task<Result<ListItemsProvider<DmoCustomer>>> HandleAsync(CustomerListRequest request, CancellationToken cancellationToken)
-        => await _factory
-            .CreateDbContext()
+    {
+        using var dbContext = _factory.CreateDbContext();
+
+        return await dbContext
             .GetItemsAsync<DvoCustomer>(
                 new ListQueryRequest<DvoCustomer>()
                 {
@@ -35,6 +37,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
                         Items: provider.Items.Select(item => DvoCustomer.Map(item)),
                         TotalCount: provider.TotalCount))
             );
+    }
 
     private Expression<Func<DvoCustomer, object>> GetSorter(string? field)
         => field switch

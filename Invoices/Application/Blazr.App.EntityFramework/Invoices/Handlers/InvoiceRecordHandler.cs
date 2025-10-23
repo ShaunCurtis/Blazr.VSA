@@ -8,16 +8,16 @@ namespace Blazr.App.EntityFramework;
 /// <summary>
 /// Mediator Handler for executing record requests to get a Customer Entity in an Entity Framework Context
 /// </summary>
-public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceRecordRequest, Result<DroInvoice>>
+public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceRecordRequest, Result<InvoiceEntity>>
 {
-    private IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
+    private IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public InvoiceRecordHandler(IDbContextFactory<InMemoryWeatherTestDbContext> dbContextFactory)
+    public InvoiceRecordHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> dbContextFactory)
     {
         _factory = dbContextFactory;
     }
 
-    public async Task<Result<DroInvoice>> HandleAsync(InvoiceRecordRequest request, CancellationToken cancellationToken)
+    public async Task<Result<InvoiceEntity>> HandleAsync(InvoiceRecordRequest request, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 
@@ -26,7 +26,7 @@ public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceRecordRequest,
             .ExecuteTransformAsync(DvoInvoice.MapToResult);
 
         if (invoiceResult.HasException)
-            return Result<DroInvoice>.Failure(invoiceResult.Exception!);
+            return Result<InvoiceEntity>.Failure(invoiceResult.Exception!);
 
         var invoiceItemsResult = await dbContext
             .GetItemsAsync(new ListQueryRequest<DvoInvoiceItem>()
@@ -36,8 +36,8 @@ public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceRecordRequest,
             .ExecuteTransformAsync(provider => provider.Items.Select(item => DvoInvoiceItem.Map(item)).ToResult());
 
         if (invoiceItemsResult.HasException)
-            return Result<DroInvoice>.Failure(invoiceItemsResult.Exception!);
+            return Result<InvoiceEntity>.Failure(invoiceItemsResult.Exception!);
 
-        return DroInvoice.CreateAsResult(invoiceResult.Value!, invoiceItemsResult.Value!);
+        return InvoiceEntity.CreateAsResult(invoiceResult.Value!, invoiceItemsResult.Value!);
     }
 }

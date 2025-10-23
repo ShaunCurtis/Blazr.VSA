@@ -10,9 +10,9 @@ namespace Blazr.App.EntityFramework;
 /// </summary>
 public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordRequest, Result<DmoCustomer>>
 {
-    private IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
+    private IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public CustomerRecordHandler(IDbContextFactory<InMemoryWeatherTestDbContext> dbContextFactory)
+    public CustomerRecordHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> dbContextFactory)
     {
         _factory = dbContextFactory;
     }

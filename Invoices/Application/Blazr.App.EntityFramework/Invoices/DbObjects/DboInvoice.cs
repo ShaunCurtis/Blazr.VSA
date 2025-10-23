@@ -18,7 +18,7 @@ public sealed record DboInvoice
     => new()
     {
         InvoiceID = item.Id.Value,
-        CustomerID = item.CustomerId.Value,
+        CustomerID = item.Customer.CustomerId.Value,
         TotalAmount = item.TotalAmount.Value,
         Date = item.Date.ToDateTime
     };

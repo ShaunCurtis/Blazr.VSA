@@ -14,6 +14,11 @@ public partial class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>,
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {
+    private const string _sameRecordMessage = "The record requested is the same as already loaded";
+    private readonly IEntityProvider<TRecord, TKey> _entityProvider;
+    private readonly IMessageBus _messageBus;
+    private TKey _key = default!;
+
     public TRecord Item { get; protected set; } = new TRecord();
     public event EventHandler? RecordChanged;
     public Result LastResult { get; protected set; } = Result.Success();
@@ -33,16 +38,6 @@ public partial class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>,
     {
         _messageBus.UnSubscribe<TKey>(OnRecordChanged);
     }
-}
-
-public partial class ReadUIBroker<TRecord, TKey> : IReadUIBroker<TRecord, TKey>, IDisposable
-    where TRecord : class, new()
-    where TKey : notnull, IEntityId
-{
-    private const string _sameRecordMessage = "The record requested is the same as already loaded";
-    private readonly IEntityProvider<TRecord, TKey> _entityProvider;
-    private readonly IMessageBus _messageBus;
-    private TKey _key = default!;
 
     private async Task<Result> GetRecordItemAsync(TKey id)
         => await Result<TKey>.Create(id)

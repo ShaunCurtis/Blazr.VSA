@@ -12,7 +12,7 @@ public record AddInvoiceItemAction
     public AddInvoiceItemAction(DmoInvoiceItem invoiceItem)
         => _invoiceItem = invoiceItem;
 
-    public Result<DroInvoice> Dispatch(DroInvoice entity)
+    public Result<InvoiceEntity> Dispatch(InvoiceEntity entity)
         => entity.ToResult
             .SwitchToExceptionOnTrue(
                 test: entity.Items.Any(item => item.Id == _invoiceItem.Id),
@@ -25,7 +25,7 @@ public record AddInvoiceItemAction
                    return _entity.Mutate(invoiceItems);
                }
             )
-            .ExecuteTransaction(DroInvoice.ApplyEntityRules);
+            .ExecuteTransaction(InvoiceEntity.ApplyEntityRules);
 
     public static AddInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => (new AddInvoiceItemAction(invoiceItem));

@@ -12,9 +12,9 @@ namespace Blazr.App.Core;
         public UpdateInvoiceAction(DmoInvoice invoice)
             => _invoice = invoice;
 
-    public Result<DroInvoice> Dispatch(DroInvoice entity)
+    public Result<InvoiceEntity> Dispatch(InvoiceEntity entity)
         => entity.Mutate(_invoice)
-            .ExecuteTransaction(DroInvoice.ApplyEntityRules);
+            .ExecuteTransaction(InvoiceEntity.ApplyEntityRules);
 
         public static UpdateInvoiceAction Create(DmoInvoice invoice)
             => (new UpdateInvoiceAction(invoice));

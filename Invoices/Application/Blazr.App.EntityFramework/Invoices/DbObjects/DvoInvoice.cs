@@ -19,8 +19,7 @@ public sealed record DvoInvoice
     => new()
     {
         Id = new(item.InvoiceID),
-        CustomerId = new(item.CustomerID),
-        CustomerName = new(item.CustomerName),
+        Customer = new(new(item.CustomerID), new(item.CustomerName)),
         TotalAmount = new(item.TotalAmount),
         Date = new(item.Date)
     };

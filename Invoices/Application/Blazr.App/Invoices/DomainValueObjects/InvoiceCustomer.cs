@@ -3,9 +3,9 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.Diode.Mediator;
-
 namespace Blazr.App.Core;
 
-public readonly record struct InvoiceRecordRequest(InvoiceId Id) 
-    : IRequest<Result<InvoiceEntity>>;
+public readonly record struct InvoiceCustomer(CustomerId CustomerId, Title CustomerName)
+{
+    public static InvoiceCustomer Default => new(CustomerId.Default, Title.Default);
+}

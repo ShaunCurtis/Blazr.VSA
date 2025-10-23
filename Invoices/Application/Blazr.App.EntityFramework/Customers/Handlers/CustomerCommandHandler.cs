@@ -11,9 +11,9 @@ namespace Blazr.App.EntityFramework;
 public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandRequest, Result<CustomerId>>
 {
     private readonly IMessageBus _messageBus;
-    private readonly IDbContextFactory<InMemoryWeatherTestDbContext> _factory;
+    private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public CustomerCommandHandler(IDbContextFactory<InMemoryWeatherTestDbContext> factory, IMessageBus messageBus)
+    public CustomerCommandHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus)
     {
         _factory = factory;
         _messageBus = messageBus;
@@ -21,8 +21,10 @@ public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandReq
 
     public async Task<Result<CustomerId>> HandleAsync(CustomerCommandRequest request, CancellationToken cancellationToken)
     {
+        using var dbContext = _factory.CreateDbContext();
+
         // Get the record result
-        var result = await _factory.CreateDbContext()
+        var result = await dbContext
             .ExecuteCommandAsync<DboCustomer>(new CommandRequest<DboCustomer>(
                     Item: DboCustomer.Map(request.Item.Record),
                     State: request.Item.State

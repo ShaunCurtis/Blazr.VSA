@@ -8,5 +8,5 @@ using Blazr.Diode.Mediator;
 namespace Blazr.App.Core;
 
 public readonly record struct InvoiceCommandRequest(
-        StateRecord<DroInvoice> Item)
-    : IRequest<Result<InvoiceId>>;
+        StateRecord<InvoiceEntity> Item)
+    : IRequest<Result>;

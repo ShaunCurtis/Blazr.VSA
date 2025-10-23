@@ -1,74 +1,70 @@
 ﻿/// ============================================================
-/// Author: Shaun Curtis, Cold Elm Coders
+/// Author: Shaun Curtis, Cold Elm Codersh {}
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.App.Core;
+using Blazr.App.Core;
 
-//public sealed record InvoiceEntity
-//{
-//    private readonly DroInvoice _baseRecord;
-//    private readonly DroInvoice _record;
+namespace Blazr.App;
 
-//    public DroInvoice AsRecord => _record;
-//    public InvoiceId Id { get; private init; }
-//    public DmoInvoice Invoice => _record.Record;
-//    public IEnumerable<DmoInvoiceItem> InvoiceItems => _record.Items.AsEnumerable();
-//    public bool IsDirty => _record.IsDirty(_baseRecord);
+public record InvoiceEntity : CollectionRecord<DmoInvoice, DmoInvoiceItem>
+{
+    private readonly InvoiceEntity _baseRecord;
+    
+    public InvoiceId Id { get; private init; }
 
-//    private InvoiceEntity(DroInvoice invoiceRecord)
-//    {
-//        this.Id = invoiceRecord.Record.Id;
-//        _baseRecord = invoiceRecord;
-//        _record = invoiceRecord;
-//    }
+    public InvoiceEntity(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
+        : base(invoice, invoiceItems)
+    {
+        this.Id = invoice.Id;
+        _baseRecord = this with { };
+    }
 
-//    private InvoiceEntity(DroInvoice invoice, DroInvoice baseInvoice)
-//    {
-//        this.Id = invoice.Record.Id;
-//        _baseRecord = baseInvoice;
-//        _record = invoice;
-//    }
+    private InvoiceEntity(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems, InvoiceEntity baseRecord)
+        : base(invoice, invoiceItems)
+    {
+        this.Id = baseRecord.Id;
+        _baseRecord = baseRecord;
+    }
 
-//    public Result<InvoiceEntity> ToResult
-//        => Result<InvoiceEntity>.Create(this);
+    public Result<InvoiceEntity> ToResult => Result<InvoiceEntity>.Create(this);
 
-//    public static Result<InvoiceEntity> Create()
-//    {
-//        var entity = new InvoiceEntity(new DroInvoice(new DmoInvoice(), Enumerable.Empty<DmoInvoiceItem>()));
-//        return Result<InvoiceEntity>.Success(entity);
-//    }
+    public Result<InvoiceEntity> Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
+        => new InvoiceEntity(invoice, invoiceItems, _baseRecord).ToResult;
+    
+    public Result<InvoiceEntity> Mutate(DmoInvoice invoice)
+        => new InvoiceEntity(invoice, this.Items, _baseRecord).ToResult;
 
-//    public static Result<InvoiceEntity> Create(DroInvoice invoiceRecord)
-//    {
-//        return CheckEntityRules(invoiceRecord)
-//            .ExecuteFunction<InvoiceEntity>(invoice => new InvoiceEntity(invoice));
-//    }
+    public Result<InvoiceEntity> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
+        => new InvoiceEntity(this.Record, invoiceItems, _baseRecord).ToResult;
 
-//    public static Result<InvoiceEntity> Load(DroInvoice invoiceRecord, InvoiceEntity entity)
-//    {
-//        return ApplyEntityRules(invoiceRecord)
-//            .ExecuteFunction<InvoiceEntity>(invoice => new InvoiceEntity(invoice, entity._baseRecord));
-//    }
+    public static Result<InvoiceEntity> ApplyEntityRules(InvoiceEntity invoiceRecord)
+    {
+        var total = invoiceRecord.Items.Sum(item => item.Amount.Value);
 
-//    private static Result<DroInvoice> ApplyEntityRules(DroInvoice invoiceRecord)
-//    {
-//        var total = invoiceRecord.Items.Sum(item => item.Amount.Value);
+        if (invoiceRecord.Record.TotalAmount.Value == total)
+            return Result<InvoiceEntity>.Success(invoiceRecord);
 
-//        if (invoiceRecord.Record.TotalAmount.Value == total)
-//            return Result<DroInvoice>.Success(invoiceRecord);
+        var newInvoice = invoiceRecord.Record with { TotalAmount = new(total) };
 
-//        var newInvoice = invoiceRecord.Record with { TotalAmount = new(total) };
+        return InvoiceEntity.CreateAsResult(newInvoice, invoiceRecord.Items);
+    }
 
-//        return DroInvoice.CreateAsResult(newInvoice, invoiceRecord.Items);
-//    }
+    public static Result<InvoiceEntity> CheckEntityRules(InvoiceEntity invoiceRecord)
+    {
+        var total = invoiceRecord.Items.Sum(item => item.Amount.Value);
 
-//    private static Result<DroInvoice> CheckEntityRules(DroInvoice invoiceRecord)
-//    {
-//        var total = invoiceRecord.Items.Sum(item => item.Amount.Value);
-        
-//        return invoiceRecord.Record.TotalAmount.Value == total
-//            ? Result<DroInvoice>.Success(invoiceRecord)
-//            : Result<DroInvoice>.Failure("The Invoice Total Amount is incorrect.");
-//    }
-//}
+        return invoiceRecord.Record.TotalAmount.Value == total
+            ? Result<InvoiceEntity>.Success(invoiceRecord)
+            : Result<InvoiceEntity>.Failure("The Invoice Total Amount is incorrect.");
+    }
+
+    public static InvoiceEntity Create()
+        => new InvoiceEntity(DmoInvoice.Create(), Enumerable.Empty<DmoInvoiceItem>());
+
+    public static InvoiceEntity Create(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
+        => new InvoiceEntity(invoice, invoiceItems);
+
+    public static Result<InvoiceEntity> CreateAsResult(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
+        => Result<InvoiceEntity>.Create(Create(invoice, invoiceItems));
+}

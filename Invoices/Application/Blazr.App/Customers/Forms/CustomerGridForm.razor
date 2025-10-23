@@ -3,7 +3,7 @@
 @using Blazr.Cadmium.QuickGrid
 @using Blazr.Cadmium.UI
 
-@inherits GridFormBase<DmoWeatherForecast,WeatherForecastId>
+@inherits GridFormBase<DmoCustomer,CustomerId>
 
 <div class="d-flex flex-row mb-1 pt-1 border-bottom">
     <div class="flex-fill justify-content-start h4">
@@ -17,25 +17,13 @@
 <BlazrPaginator State="Pagination" />
 
 <div class="@this.GridCss" tabindex="-1">
-    <QuickGrid Theme="None" TGridItem="DmoWeatherForecast" ItemsProvider="UIBroker.GetItemsAsync" Pagination="Pagination" @ref="this.quickGrid" Class="@this.TableCss">
+    <QuickGrid Theme="None" TGridItem="DmoCustomer" ItemsProvider="UIBroker.GetItemsAsync" Pagination="Pagination" @ref="this.quickGrid" Class="@this.TableCss">
 
         <SortedPropertyColumn SortField="Id" Class="nowrap-column" Sortable="true" Title="ID">
             @context.Id.ToString()
         </SortedPropertyColumn>
 
-        <PropertyColumn Title="Date" Property="@(c => c!.Date.Value)" Format="dd-MMM-yy" Sortable="true" IsDefaultSortColumn InitialSortDirection="SortDirection.Ascending" Align=Align.Start />
-
-        <SortedPropertyColumn SortField="Temperature" Class="nowrap-column" Sortable="true" Align="Align.End" Title="Temp &deg;C">
-            @context.Temperature.TemperatureC.ToString("F0")
-        </SortedPropertyColumn>
-
-        <SortedPropertyColumn SortField="Temperature" Class="nowrap-column" Sortable="true" Align="Align.End" Title="Temp &deg;F">
-            @context.Temperature.TemperatureF.ToString("F0")
-        </SortedPropertyColumn>
-
-@*         <PropertyColumn Title="Owner" Sortable="true" Property="@(c => c!.Owner)" Align=Align.End />
- *@
-        <PropertyColumn Title="Summary" Sortable="true" Property="@(c => c!.Summary)" Align=Align.End />
+        <PropertyColumn Title="Name" Property="@(c => c!.Name.ToString())" Format="dd-MMM-yy" Sortable="true" IsDefaultSortColumn InitialSortDirection="SortDirection.Ascending" Align=Align.Start />
 
         <TemplateColumn Class="nowrap-column no-max-width" Align="Align.End">
             <UIButtonGroup>
