@@ -4,67 +4,62 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.App.Core;
+using System.Collections.Immutable;
 
 namespace Blazr.App;
 
-public record InvoiceEntity : CollectionRecord<DmoInvoice, DmoInvoiceItem>
+public InvoiceRecord InvoiceEntity
 {
-    private readonly InvoiceEntity _baseRecord;
-    
-    public InvoiceId Id { get; private init; }
+    public DmoInvoice InvoiceRecord { get; private init; }
+    public ImmutableList<DmoInvoiceItem> Items { get; private init; }
 
-    public InvoiceEntity(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
-        : base(invoice, invoiceItems)
+    private InvoiceEntity(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
     {
-        this.Id = invoice.Id;
-        _baseRecord = this with { };
+        this.InvoiceRecord = invoice;
+        this.Items = invoiceItems.ToImmutableList();
     }
 
-    private InvoiceEntity(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems, InvoiceEntity baseRecord)
-        : base(invoice, invoiceItems)
+    public bool IsDirty(InvoiceEntity control)
     {
-        this.Id = baseRecord.Id;
-        _baseRecord = baseRecord;
+        if (control.InvoiceRecord is null || !control.InvoiceRecord.Equals(this.InvoiceRecord))
+            return true;
+        if (control.Items.Count != this.Items.Count)
+            return true;
+        if (control.Items.Except(this.Items).Count() != 0)
+            return true;
+
+        return false;
     }
 
     public Result<InvoiceEntity> ToResult => Result<InvoiceEntity>.Create(this);
 
-    public Result<InvoiceEntity> Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
-        => new InvoiceEntity(invoice, invoiceItems, _baseRecord).ToResult;
-    
-    public Result<InvoiceEntity> Mutate(DmoInvoice invoice)
-        => new InvoiceEntity(invoice, this.Items, _baseRecord).ToResult;
-
-    public Result<InvoiceEntity> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
-        => new InvoiceEntity(this.Record, invoiceItems, _baseRecord).ToResult;
-
-    public static Result<InvoiceEntity> ApplyEntityRules(InvoiceEntity invoiceRecord)
+    public static Result<InvoiceEntity> CheckEntityRules(InvoiceEntity entity)
     {
-        var total = invoiceRecord.Items.Sum(item => item.Amount.Value);
+        var total = entity.Items.Sum(item => item.Amount.Value);
 
-        if (invoiceRecord.Record.TotalAmount.Value == total)
-            return Result<InvoiceEntity>.Success(invoiceRecord);
-
-        var newInvoice = invoiceRecord.Record with { TotalAmount = new(total) };
-
-        return InvoiceEntity.CreateAsResult(newInvoice, invoiceRecord.Items);
-    }
-
-    public static Result<InvoiceEntity> CheckEntityRules(InvoiceEntity invoiceRecord)
-    {
-        var total = invoiceRecord.Items.Sum(item => item.Amount.Value);
-
-        return invoiceRecord.Record.TotalAmount.Value == total
-            ? Result<InvoiceEntity>.Success(invoiceRecord)
+        return entity.InvoiceRecord.TotalAmount.Value == total
+            ? Result<InvoiceEntity>.Success(entity)
             : Result<InvoiceEntity>.Failure("The Invoice Total Amount is incorrect.");
     }
 
-    public static InvoiceEntity Create()
+    public static Result<InvoiceEntity> ApplyEntityRules(InvoiceEntity entity)
+    {
+        var total = entity.Items.Sum(item => item.Amount.Value);
+
+        if (entity.InvoiceRecord.TotalAmount.Value == total)
+            return Result<InvoiceEntity>.Success(entity);
+
+        var newInvoice = entity.InvoiceRecord with { TotalAmount = new(total) };
+
+        return InvoiceEntity.Create(newInvoice, entity.Items);
+    }
+
+    public static InvoiceEntity CreateNew
         => new InvoiceEntity(DmoInvoice.Create(), Enumerable.Empty<DmoInvoiceItem>());
 
-    public static InvoiceEntity Create(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
-        => new InvoiceEntity(invoice, invoiceItems);
+    public static Result<InvoiceEntity> Create(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
+        => CheckEntityRules(new InvoiceEntity(invoice, invoiceItems));
 
-    public static Result<InvoiceEntity> CreateAsResult(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
-        => Result<InvoiceEntity>.Create(Create(invoice, invoiceItems));
+    public static Result<InvoiceEntity> CreateWithRules(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
+        => ApplyEntityRules(new InvoiceEntity(invoice, invoiceItems));
 }
