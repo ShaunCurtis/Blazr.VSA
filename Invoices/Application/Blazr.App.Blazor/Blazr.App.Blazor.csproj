@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Customers\**" />
+    <Compile Remove="Invoices\**" />
+    <Content Remove="Customers\**" />
+    <Content Remove="Invoices\**" />
+    <EmbeddedResource Remove="Customers\**" />
+    <EmbeddedResource Remove="Invoices\**" />
+    <None Remove="Customers\**" />
+    <None Remove="Invoices\**" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.10" />
+	  <ProjectReference Include="..\..\..\Libraries\Blazr.Diode\Blazr.Diode.csproj" />
+	  <ProjectReference Include="..\..\..\Libraries\Blazr.Cadmium\Blazr.Cadmium.csproj" />
+	  <ProjectReference Include="..\..\..\Libraries\Blazr.Indium\Blazr.Indium.csproj" />
+	  <ProjectReference Include="..\..\..\Libraries\Blazr.Manganese\Blazr.Manganese.csproj" />
+	  <ProjectReference Include="..\Blazr.App\Blazr.App.csproj" />
+  </ItemGroup>
+
+</Project>

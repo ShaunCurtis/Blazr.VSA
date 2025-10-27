@@ -7,46 +7,87 @@ using Blazr.App.Core;
 
 namespace Blazr.App;
 
-public InvoiceRecord InvoiceMutor
+public sealed record InvoiceMutor
 {
-    public InvoiceEntity BaseEntity { get; private init; }
-    public InvoiceEntity MutatedEntity { get; private init; }
+    private InvoiceEntity BaseEntity { get; init; }
+    public InvoiceEntity CurrentEntity { get; private init; }
 
     public InvoiceId Id => BaseEntity.InvoiceRecord.Id;
+
+    public Result<InvoiceMutor> ToResult => Result<InvoiceMutor>.Create(this);
+
+    public bool IsDirty => this.CurrentEntity.IsDirty(BaseEntity);
+
+    public bool IsNew { get; private init; }
+
+    public EditState State => this.IsNew 
+        ? EditState.New 
+        : IsDirty 
+            ? EditState.Dirty 
+            : EditState.Clean;
 
     private InvoiceMutor(InvoiceEntity baseEntity)
     {
         this.BaseEntity = baseEntity;
-        this.MutatedEntity = baseEntity;
+        this.CurrentEntity = baseEntity;
     }
+
     private InvoiceMutor(InvoiceEntity mutatedEntity, InvoiceEntity baseEntity)
     {
         this.BaseEntity = baseEntity;
-        this.MutatedEntity = mutatedEntity;
+        this.CurrentEntity = mutatedEntity;
     }
 
-    public Result<InvoiceMutor> ToResult => Result<InvoiceMutor>.Create(this);
-
-    public bool IsDirty => this.MutatedEntity.IsDirty(BaseEntity);
-
+    /// <summary>
+    /// Creates and returns a new InvoiceMutor using the supplied invoice and invoice items
+    /// and the base invoice entity from the current mutor
+    /// </summary>
+    /// <param name="invoice"></param>
+    /// <param name="invoiceItems"></param>
+    /// <returns></returns>
     public Result<InvoiceMutor> Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
-        => InvoiceEntity.CreateWithRules(invoice, invoiceItems)
-            .ExecuteTransform(entity => InvoiceMutor.Create(entity, this.BaseEntity).ToResult);
+        => InvoiceEntity.CreateWithEntityRulesApplied(invoice, invoiceItems)
+            .ExecuteTransform(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
 
+    /// <summary>
+    /// Creates and returns a new InvoiceMutor using the supplied invoice
+    /// and the invoice items and base invoice entity from the current mutor
+    /// </summary>
+    /// <param name="invoice"></param>
+    /// <param name="invoiceItems"></param>
+    /// <returns></returns>
     public Result<InvoiceMutor> Mutate(DmoInvoice invoice)
-        => InvoiceEntity.CreateWithRules(invoice, this.MutatedEntity.Items)
-            .ExecuteTransform(entity => InvoiceMutor.Create(entity, this.BaseEntity).ToResult);
+        => InvoiceEntity.CreateWithEntityRulesApplied(invoice, this.CurrentEntity.InvoiceItems)
+            .ExecuteTransform(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
 
+    /// <summary>
+    /// Creates and returns a new InvoiceMutor using the supplied invoice items
+    /// and the invoice and base invoice entity from the current mutor
+    /// </summary>
+    /// <param name="invoice"></param>
+    /// <param name="invoiceItems"></param>
+    /// <returns></returns>
     public Result<InvoiceMutor> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
-        => InvoiceEntity.CreateWithRules(this.MutatedEntity.InvoiceRecord, invoiceItems)
-            .ExecuteTransform(entity => InvoiceMutor.Create(entity, this.BaseEntity).ToResult);
+        => InvoiceEntity.CreateWithEntityRulesApplied(this.CurrentEntity.InvoiceRecord, invoiceItems)
+            .ExecuteTransform(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
 
+    /// <summary>
+    /// Contructor to create a New Invoice i.e. an Invoice with default values
+    /// that will be treated as an Create/Add by the data pipeline
+    /// </summary>
+    /// <returns></returns>
     public static InvoiceMutor CreateNew()
-        => Create(InvoiceEntity.CreateNew);
+        => new InvoiceMutor(InvoiceEntity.CreateNewEntity()) { IsNew = true };
 
+    /// <summary>
+    /// Constructor to create a InvoiceMutor from an existing Invoice
+    /// Do not use it to create a brand new invoice - Use CreateNew
+    /// </summary>
+    /// <param name="baseEntity"></param>
+    /// <returns></returns>
     public static InvoiceMutor Create(InvoiceEntity baseEntity)
         => new InvoiceMutor(baseEntity);
 
-    public static InvoiceMutor Create(InvoiceEntity mutatedEntity, InvoiceEntity baseEntity)
+    private static InvoiceMutor CreateMutation(InvoiceEntity mutatedEntity, InvoiceEntity baseEntity)
         => new InvoiceMutor(mutatedEntity, baseEntity);
 }

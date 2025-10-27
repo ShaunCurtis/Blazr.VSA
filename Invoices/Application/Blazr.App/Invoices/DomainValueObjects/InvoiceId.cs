@@ -11,8 +11,6 @@ public readonly record struct InvoiceId(Guid Value) : IEntityId
     public static InvoiceId Create => new(Guid.CreateVersion7());
     public static InvoiceId Default => new(Guid.Empty);
 
-    public InvoiceId ValidatedId => this.IsDefault ? Create : this;
-
     public override string ToString()
     {
         return this.IsDefault ? "Default" : Value.ToString();

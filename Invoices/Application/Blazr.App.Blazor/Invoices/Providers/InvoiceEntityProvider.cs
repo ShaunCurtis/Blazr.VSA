@@ -64,11 +64,11 @@ public class InvoiceEntityProvider
         => (id) => id.IsDefault ? NewRecordRequestAsync(id) : ExistingRecordRequestAsync(id);
 
     public Func<StateRecord<InvoiceEntity>, Task<Result>> EntityCommandAsync
-        => (record) => _mediator.DispatchAsync(new InvoiceCommandRequest(record));
+        => (record) => _mediator.DispatchAsync(new InvoiceCommandRequest(record.Record, record.State, record.TransactionId));
 
     private Func<InvoiceId, Task<Result<InvoiceEntity>>> ExistingRecordRequestAsync
         => (id) => _mediator.DispatchAsync(new InvoiceRecordRequest(id));
 
     private Func<InvoiceId, Task<Result<InvoiceEntity>>> NewRecordRequestAsync
-        => (id) => Task.FromResult(Result<InvoiceEntity>.Create(InvoiceEntity.Create()));
+        => (id) => Task.FromResult(Result<InvoiceEntity>.Create(InvoiceEntity.CreateNewEntity));
 }

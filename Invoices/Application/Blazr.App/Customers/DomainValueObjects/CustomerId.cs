@@ -8,10 +8,9 @@ namespace Blazr.App.Core;
 public readonly record struct CustomerId(Guid Value) : IEntityId
 {
     public bool IsDefault => this == Default;
-    public static CustomerId Create => new(Guid.CreateVersion7());
-    public static CustomerId Default => new(Guid.Empty);
 
-    public CustomerId ValidatedId => this.IsDefault ? Create : this;
+    public static CustomerId Create() => new(Guid.CreateVersion7());
+    public static CustomerId Default => new(Guid.Empty);
 
     public override string ToString()
     {

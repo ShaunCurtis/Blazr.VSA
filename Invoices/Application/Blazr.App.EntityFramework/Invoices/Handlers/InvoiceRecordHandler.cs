@@ -38,6 +38,6 @@ public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceRecordRequest,
         if (invoiceItemsResult.HasException)
             return Result<InvoiceEntity>.Failure(invoiceItemsResult.Exception!);
 
-        return InvoiceEntity.CreateAsResult(invoiceResult.Value!, invoiceItemsResult.Value!);
+        return InvoiceEntity.CreateWithRulesValidation(invoiceResult.Value!, invoiceItemsResult.Value!);
     }
 }

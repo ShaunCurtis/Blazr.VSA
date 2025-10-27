@@ -15,7 +15,7 @@ public sealed record DboCustomer : ICommandEntity
     public static DboCustomer Map(DmoCustomer item)
         => new()
         {
-            CustomerID = item.Id.ValidatedId.Value,
+            CustomerID = item.Id.Value,
             CustomerName = item.Name.Value
         };
 }

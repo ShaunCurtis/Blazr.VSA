@@ -16,7 +16,7 @@ public static partial class AppServerServices
             => options.UseInMemoryDatabase($"TestDatabase-{Guid.NewGuid().ToString()}"));
 
         // Add any individual entity services
-        services.AddCustomerServices();
-        services.AddInvoiceServices();
+        //services.AddCustomerServices();
+        //services.AddInvoiceServices();
     }
 }

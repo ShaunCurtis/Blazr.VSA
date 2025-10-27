@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public class CustomerEditContextValidator : AbstractValidator<CustomerEditContext>
+public class CustomerEditContextValidator : AbstractValidator<CustomerRecordMutor>
 {
     public CustomerEditContextValidator()
     {

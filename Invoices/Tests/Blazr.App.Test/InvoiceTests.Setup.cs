@@ -4,16 +4,18 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
+using Blazr.App;
 using Blazr.App.Core;
 using Blazr.App.EntityFramework;
 using Blazr.App.Infrastructure;
 using Blazr.Cadmium.Presentation;
 using Blazr.Diode.Mediator;
 using Blazr.Gallium;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 namespace Blazr.Test;
 
 public partial class InvoiceTests
@@ -52,6 +54,23 @@ public partial class InvoiceTests
             InvoiceTestDataProvider.Instance().LoadDbContext<InMemoryInvoiceTestDbContext>(factory);
 
         return provider!;
+    }
+
+    private async Task<InvoiceMutor> GetASampleMutorAsync(IMediatorBroker mediator)
+    {
+
+        // Get a test item and it's Id from the Test Provider
+        var controlId = new InvoiceId(_testDataProvider.Invoices.Skip(Random.Shared.Next(3)).First().InvoiceID);
+
+        // Get the Invoice Entity
+        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(controlId));
+
+        Assert.False(entityResult.HasException);
+
+        // Create the Invoice Mutor
+        var mutor = InvoiceMutor.Create(entityResult.Value!);
+
+        return mutor;
     }
 
     private DmoInvoice AsDmoInvoice(DboInvoice invoice)

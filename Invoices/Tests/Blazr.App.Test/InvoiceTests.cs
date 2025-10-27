@@ -4,24 +4,11 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
-using Azure.Core;
+using Blazr.App;
 using Blazr.App.Core;
-using Blazr.App.EntityFramework;
-using Blazr.App.Infrastructure;
-using Blazr.App.Presentation;
-using Blazr.App.UI;
-using Blazr.Cadmium;
-using Blazr.Cadmium.Core;
-using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode;
 using Blazr.Diode.Mediator;
-using Blazr.Manganese;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.QuickGrid;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Xunit;
 
 namespace Blazr.Test;
 
@@ -41,13 +28,13 @@ public partial class InvoiceTests
         var controlRecord = this.AsDmoInvoice(controlItem);
         var controlId = controlRecord.Id;
         var _controlInvoiceItems = _testDataProvider.InvoiceItems.Where(item => item.InvoiceID == controlItem.InvoiceID);
-        var controlInvoiceItems = _controlInvoiceItems.Select(item => this.AsDmoInvoiceItem(item) ).ToList();
+        var controlInvoiceItems = _controlInvoiceItems.Select(item => this.AsDmoInvoiceItem(item)).ToList();
 
         var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(controlId));
 
         Assert.True(entityResult.HasValue);
-        Assert.Equal(controlInvoiceItems.Count, entityResult.Value!.Items.Count);
-        Assert.Contains(entityResult.Value!.Items.First(), controlInvoiceItems);
+        Assert.Equal(controlInvoiceItems.Count, entityResult.Value!.InvoiceItems.Count);
+        Assert.Contains(entityResult.Value!.InvoiceItems.First(), controlInvoiceItems);
     }
 
     [Theory]
@@ -80,223 +67,257 @@ public partial class InvoiceTests
     }
 
     [Fact]
-    public async Task UpdateAForecast()
+    public async Task UpdateAnInvoice()
     {
         // Get a fully stocked DI container
         var provider = GetServiceProvider();
         var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 
-        // Get the test item and it's Id from the Test Provider
-        var controlItem = _testDataProvider.Invoices.Skip(Random.Shared.Next(3)).First();
-        var controlRecord = this.AsDmoInvoice(controlItem);
-        var controlId = controlRecord.Id;
+        // Get a sample Invoice Mutor
+        var mutor = await this.GetASampleMutorAsync(mediator);
 
-        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(controlId));
+        // Update the Mutor
+        var updatedInvoice = mutor.CurrentEntity.InvoiceRecord with { Date = new(DateTime.Now.AddDays(-5)) };
+        var entityUpdateResult = mutor.Mutate(updatedInvoice);
+        mutor = entityUpdateResult.Value!;
 
-        Assert.True(entityResult.HasValue);
+        // Update the Data store from the Mutor
+        var updateResult = await mediator.DispatchAsync(new InvoiceCommandRequest(mutor.CurrentEntity, EditState.Dirty, Guid.NewGuid()));
 
+        Assert.False(updateResult.HasException);
 
+        // Get the current Mutor Entity
+        var updatedEntity = mutor.CurrentEntity;
+
+        // Get the Invoice Entity from the Data Store
+        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(mutor.Id));
+
+        Assert.False(entityResult.HasException);
+
+        var dbEntity = entityResult.Value!;
+
+        // Check the stored data is tthe same as the edited entity
+        Assert.Equivalent(updatedEntity, dbEntity);
     }
-    //    //VGet the providers
-    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
-    //    var _entityUIProvider = provider.GetService<IUIEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-    //    var entityUIProvider = (WeatherForecastUIEntityProvider)_entityUIProvider;
 
 
-    //    // Get the test item and it's Id from the Test Provider
-    //    var testItem = _testDataProvider.WeatherForecasts.First();
+    [Fact]
+    public async Task AddAnInvoice()
+    {
+        // Get a fully stocked DI container
+        var provider = GetServiceProvider();
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 
-    //    DmoWeatherForecast controlRecord = new()
-    //    {
-    //        Id = new(testItem.WeatherForecastID),
-    //        Date = new(testItem.Date),
-    //        Temperature = new(testItem.Temperature),
-    //        Summary = "Test Edit"
-    //    };
+        // Get a sample Invoice Mutor
+        var baseMutor = await this.GetASampleMutorAsync(mediator);
 
-    //    var testId = controlRecord.Id;
+        // Get a sample Invoice Mutor
+        var mutor = InvoiceMutor.CreateNew();
 
-    //    //Set up the outputs from the process that need testing
-    //    bool result = false;
+        // Update the Mutor
+        var newInvoice = mutor.CurrentEntity.InvoiceRecord with
+        {
+            Customer = baseMutor.CurrentEntity.InvoiceRecord.Customer,
+            Date = new(DateTime.Now.AddDays(-1)),
+        };
 
-    //    // Get a UI Broker instance
-    //    var uiBroker = await entityUIProvider.GetEditUIBrokerAsync<WeatherForecastEditContext>(testId);
+        var newItems = new List<DmoInvoiceItem>()
+        {
+            new DmoInvoiceItem
+            {
+                Id = InvoiceItemId.Create(),
+                InvoiceId = mutor.Id,
+                 Description = new("B787"),
+                  Amount = new(27)
+            },
+            new DmoInvoiceItem
+            {
+                Id = InvoiceItemId.Create(),
+                InvoiceId = mutor.Id,
+                 Description = new("B707"),
+                  Amount = new(1)
+            },
+        };
 
-    //    // Edit the summary as would happen in the UI
-    //    uiBroker.EditMutator.Summary = controlRecord.Summary;
+        var entityUpdateResult = mutor.Mutate(newInvoice, newItems);
+        mutor = entityUpdateResult.Value!;
 
-    //    // check the Mutator generated record against the control
-    //    Assert.Equal(controlRecord, uiBroker.EditMutator.AsRecord);
+        // Update the Data store from the Mutor
+        var updateResult = await mediator.DispatchAsync(new InvoiceCommandRequest(mutor.CurrentEntity, EditState.Dirty, Guid.NewGuid()));
 
-    //    await uiBroker.SaveAsync();
+        Assert.False(updateResult.HasException);
 
-    //    uiBroker.LastResult.Output(
-    //        success: () => result = true,
-    //        failure: (ex) => result = false
-    //        );
+        // Get the current Mutor Entity
+        var updatedEntity = mutor.CurrentEntity;
 
-    //    Assert.True(result);
+        // Get the Invoice Entity from the Data Store
+        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(mutor.Id));
 
-    //    DmoWeatherForecast dbRecord = default!;
+        Assert.False(entityResult.HasException);
 
-    //    // Get the record from the data store
-    //    var recordResult = await entityProvider.RecordRequestAsync(testId)
-    //        .TaskSideEffectAsync(
-    //            success: (item) =>
-    //            {
-    //                dbRecord = item;
-    //                result = true;
-    //            },
-    //            failure: (ex) => result = false
-    //        );
+        var dbEntity = entityResult.Value!;
 
-    //    // check the query was successful
-    //    Assert.True(result);
-    //    // check the updated record matches the control record
-    //    Assert.Equal(controlRecord, dbRecord);
-    //}
+        // Check the stored data is tthe same as the edited entity
+        Assert.Equivalent(updatedEntity, dbEntity);
+    }
 
-    //[Fact]
-    //public async Task DeleteAForecast()
-    //{
-    //    // Get a fully stocked DI container
-    //    var provider = GetServiceProvider();
+    [Fact]
+    public async Task DeleteAnInvoice()
+    {
+        // Get a fully stocked DI container
+        var provider = GetServiceProvider();
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 
-    //    //Injects the data broker
-    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
+        // Get a sample Invoice Mutor
+        var mutor = await this.GetASampleMutorAsync(mediator);
 
-    //    // Get the test item and it's Id from the Test Provider
-    //    var testItem = _testDataProvider.WeatherForecasts.First();
+        // Delete from the Data store 
+        var deleteResult = await mediator.DispatchAsync(new InvoiceCommandRequest(mutor.CurrentEntity, EditState.Deleted, Guid.NewGuid()));
 
-    //    var testId = new WeatherForecastId(testItem.WeatherForecastID);
+        Assert.False(deleteResult.HasException);
 
-    //    //Outputs from the process that need to be tested
-    //    bool result = false;
-    //    WeatherForecastEntity entity = default!;
-    //    WeatherForecastId updatedId = default!;
+        // Get the Invoice Entity from the Data Store
+        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(mutor.Id));
 
-    //    var recordResult = await entityProvider.EntityRequestAsync(testId)
-    //        .TaskSideEffectAsync(
-    //        success: (item) =>
-    //        {
-    //            entity = item;
-    //            result = true;
-    //        });
+        // Check the invoice doesn't exist
+        Assert.True(entityResult.HasException);
+    }
 
-    //    // check the query was successful
-    //    Assert.True(result);
+    [Fact]
+    public async Task DeleteAnInvoiceItem()
+    {
+        // Get a fully stocked DI container
+        var provider = GetServiceProvider();
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 
-    //    DmoWeatherForecast testRecord = entity.WeatherForecast;
+        // Get a sample Invoice Mutor
+        var mutor = await this.GetASampleMutorAsync(mediator);
 
+        // Get the item to delete
+        var itemToDelete = mutor.CurrentEntity.InvoiceItems.First();
 
-    //    await WeatherForecastEntity.DeleteWeatherForecastAction
-    //        .CreateAction()
-    //        .AddSender(this)
-    //        .ExecuteAction(entity)
-    //        .ApplyTransformOnException(entityProvider.EntityCommandAsync)
-    //        .OutputTaskAsync(success: (id) =>
-    //        {
-    //            result = true;
-    //            updatedId = id;
-    //        });
+        // Update the Mutor
+        var deleteActionResult = DeleteInvoiceItemAction
+            .Create(itemToDelete)
+            .Dispatch(mutor);
 
-    //    // check the update was successful
-    //    Assert.True(result);
+        Assert.False(deleteActionResult.HasException);
 
+        // Get the current Mutor Entity
+        var updatedEntity = deleteActionResult.Value!.CurrentEntity;
 
-    //    result = false;
-    //    Exception? exception = null;
+        // Commit the changes to the data store
+        var commandResult = await deleteActionResult
+            .ExecuteTransformAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
 
-    //    await entityProvider.RecordRequestAsync(updatedId)
-    //        .OutputTaskAsync(
-    //        failure: (ex) =>
-    //        {
-    //            exception = ex;
-    //            result = true;
-    //        });
+        Assert.False(commandResult.HasException);
 
-    //    // check the query was successful
-    //    Assert.True(result);
-    //    // check it matches the update record
-    //    Assert.NotNull(exception);
-    //}
+        // Get the Invoice Entity from the Data Store
+        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(mutor.Id));
 
-    //[Fact]
-    //public async Task AddAForecast()
-    //{
-    //    var provider = GetServiceProvider();
+        Assert.False(entityResult.HasException);
 
-    //    //Get the Entity Provider
-    //    var _entityProvider = provider.GetService<IEntityProvider<DmoWeatherForecast, WeatherForecastId>>()!;
-    //    var entityProvider = (WeatherForecastEntityProvider)_entityProvider;
+        var dbEntity = entityResult.Value!;
 
-    //    // Get the current record count
-    //    var CurrentItemCount = _testDataProvider.WeatherForecasts.Count();
+        // Check the stored data is the same as the edited entity
+        Assert.Equivalent(updatedEntity, dbEntity);
 
-    //    // Create a new WeatherForecastEntity with a new DmoWeatherForecast
-    //    var entity = WeatherForecastEntity.Load(new DmoWeatherForecast
-    //        {
-    //            Id = new(Guid.CreateVersion7()),
-    //            Date = new(DateTime.Now),
-    //            Summary = "Test Add",
-    //            Temperature = new(30)
-    //        },
-    //        isNew: true);
+        var rulesCheckResult = InvoiceEntity.CheckEntityRules(dbEntity);
 
-    //    bool result = false;
-    //    WeatherForecastId newId = default!;
+        Assert.False(rulesCheckResult.HasException);
+    }
 
-    //    // Execute the entity command to add the new record
-    //    var commandResult = await entityProvider.EntityCommandAsync.Invoke(entity)
-    //        .TaskSideEffectAsync(success: (id) =>
-    //            {
-    //                result = true;
-    //                newId = id;
-    //            });
+    [Fact]
+    public async Task UpdateAnInvoiceItem()
+    {
+        // Get a fully stocked DI container
+        var provider = GetServiceProvider();
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 
-    //    // check the update was successful
-    //    Assert.True(result);
+        // Get a sample Invoice Mutor
+        var mutor = await this.GetASampleMutorAsync(mediator);
 
-    //    result = false;
-    //    DmoWeatherForecast? dbRecord = null;
+        // Get the item to Update
+        var itemToUpdate = mutor.CurrentEntity.InvoiceItems.First() with { Amount = new(59) };
 
-    //    // Now we try to get the record we just added
-    //    await entityProvider.RecordRequestAsync(newId)
-    //        .OutputTaskAsync(
-    //        success: (record) =>
-    //        {
-    //            dbRecord = record;
-    //            result = true;
-    //        });
+        // Update the Mutor
+        var actionResult = UpdateInvoiceItemAction
+            .Create(itemToUpdate)
+            .Dispatch(mutor);
 
-    //    // check the query was successful
-    //    Assert.True(result);
+        Assert.False(actionResult.HasException);
 
-    //    result = false;
-    //    ListItemsProvider<DmoWeatherForecast> listItemsProvider = default!;
+        // Get the current Mutor Entity
+        var updatedEntity = actionResult.Value!.CurrentEntity;
 
-    //    // We create a Result from a new WeatherForecastListRequest defining our test parameters
-    //    // and then map it to the WeatherListRequest method of the entity provider
-    //    // This will execute the request and return a ListItemsProvider<DmoWeatherForecast> Result
-    //    // which we then match to get the items provider.
+        // Commit the changes to the data store
+        var commandResult = await actionResult
+            .ExecuteTransformAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
 
-    //    await Result<WeatherForecastListRequest>
-    //        .Create(new()
-    //        {
-    //            PageSize = 1,
-    //            StartIndex = 0,
-    //        })
-    //        .ApplyTransformOnException<ListItemsProvider<DmoWeatherForecast>>(entityProvider.ListItemsRequestAsync)
-    //        .OutputTaskAsync(success: (provider) =>
-    //        {
-    //            listItemsProvider = provider;
-    //            result = true;
-    //        });
+        Assert.False(commandResult.HasException);
 
-    //    // check the query was successful
-    //    Assert.True(result);
-    //    Assert.Equal(CurrentItemCount + 1, listItemsProvider.TotalCount);
-    //}
+        // Get the Invoice Entity from the Data Store
+        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(mutor.Id));
+
+        Assert.False(entityResult.HasException);
+
+        var dbEntity = entityResult.Value!;
+
+        // Check the stored data is the same as the edited entity
+        Assert.Equivalent(updatedEntity, dbEntity);
+
+        var rulesCheckResult = InvoiceEntity.CheckEntityRules(dbEntity);
+
+        Assert.False(rulesCheckResult.HasException);
+    }
+
+    [Fact]
+    public async Task AddAnInvoiceItem()
+    {
+        // Get a fully stocked DI container
+        var provider = GetServiceProvider();
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
+
+        // Get a sample Invoice Mutor
+        var mutor = await this.GetASampleMutorAsync(mediator);
+
+        // Get the item to delete
+        var itemToAdd = new DmoInvoiceItem()
+        {
+            Description = new("Added Plane"),
+            Amount = new(59),
+            Id = InvoiceItemId.Create(),
+            InvoiceId = mutor.Id,
+        };
+
+        // Update the Mutor
+        var actionResult = AddInvoiceItemAction
+            .Create(itemToAdd)
+            .Dispatch(mutor);
+
+        Assert.False(actionResult.HasException);
+
+        // Get the current Mutor Entity
+        var updatedEntity = actionResult.Value!.CurrentEntity;
+
+        // Commit the changes to the data store
+        var commandResult = await actionResult
+            .ExecuteTransformAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
+
+        Assert.False(commandResult.HasException);
+
+        // Get the Invoice Entity from the Data Store
+        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(mutor.Id));
+
+        Assert.False(entityResult.HasException);
+
+        var dbEntity = entityResult.Value!;
+
+        // Check the stored data is the same as the edited entity
+        Assert.Equivalent(updatedEntity, dbEntity);
+
+        var rulesCheckResult = InvoiceEntity.CheckEntityRules(dbEntity);
+
+        Assert.False(rulesCheckResult.HasException);
+    }
 }
