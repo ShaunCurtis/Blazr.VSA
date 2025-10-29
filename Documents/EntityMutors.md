@@ -152,4 +152,4 @@ public Result<InvoiceMutor> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
         .ExecuteTransform(entity => InvoiceMutor.Create(entity, this.BaseEntity).ToResult);
 ```
 
-The key functionality is the creation of a new copy of the *Mutor* with each mutation, but the maintenance of the initial base entity with each copy.  As all the objects within the entity are *records*, you can use simple equality checking to detect if the current copy is dirty (compared with the original).
+The key functionality is the creation of a new copy of the *Mutor* with each mutation, but the maintenance of the initial base entity state with each copy.  As all the objects within the entity are *records*, you can use simple equality checking to detect if the current copy is dirty (compared with the original).

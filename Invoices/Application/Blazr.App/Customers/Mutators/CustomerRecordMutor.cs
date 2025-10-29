@@ -5,13 +5,13 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public sealed class CustomerRecordMutor
+public sealed class CustomerRecordMutor : IRecordMutor<DmoCustomer>
 {
     public DmoCustomer BaseRecord { get; private init; }
 
     [TrackState] public string? Name { get; set; }
 
-    public bool IsDirty => !this.AsRecord().Equals(BaseRecord);
+    public bool IsDirty => !this.ToRecord().Equals(BaseRecord);
 
     public bool IsNew { get; private init; }
 
@@ -32,10 +32,13 @@ public sealed class CustomerRecordMutor
         this.Name = this.BaseRecord.Name.Value;
     }
 
-    public DmoCustomer AsRecord() => this.BaseRecord with
+    public DmoCustomer ToRecord() => this.BaseRecord with
     {
         Name = new(this.Name ?? "No Name Set")
     };
+
+    public Result<DmoCustomer> ToResult()
+        => Result<DmoCustomer>.Success(this.ToRecord());
 
     public void Reset()
         => this.SetFields();

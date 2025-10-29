@@ -7,16 +7,19 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.App.EntityFramework;
 
-public static partial class AppServerServices
+public static class AppEFServerServices
 {
     public static void AddAppEFServices(this IServiceCollection services)
     {
         // Add the InMemory Database
         services.AddDbContextFactory<InMemoryInvoiceTestDbContext>(options
             => options.UseInMemoryDatabase($"TestDatabase-{Guid.NewGuid().ToString()}"));
+    }
+    public static void AddInvoiceTestData(this IServiceProvider provider)
+    {
+        var factory = provider.GetService<IDbContextFactory<InMemoryInvoiceTestDbContext>>();
 
-        // Add any individual entity services
-        //services.AddCustomerServices();
-        //services.AddInvoiceServices();
+        if (factory is not null)
+            InvoiceTestDataProvider.Instance().LoadDbContext<InMemoryInvoiceTestDbContext>(factory);
     }
 }

@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.Cadmium.UI;
 
-public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisposable
+public abstract class GridFormBase<TRecord, TKey> : ComponentBase, IDisposable
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {
@@ -71,12 +71,12 @@ public abstract partial class GridFormBase<TRecord, TKey> : ComponentBase, IDisp
 
     protected virtual async Task OnViewAsync(TKey id)
     {
-        var options = new ModalOptions();
+        var options = new ModalOptions() { ModalDialogType = this.UIEntityProvider.ViewForm };
         options.ControlParameters.Add("Uid", id);
 
         ArgumentNullException.ThrowIfNull(this.UIEntityProvider.ViewForm);
 
-        await modalDialog.ShowAsync(this.UIEntityProvider.ViewForm, options);
+        await modalDialog.ShowAsync(options);
     }
 
     protected virtual async Task OnAddAsync()

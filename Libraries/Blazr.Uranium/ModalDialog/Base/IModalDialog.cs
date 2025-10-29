@@ -18,6 +18,8 @@ public interface IModalDialog
 
     public Task<ModalResult> ShowAsync(Type control, ModalOptions options);
 
+    public Task<ModalResult> ShowAsync(ModalOptions options);
+
     public Task<bool> SwitchAsync<TModal>(ModalOptions options) where TModal : IComponent;
 
     public Task<bool> SwitchAsync(Type control, ModalOptions options);

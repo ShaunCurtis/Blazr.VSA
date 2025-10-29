@@ -18,8 +18,8 @@ public sealed record CustomerUIEntityProvider : IUIEntityProvider<DmoCustomer, C
 
     public string SingleDisplayName { get; } = "Customer";
     public string PluralDisplayName { get; } = "Customers";
-    public Type? EditForm { get; } = null;
-    public Type? ViewForm { get; } = null;
+    public Type? EditForm { get; } = typeof(CustomerEditForm);
+    public Type? ViewForm { get; } = typeof( CustomerViewForm);
     public string Url { get; } = "/Customer";
 
     public CustomerUIEntityProvider(IServiceProvider serviceProvider)
@@ -34,23 +34,31 @@ public sealed record CustomerUIEntityProvider : IUIEntityProvider<DmoCustomer, C
         return presenter;
     }
 
-    public ValueTask<IGridUIBroker<DmoCustomer>> GetGridUIBrokerAsync()
+    public async ValueTask<IEditUIBroker<DmoCustomer,TRecordMutor, CustomerId>> GetEditUIBrokerAsync<TRecordMutor>(CustomerId id)
+        where TRecordMutor : IRecordMutor<DmoCustomer>
     {
-        var presenter = ActivatorUtilities.CreateInstance<GridUIBroker<DmoCustomer, CustomerId>>(_serviceProvider);
-        return ValueTask.FromResult<IGridUIBroker<DmoCustomer>>(presenter);
-    }
-
-    public async ValueTask<IEditUIBroker<TEditContext, CustomerId>> GetEditUIBrokerAsync<TEditContext>(CustomerId id)
-        where TEditContext : IRecordEditContext<DmoCustomer>, new()
-    {
-        var presenter = ActivatorUtilities.CreateInstance<EditUIBroker<DmoCustomer, TEditContext, CustomerId>>(_serviceProvider);
+        var presenter = ActivatorUtilities.CreateInstance<EditUIBroker<DmoCustomer, TRecordMutor, CustomerId>>(_serviceProvider);
         await presenter.LoadAsync(id);
         return presenter;
     }
 
-    public ValueTask<IGridUIBroker<DmoCustomer>> GetGridUIBrokerAsync(Guid contextId)
-        => throw new NotImplementedException();
+    public async ValueTask<IGridUIBroker<DmoCustomer>> GetGridUIBrokerAsync(Guid contextId)
+    {
+        var broker = await GetGridUIBrokerAsync();
+        broker.SetContext(contextId);
+        return broker;
+    }
 
-    public ValueTask<IGridUIBroker<DmoCustomer>> GetGridUIBrokerAsync(Guid contextId, UpdateGridRequest<DmoCustomer> resetGridRequest)
-        => throw new NotImplementedException();
+    public async ValueTask<IGridUIBroker<DmoCustomer>> GetGridUIBrokerAsync(Guid contextId, UpdateGridRequest<DmoCustomer> resetGridRequest)
+    {
+        var broker = await GetGridUIBrokerAsync();
+        broker.SetContext(contextId, resetGridRequest);
+        return broker;
+    }
+
+    private ValueTask<IGridUIBroker<DmoCustomer>> GetGridUIBrokerAsync()
+    {
+        var presenter = ActivatorUtilities.CreateInstance<GridUIBroker<DmoCustomer, CustomerId>>(_serviceProvider);
+        return ValueTask.FromResult<IGridUIBroker<DmoCustomer>>(presenter);
+    }
 }

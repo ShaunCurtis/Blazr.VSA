@@ -6,7 +6,9 @@ using Blazr.App.Core;
 using Blazr.Cadmium;
 using Blazr.Cadmium.Core;
 using Blazr.Cadmium.QuickGrid;
+using Blazr.Diode;
 using Blazr.Diode.Mediator;
+using Blazr.Manganese;
 using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.App.Presentation;
@@ -15,26 +17,23 @@ public class CustomerEntityProvider
    : EntityProvider<DmoCustomer>,
     IEntityProvider<DmoCustomer, CustomerId>
 {
+    private readonly IMediatorBroker _mediator;
+    private readonly IServiceProvider _serviceProvider;
+
     public CustomerEntityProvider(IMediatorBroker mediator, IServiceProvider serviceProvider)
     {
         _mediator = mediator;
         _serviceProvider = serviceProvider;
     }
 
-    public Task<Result<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
-        => CustomerListRequest.Create(state)
-            .DispatchAsync((request) => _mediator.DispatchAsync(request))
-            .ExecuteFunctionAsync((itemsProvider) => GridItemsProviderResult
-                .From<DmoCustomer>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
-
     public Func<CustomerId, Task<Result<DmoCustomer>>> RecordRequestAsync
-        => (id) => id.IsDefault ? NewRecordRequestAsync(id) : ExistingRecordRequestAsync(id);
+        => id => id.IsDefault ? NewRecordRequestAsync(id) : ExistingRecordRequestAsync(id);
 
     public Func<StateRecord<DmoCustomer>, Task<Result<CustomerId>>> RecordCommandAsync
-        => (record) => _mediator.DispatchAsync(new CustomerCommandRequest(record));
+        => record => _mediator.DispatchAsync(new CustomerCommandRequest(record));
 
     public Func<GridState<DmoCustomer>, Task<Result<ListItemsProvider<DmoCustomer>>>> GridItemsRequestAsync
-        => (state) => _mediator.DispatchAsync(new CustomerListRequest()
+        => state => _mediator.DispatchAsync(new CustomerListRequest()
         {
             PageSize = state.PageSize,
             StartIndex = state.StartIndex,
@@ -42,8 +41,11 @@ public class CustomerEntityProvider
             SortDescending = state.SortDescending
         });
 
-    public Func<CustomerListRequest, Task<Result<ListItemsProvider<DmoCustomer>>>> ListItemsRequestAsync
-        => (request) => _mediator.DispatchAsync(request);
+    public Task<Result<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
+        => CustomerListRequest.Create(state)
+            .DispatchAsync((request) => _mediator.DispatchAsync(request))
+            .ExecuteFunctionAsync((itemsProvider) => GridItemsProviderResult
+                .From<DmoCustomer>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
 
     public Result<CustomerId> GetKey(object? obj)
         => obj switch
@@ -57,12 +59,15 @@ public class CustomerEntityProvider
     public DmoCustomer NewRecord
         => new DmoCustomer { Id = CustomerId.Default };
 
-    private readonly IMediatorBroker _mediator;
-    private readonly IServiceProvider _serviceProvider;
+    public IRecordMutor<DmoCustomer> GetRecordMutor(DmoCustomer customer)
+        => CustomerRecordMutor.Create(customer);
+
+    public IRecordMutor<DmoCustomer> GetNewRecordMutor()
+        => CustomerRecordMutor.CreateNew();
 
     private Func<CustomerId, Task<Result<DmoCustomer>>> ExistingRecordRequestAsync
-        => (id) => _mediator.DispatchAsync(new CustomerRecordRequest(id));
+        => id => _mediator.DispatchAsync(new CustomerRecordRequest(id));
 
     private Func<CustomerId, Task<Result<DmoCustomer>>> NewRecordRequestAsync
-        => (id) => Task.FromResult(Result<DmoCustomer>.Create(new DmoCustomer { Id = CustomerId.Default }));
+        => id => Task.FromResult(Result<DmoCustomer>.Create(new DmoCustomer { Id = CustomerId.Default }));
 }

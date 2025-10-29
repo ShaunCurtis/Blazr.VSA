@@ -3,18 +3,23 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Blazr.Cadmium.Core;
 using Blazr.Diode;
 
 namespace Blazr.Cadmium.Presentation;
 
-public interface IEditUIBrokerFactory<TRecordEditContext, TKey>
+public interface IEditUIBrokerFactory<TRecord, TMutor, TKey>
         where TKey : notnull, IEntityId
+        where TMutor : IRecordMutor<TRecord>
+        where TRecord : class, new()
 {
-    public ValueTask<IEditUIBroker<TRecordEditContext, TKey>> GetAsync(TKey id);
+    public ValueTask<IEditUIBroker<TRecord,TMutor, TKey>> GetAsync(TKey id);
 }
 
 public interface IEditUIBrokerFactory
 {
-    public ValueTask<IEditUIBroker<TRecordEditContext, TKey>> GetAsync<TRecordEditContext, TKey>(TKey id)
-                where TKey : notnull, IEntityId;
+    public ValueTask<IEditUIBroker<TRecord, TMutor, TKey>> GetAsync<TRecord,TMutor, TKey>(TKey id)
+        where TRecord : class, new()
+        where TMutor : IRecordMutor<TRecord>
+        where TKey : notnull, IEntityId;
 }

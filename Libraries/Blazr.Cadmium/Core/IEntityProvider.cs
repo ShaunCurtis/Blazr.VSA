@@ -21,6 +21,10 @@ public interface IEntityProvider<TRecord, TKey>
 
     public Func<GridState<TRecord>, Task<Result<ListItemsProvider<TRecord>>>> GridItemsRequestAsync { get; }
 
+    public IRecordMutor<TRecord> GetRecordMutor(TRecord record);
+
+    public IRecordMutor<TRecord> GetNewRecordMutor();
+
     public Result<TKey> GetKey(object? obj);
 
     public TRecord NewRecord { get; }

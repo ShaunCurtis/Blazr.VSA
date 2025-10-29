@@ -31,7 +31,7 @@ public partial class InvoiceTests
 
         // Add Blazor Mediator Service
         services.AddMediator(new Assembly[] {
-                typeof(Blazr.App.EntityFramework.AppServerServices).Assembly
+                typeof(Blazr.App.EntityFramework.AppEFServerServices).Assembly
         });
 
         // Add the Gallium Message Bus Server services

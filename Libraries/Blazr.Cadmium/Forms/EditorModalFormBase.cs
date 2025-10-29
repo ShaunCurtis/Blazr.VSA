@@ -12,11 +12,11 @@ using Microsoft.JSInterop;
 
 namespace Blazr.Cadmium.UI;
 
-public abstract class EditorModalFormBase<TRecord, TKey, TEditContext>
+public abstract class EditorModalFormBase<TRecord, TRecordMutor, TKey>
     : ComponentBase, IDisposable
     where TRecord : class, new()
     where TKey : notnull, IEntityId
-    where TEditContext : class, IRecordEditContext<TRecord>, new()
+    where TRecordMutor : class, IRecordMutor<TRecord>
 {
     [Inject] protected IJSRuntime Js { get; set; } = default!;
     [Inject] protected IUIEntityProvider<TRecord,TKey> UIEntityProvider { get; set; } = default!;
@@ -25,7 +25,7 @@ public abstract class EditorModalFormBase<TRecord, TKey, TEditContext>
     [Parameter, EditorRequired] public TKey Uid { get; set; } = default!;
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    protected IEditUIBroker<TEditContext, TKey> UIBroker = default!;
+    protected IEditUIBroker<TRecord, TRecordMutor, TKey> UIBroker = default!;
 
     protected EditFormButtonsOptions editFormButtonsOptions = new();
     protected bool IsNewRecord => this.UIBroker.State == EditState.New;
@@ -35,7 +35,7 @@ public abstract class EditorModalFormBase<TRecord, TKey, TEditContext>
     {
         ArgumentNullException.ThrowIfNull(Uid);
 
-        this.UIBroker = await this.UIEntityProvider.GetEditUIBrokerAsync<TEditContext>(Uid);
+        this.UIBroker = await this.UIEntityProvider.GetEditUIBrokerAsync<TRecordMutor>(Uid);
         this.UIBroker.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
     }
 

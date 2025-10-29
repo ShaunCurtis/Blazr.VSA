@@ -40,6 +40,18 @@ public abstract class ModalDialogBase : BlazrControlBase, IModalDialog
         InvokeAsync(StateHasChanged);
         return this._ModalTask.Task;
     }
+    public Task<ModalResult> ShowAsync(ModalOptions options)
+    {
+        if (!(typeof(IComponent).IsAssignableFrom(options.ModalDialogType)))
+            throw new InvalidOperationException("Passed control must implement IComponent");
+
+        this.Options = options ??= this.Options;
+        this._ModalTask = new TaskCompletionSource<ModalResult>();
+        this.ModalContentType = options.ModalDialogType;
+        this.Display = true;
+        InvokeAsync(StateHasChanged);
+        return this._ModalTask.Task;
+    }
 
     public async Task<bool> SwitchAsync<TModal>(ModalOptions options) where TModal : IComponent
     {

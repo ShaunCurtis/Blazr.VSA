@@ -17,6 +17,8 @@ public class ModalOptions : IEnumerable<KeyValuePair<string, object>>
 
     public Dictionary<string, object> ControlParameters { get; } = new Dictionary<string, object>();
 
+    public Type? ModalDialogType { get; init; }
+
     private Dictionary<string, object> OptionsList { get; } = new Dictionary<string, object>();
 
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator()

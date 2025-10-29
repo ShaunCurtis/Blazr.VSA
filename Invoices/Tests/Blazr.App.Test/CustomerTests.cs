@@ -82,9 +82,9 @@ public partial class CustomerTests
 
         mutor.Name = $"{mutor.Name} - Update";
 
-        var expectedRecord = mutor.AsRecord();
+        var expectedRecord = mutor.ToRecord();
 
-        var customerUpdateResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(mutor.AsRecord(), mutor.State ));
+        var customerUpdateResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(mutor.ToRecord(), mutor.State ));
 
         customerResult = await mediator.DispatchAsync(new CustomerRecordRequest(controlId));
 
@@ -99,7 +99,7 @@ public partial class CustomerTests
         var provider = GetServiceProvider();
         var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 
-        var newCustomer = DmoCustomer.CreateNewEntity().WithName("Alaskan");
+        var newCustomer = DmoCustomer.CreateNewEntity() with { Name = new("Alaskan") };
 
         var customerAddResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(newCustomer, EditState.New));
 

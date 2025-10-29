@@ -19,6 +19,11 @@ public partial class GridUIBroker<TRecord, TKey>
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {
+    // Services
+    protected readonly IMessageBus _messageBus;
+    private readonly ScopedStateProvider _gridStateStore;
+    private readonly IEntityProvider<TRecord, TKey> _entityProvider;
+
     public Guid StateContextUid { get; private set; } = Guid.NewGuid();
     public GridState<TRecord> GridState { get; private set; } = new();
     public Result LastResult { get; protected set; } = Result.Success();
@@ -75,11 +80,6 @@ public partial class GridUIBroker<TRecord, TKey>
             .ExecuteTransformAsync(_entityProvider.GetItemsAsync)
             .ExecuteActionAsync((result) => this.LastResult = result)
             .OutputValueAsync(ExceptionOutput: (ex) => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
-
-    // Services
-    protected readonly IMessageBus _messageBus;
-    private readonly ScopedStateProvider _gridStateStore;
-    private readonly IEntityProvider<TRecord, TKey> _entityProvider;
 
     private void OnStateChanged(object? message)
         => this.StateChanged?.Invoke(this, EventArgs.Empty);

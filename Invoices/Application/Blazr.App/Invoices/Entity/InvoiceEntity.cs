@@ -37,10 +37,7 @@ public sealed record InvoiceEntity
     private static InvoiceEntity Create(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
         new InvoiceEntity(invoice, invoiceItems);
 
-    public static Result<InvoiceEntity> CheckEntityRules(InvoiceEntity entity) =>
-         CheckInvoiceTotal(entity);
-
-    private static Result<InvoiceEntity> CheckInvoiceTotal(InvoiceEntity entity)
+    public static Result<InvoiceEntity> CheckEntityRules(InvoiceEntity entity)
         => entity.InvoiceItems.Sum(item => item.Amount.Value) == entity.InvoiceRecord.TotalAmount.Value
             ? Result<InvoiceEntity>.Success(entity)
             : Result<InvoiceEntity>.Failure("The Invoice Total Amount is incorrect.");

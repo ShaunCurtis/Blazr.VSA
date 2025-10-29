@@ -247,9 +247,6 @@ public partial class InvoiceTests
 
         Assert.False(actionResult.HasException);
 
-        // Get the current Mutor Entity
-        var updatedEntity = actionResult.Value!.CurrentEntity;
-
         // Commit the changes to the data store
         var commandResult = await actionResult
             .ExecuteTransformAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
@@ -261,6 +258,8 @@ public partial class InvoiceTests
 
         Assert.False(entityResult.HasException);
 
+        // Get the Mutor Entities
+        var updatedEntity = actionResult.Value!.CurrentEntity;
         var dbEntity = entityResult.Value!;
 
         // Check the stored data is the same as the edited entity

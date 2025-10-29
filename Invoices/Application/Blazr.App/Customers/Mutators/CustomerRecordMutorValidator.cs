@@ -5,9 +5,9 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public class CustomerEditContextValidator : AbstractValidator<CustomerRecordMutor>
+public class CustomerRecordMutorValidator : AbstractValidator<CustomerRecordMutor>
 {
-    public CustomerEditContextValidator()
+    public CustomerRecordMutorValidator()
     {
         this.RuleFor(p => p.Name)
             .MinimumLength(3)

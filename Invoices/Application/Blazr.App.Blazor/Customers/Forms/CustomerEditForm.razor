@@ -3,7 +3,7 @@
 @using Blazr.Cadmium.UI
 @using Blazr.Indium
 
-@inherits EditorModalFormBase<DmoCustomer, CustomerId, CustomerEditContext>
+@inherits EditorModalFormBase<DmoCustomer,CustomerRecordMutor, CustomerId>
 
 <PageTitle>@this.FormTitle</PageTitle>
 
@@ -17,7 +17,7 @@
 
     <div class="modal-body px-3">
 
-        <BlazrFluentValidator TRecord="CustomerEditContext" TValidator="CustomerEditContextValidator" />
+        <BlazrFluentValidator TRecord="CustomerRecordMutor" TValidator="CustomerRecordMutorValidator" />
         <BlazrEditStateTracker LockNavigation=this.LockNavigation />
 
         <div class="row">

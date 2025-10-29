@@ -5,16 +5,14 @@
 /// ============================================================
 namespace Blazr.Cadmium.Core;
 
-public interface IRecordEditContext<TRecord>
+public interface IRecordMutor<TRecord>
     where TRecord : class
 {
     public TRecord BaseRecord { get; }
-    public TRecord AsRecord { get; }
-    public Result<TRecord> ToResult { get; }
-
     public bool IsDirty { get; }
+    public bool IsNew { get; }
 
-    public Result Load(TRecord record);
+    public TRecord ToRecord();
+    public Result<TRecord> ToResult();
     public void Reset();
-    public void SetAsPersisted();
 }

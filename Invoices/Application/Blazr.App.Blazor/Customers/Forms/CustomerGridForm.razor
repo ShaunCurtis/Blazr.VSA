@@ -3,8 +3,8 @@
 @using Blazr.Cadmium.QuickGrid
 @using Blazr.Cadmium.UI
 
-@inherits GridFormBase<DmoCustomer,CustomerId>
-
+ @inherits GridFormBase<DmoCustomer,CustomerId>
+ 
 <div class="d-flex flex-row mb-1 pt-1 border-bottom">
     <div class="flex-fill justify-content-start h4">
         @this.formTitle
@@ -20,10 +20,12 @@
     <QuickGrid Theme="None" TGridItem="DmoCustomer" ItemsProvider="UIBroker.GetItemsAsync" Pagination="Pagination" @ref="this.quickGrid" Class="@this.TableCss">
 
         <SortedPropertyColumn SortField="Id" Class="nowrap-column" Sortable="true" Title="ID">
-            @context.Id.ToString()
+             @context.Id.ToString(true)
         </SortedPropertyColumn>
 
-        <PropertyColumn Title="Name" Property="@(c => c!.Name.ToString())" Format="dd-MMM-yy" Sortable="true" IsDefaultSortColumn InitialSortDirection="SortDirection.Ascending" Align=Align.Start />
+        <SortedPropertyColumn SortField="Name" Class="nowrap-column" Sortable="true" Title="Name">
+            @context.Name.ToString()
+        </SortedPropertyColumn>
 
         <TemplateColumn Class="nowrap-column no-max-width" Align="Align.End">
             <UIButtonGroup>
@@ -36,4 +38,3 @@
 </div>
 
 <BsModalDialog @ref=modalDialog />
-

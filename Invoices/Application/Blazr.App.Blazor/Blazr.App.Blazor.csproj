@@ -7,13 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Customers\**" />
     <Compile Remove="Invoices\**" />
-    <Content Remove="Customers\**" />
     <Content Remove="Invoices\**" />
-    <EmbeddedResource Remove="Customers\**" />
     <EmbeddedResource Remove="Invoices\**" />
-    <None Remove="Customers\**" />
     <None Remove="Invoices\**" />
   </ItemGroup>
 

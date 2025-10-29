@@ -22,4 +22,6 @@ public record ListQueryRequest<TRecord>
         SortExpression = null;
         Cancellation = new();
     }
+    public static ListQueryRequest<TRecord> Create(CancellationToken? cancellationToken = null)
+        => new ListQueryRequest<TRecord>() { Cancellation = cancellationToken ?? new() };
 }

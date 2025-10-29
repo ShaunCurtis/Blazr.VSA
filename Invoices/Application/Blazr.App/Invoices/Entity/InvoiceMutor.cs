@@ -9,16 +9,16 @@ namespace Blazr.App;
 
 public sealed record InvoiceMutor
 {
-    private InvoiceEntity BaseEntity { get; init; }
+    private readonly InvoiceEntity BaseEntity;
+    
     public InvoiceEntity CurrentEntity { get; private init; }
+    public bool IsNew { get; private init; }
 
     public InvoiceId Id => BaseEntity.InvoiceRecord.Id;
 
     public Result<InvoiceMutor> ToResult => Result<InvoiceMutor>.Create(this);
 
     public bool IsDirty => this.CurrentEntity.IsDirty(BaseEntity);
-
-    public bool IsNew { get; private init; }
 
     public EditState State => this.IsNew 
         ? EditState.New 

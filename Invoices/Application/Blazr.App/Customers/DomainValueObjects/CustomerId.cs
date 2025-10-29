@@ -16,4 +16,8 @@ public readonly record struct CustomerId(Guid Value) : IEntityId
     {
         return this.IsDefault ? "Default" : Value.ToString();
     }
+    public string ToString(bool shortform)
+    {
+        return this.IsDefault ? "Default" : Value.ToString().Substring(28);
+    }
 }

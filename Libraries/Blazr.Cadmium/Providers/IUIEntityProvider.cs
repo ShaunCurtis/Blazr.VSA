@@ -23,8 +23,8 @@ public interface IUIEntityProvider<TRecord, TKey>
 
     public ValueTask<IReadUIBroker<TRecord, TKey>> GetReadUIBrokerAsync(TKey id);
 
-    public ValueTask<IEditUIBroker<TRecordEditContext, TKey>> GetEditUIBrokerAsync<TRecordEditContext>(TKey id)
-                where TRecordEditContext : IRecordEditContext<TRecord>, new();
+    public ValueTask<IEditUIBroker<TRecord, TRecordMutor, TKey>> GetEditUIBrokerAsync<TRecordMutor>(TKey id)
+                where TRecordMutor : IRecordMutor<TRecord>;
 
     public ValueTask<IGridUIBroker<TRecord>> GetGridUIBrokerAsync(Guid contextId);
 
