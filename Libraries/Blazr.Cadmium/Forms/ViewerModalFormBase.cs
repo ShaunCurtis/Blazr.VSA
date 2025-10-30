@@ -4,8 +4,8 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Cadmium.Core;
-using Blazr.Cadmium.Presentation;
 using Blazr.Diode;
+using Blazr.Gallium;
 using Blazr.Uranium;
 using Microsoft.AspNetCore.Components;
 
@@ -20,13 +20,16 @@ public abstract partial class ViewerModalFormBase<TRecord, TKey> : ComponentBase
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {
-    [Inject] protected IUIEntityProvider<TRecord, TKey> UIEntityProvider { get; set; } = default!;
+    [Inject] protected IEntityProvider<TRecord, TKey> PresentationProvider { get; set; } = default!;
+    [Inject] private IMessageBus _messageBus { get; set; } = default!;
 
     [Parameter] public TKey Uid { get; set; } = default!;
     [CascadingParameter] protected IModalDialog? ModalDialog { get; set; }
 
-    protected IReadUIBroker<TRecord, TKey> UIBroker { get; private set; } = default!;
-    protected string FormTitle => $"{this.UIEntityProvider.SingleDisplayName} Viewer";
+    protected string FormTitle => $"{this.PresentationProvider.SingleDisplayName} Viewer";
+
+    protected TRecord Item { get; set; } = new TRecord();
+    protected Result LastResult { get; set; } = Result.Success();
 
     protected async override Task OnInitializedAsync()
     {
@@ -34,14 +37,28 @@ public abstract partial class ViewerModalFormBase<TRecord, TKey> : ComponentBase
         ArgumentNullException.ThrowIfNull(Uid);
         ArgumentNullException.ThrowIfNull(ModalDialog);
 
-        this.UIBroker = await this.UIEntityProvider.GetReadUIBrokerAsync(this.Uid);
+        await this.Load();
 
-        this.UIBroker.RecordChanged += OnRecordChanged;
+        _messageBus.Subscribe<TKey>(OnRecordChanged);
     }
 
-    protected void OnRecordChanged(object? sender, EventArgs e)
+    private async Task Load()
     {
-        this.StateHasChanged();
+        var result = await Result<TKey>.Create(Uid)
+             .ExecuteTransformAsync(PresentationProvider.RecordRequestAsync);
+
+        this.LastResult = result.ToResult();
+
+        this.Item = result.OutputValue(exception => new TRecord());
+    }
+
+    protected virtual async void OnRecordChanged(object? sender)
+    {
+        if (sender is TKey key && this.Uid.Equals(key))
+        {
+            await this.Load();
+            this.StateHasChanged();
+        }
     }
 
     protected Task OnExit()
@@ -52,10 +69,6 @@ public abstract partial class ViewerModalFormBase<TRecord, TKey> : ComponentBase
 
     public void Dispose()
     {
-        if(UIBroker is null)
-            return;
-
-        this.UIBroker.RecordChanged -= OnRecordChanged;
-        this.UIBroker.Dispose();
+        _messageBus.UnSubscribe<TKey>(OnRecordChanged);
     }
 }

@@ -3,9 +3,11 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Blazr.Cadmium.Core;
 using Blazr.Cadmium.Presentation;
 using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode;
+using Blazr.Gallium;
 using Blazr.Uranium;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
@@ -17,37 +19,41 @@ public abstract class GridFormBase<TRecord, TKey> : ComponentBase, IDisposable
     where TKey : notnull, IEntityId
 {
     [Inject] protected NavigationManager NavManager { get; set; } = default!;
-    [Inject] protected IUIEntityProvider<TRecord, TKey> UIEntityProvider { get; set; } = default!;
+    [Inject] protected IEntityProvider<TRecord, TKey> EntityProvider { get; set; } = default!;
+    [Inject] private ScopedStateProvider _gridStateStore { get; set; } = default!;
+    [Inject] private IMessageBus _messageBus { get; set; } = default!;
 
     [Parameter] public string? FormTitle { get; set; }
     [Parameter] public Guid GridContextId { get; set; } = Guid.NewGuid();
     [Parameter] public int PageSize { get; set; } = 15;
     [Parameter] public bool ResetGridContext { get; set; }
 
-    protected IGridUIBroker<TRecord> UIBroker { get; private set; } = default!;
     protected IModalDialog modalDialog = default!;
     protected QuickGrid<TRecord> quickGrid = default!;
     protected PaginationState Pagination = new PaginationState { ItemsPerPage = 10 };
-    //protected Expression<Func<TRecord, bool>>? DefaultFilter { get; set; } = null;
+    protected GridState<TRecord> GridState = new();
+    protected Result LastResult = Result.Success();
 
-    protected virtual string formTitle => this.FormTitle ?? $"List of {this.UIEntityProvider?.PluralDisplayName ?? "Items"}";
-    protected string TableCss = "table table-sm table-striped table-hover border-bottom no-margin hide-blank-rows";
-    protected string GridCss = "grid";
+    protected string formTitle => this.FormTitle ?? $"List of {this.EntityProvider?.PluralDisplayName ?? "Items"}";
+    protected readonly string TableCss = "table table-sm table-striped table-hover border-bottom no-margin hide-blank-rows";
+    protected readonly string GridCss = "grid";
 
     protected async override Task OnInitializedAsync()
     {
         this.Pagination.ItemsPerPage = this.PageSize;
 
-        // If we are resetting the grid context, then we need to reset the saved grid state
-        UIBroker = ResetGridContext
-            ? await this.UIEntityProvider.GetGridUIBrokerAsync(this.GridContextId, new UpdateGridRequest<TRecord>(0, this.PageSize, false, null))
-            : UIBroker = await this.UIEntityProvider.GetGridUIBrokerAsync(this.GridContextId);
+        var result = this.ResetGridContext
+            ? this.GetGridState()
+            : this.ResetGridState();
 
-        this.UIBroker.StateChanged += OnStateChanged;
+        this.GridState = result.OutputValue(exception => new GridState<TRecord>());
+        this.LastResult = result.ToResult();
+
+        _messageBus.Subscribe<TKey>(OnRecordChanged);
 
         // Set the current page index in the pager.
         // This will trigger the GetItemsAsync method to be called with the correct page index.
-        await Pagination.SetCurrentPageIndexAsync(this.UIBroker.GridState.Page);
+        await Pagination.SetCurrentPageIndexAsync(this.GridState.Page);
 
         // Make sure we yield so we have the first UI render
         // before testing the modalDialog and quickGrid components exist in the form
@@ -59,51 +65,74 @@ public abstract class GridFormBase<TRecord, TKey> : ComponentBase, IDisposable
         ArgumentNullException.ThrowIfNull(this.quickGrid);
     }
 
+    protected Result<GridState<TRecord>> GetGridState()
+        => _gridStateStore.GetState<GridState<TRecord>>(GridContextId);
+
+    protected Result<GridState<TRecord>> SetGridState(UpdateGridRequest<TRecord> request)
+        => _gridStateStore.Dispatch(request.ToGridState(this.GridContextId));
+
+    protected Result<GridState<TRecord>> ResetGridState()
+        => _gridStateStore.Dispatch(new GridState<TRecord>
+        {
+            Key = this.GridContextId,
+            PageSize = this.PageSize,
+            StartIndex = 0,
+            SortField = null,
+            SortDescending = false
+        });
+
+    protected async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
+        => await UpdateGridRequest<TRecord>
+            .CreateAsResult(gridRequest)
+            .Dispatch(this.SetGridState)
+            .ExecuteTransformAsync(EntityProvider.GetItemsAsync)
+            .ExecuteSideEffectAsync((result) => this.LastResult = result)
+            .OutputValueAsync(ExceptionOutput: ex => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+
     protected virtual async Task OnEditAsync(TKey id)
     {
-        var options = new ModalOptions();
+        ArgumentNullException.ThrowIfNull(this.EntityProvider.EditForm);
+
+        var options = new ModalOptions() { ModalDialogType = this.EntityProvider.EditForm };
         options.ControlParameters.Add("Uid", id);
 
-        ArgumentNullException.ThrowIfNull(this.UIEntityProvider.EditForm);
-
-        await modalDialog.ShowAsync(this.UIEntityProvider.EditForm, options);
+        await modalDialog.ShowAsync( options);
     }
 
     protected virtual async Task OnViewAsync(TKey id)
     {
-        var options = new ModalOptions() { ModalDialogType = this.UIEntityProvider.ViewForm };
-        options.ControlParameters.Add("Uid", id);
+        ArgumentNullException.ThrowIfNull(this.EntityProvider.ViewForm);
 
-        ArgumentNullException.ThrowIfNull(this.UIEntityProvider.ViewForm);
+        var options = new ModalOptions() { ModalDialogType = this.EntityProvider.ViewForm };
+        options.ControlParameters.Add("Uid", id);
 
         await modalDialog.ShowAsync(options);
     }
 
     protected virtual async Task OnAddAsync()
     {
-        var options = new ModalOptions();
+        ArgumentNullException.ThrowIfNull(this.EntityProvider.EditForm);
+
         // we don't set UId, so it will be default telling the edit this is a new record
+        var options = new ModalOptions() { ModalDialogType = this.EntityProvider.EditForm };
 
-        ArgumentNullException.ThrowIfNull(this.UIEntityProvider.EditForm);
-
-        await modalDialog.ShowAsync(this.UIEntityProvider.EditForm, options);
+        await modalDialog.ShowAsync(options);
     }
 
     protected virtual Task OnDashboardAsync(TKey id)
     {
-        this.NavManager.NavigateTo($"{this.UIEntityProvider.Url}/dash/{id.ToString()}");
+        this.NavManager.NavigateTo($"{this.EntityProvider.Url}/dash/{id.ToString()}");
 
         return Task.CompletedTask;
     }
 
-    private void OnStateChanged(object? sender, EventArgs e)
+    private void OnRecordChanged(object? sender)
     {
         this.InvokeAsync(quickGrid.RefreshDataAsync);
     }
 
     public void Dispose()
     {
-        if (this.UIBroker is not null)
-            this.UIBroker.StateChanged -= OnStateChanged;
+        _messageBus.UnSubscribe<TKey>(OnRecordChanged);
     }
 }

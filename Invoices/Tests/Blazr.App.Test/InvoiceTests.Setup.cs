@@ -40,9 +40,6 @@ public partial class InvoiceTests
         // InMemory Scoped State Store 
         services.AddScoped<ScopedStateProvider>();
 
-        // Presenter Factories
-        services.AddScoped<ILookupUIBrokerFactory, LookupUIBrokerFactory>();
-
         services.AddAppEFServices();
         services.AddLogging(builder => builder.AddDebug());
 

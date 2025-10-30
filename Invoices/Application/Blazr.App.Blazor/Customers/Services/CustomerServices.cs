@@ -18,6 +18,5 @@ public static class CustomerServices
     public static void AddCustomerServices(this IServiceCollection services)
     {
         services.AddScoped<IEntityProvider<DmoCustomer, CustomerId>, CustomerEntityProvider>();
-        services.AddScoped<IUIEntityProvider<DmoCustomer, CustomerId>, CustomerUIEntityProvider>();
     }
 }

@@ -173,7 +173,7 @@ var mutor = await this.GetASampleMutorAsync(mediator);
 ```
 
 ```csharp
-        var itemToUpdate = mutor.CurrentEntity.InvoiceItems.First() with { Amount = new(59) };
+var itemToUpdate = mutor.CurrentEntity.InvoiceItems.First() with { Amount = new(59) };
 ```
 
 ```csharp

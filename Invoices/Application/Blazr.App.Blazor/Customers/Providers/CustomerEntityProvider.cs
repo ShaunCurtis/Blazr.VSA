@@ -3,6 +3,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.App.Core;
+using Blazr.App.UI;
 using Blazr.Cadmium;
 using Blazr.Cadmium.Core;
 using Blazr.Cadmium.QuickGrid;
@@ -19,6 +20,12 @@ public class CustomerEntityProvider
 {
     private readonly IMediatorBroker _mediator;
     private readonly IServiceProvider _serviceProvider;
+
+    public string SingleDisplayName { get; } = "Customer";
+    public string PluralDisplayName { get; } = "Customers";
+    public Type? EditForm { get; } = typeof(CustomerEditForm);
+    public Type? ViewForm { get; } = typeof(CustomerViewForm);
+    public string Url { get; } = "/Customer";
 
     public CustomerEntityProvider(IMediatorBroker mediator, IServiceProvider serviceProvider)
     {

@@ -7,7 +7,21 @@ using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.Cadmium.QuickGrid;
 public readonly record struct UpdateGridRequest<TRecord>(int StartIndex, int PageSize, bool SortDescending, string? SortField)
+    where TRecord : class
 {
+    public Result<UpdateGridRequest<TRecord>> ToResult() => Result<UpdateGridRequest<TRecord>>.Success(this);
+
+    public GridState<TRecord> ToGridState(Guid contextId) => new() {
+         Key = contextId,
+         StartIndex = this.StartIndex,
+         PageSize = this.PageSize,
+         SortDescending = this.SortDescending,
+         SortField = this.SortField
+    };  
+
+    public static Result<UpdateGridRequest<TRecord>> CreateAsResult(GridItemsProviderRequest<TRecord> request)
+        => Create(request).ToResult();
+
     public static UpdateGridRequest<TRecord> Create(GridItemsProviderRequest<TRecord> request)
     {
         var column = request.SortByColumn as SortedPropertyColumn<TRecord>;

@@ -13,17 +13,12 @@ public record UpdateInvoiceItemAction
         => _invoiceItem = invoiceItem;
 
     public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
-    {
-        var invoiceItemResult = mutor.GetInvoiceItem(_invoiceItem);
-        if (invoiceItemResult.HasException)
-            return Result<InvoiceMutor>.Failure("No record exists in the Invoice Items.");
-
-        var newInvoiceItems = mutor.CurrentEntity.InvoiceItems.ToList()
-            .RemoveItem(invoiceItemResult.Value!)
-            .AddItem(_invoiceItem);
-
-        return mutor.Mutate(newInvoiceItems);
-    }
+        => mutor.GetInvoiceItem(_invoiceItem)
+            .ExecuteFunction(invoiceItem => mutor.CurrentEntity.InvoiceItems
+                .ToList()
+                .RemoveItem(invoiceItem)
+                .AddItem(_invoiceItem))
+            .ExecuteTransform(mutor.Mutate);
 
     public static UpdateInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => (new UpdateInvoiceItemAction(invoiceItem));

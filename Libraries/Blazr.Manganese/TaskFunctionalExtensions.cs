@@ -127,6 +127,14 @@ public static class TaskFunctionalExtensions
             .ExecuteTransaction((value) => CheckForTaskException(task))
             .ExecuteAction(action);
 
+    public static Task<Result> ExecuteSideEffectAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
+        => task.OutputAsync(hasValue, hasException);
+
+    public async static Task<Result<T>> ExecuteSideEffectAsync<T>(this Task<Result<T>> task, Action<Result> action)
+         => (await task)
+            .ExecuteTransaction((value) => CheckForTaskException(task))
+            .ExecuteAction(action);
+
     private static Result<T> CheckForTaskException<T>(Task<Result<T>> task)
         => task.IsCompletedSuccessfully
             ? task.Result

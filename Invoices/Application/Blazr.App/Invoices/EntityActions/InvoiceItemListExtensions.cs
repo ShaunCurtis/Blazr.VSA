@@ -22,11 +22,17 @@ public static class InvoiceItemListExtensions
     }
 
     public static Result<DmoInvoiceItem> GetInvoiceItem(this InvoiceMutor mutor, DmoInvoiceItem item)
-        => Result<DmoInvoiceItem>.Create(mutor.CurrentEntity.InvoiceItems.SingleOrDefault(_item => _item.Id == item.Id), "The record does not exist in the Invoice Items");
+        => Result<DmoInvoiceItem>.Create( 
+            value: mutor.CurrentEntity.InvoiceItems.SingleOrDefault(_item => _item.Id == item.Id), 
+            errorMessage: "The record does not exist in the Invoice Items");
 
-    public static bool ContainsInvoiceItem(this InvoiceMutor mutor, DmoInvoiceItem item)
-        => mutor.CurrentEntity.InvoiceItems.Any(_item => item.Id.Equals(_item.Id));
+    public static Result<DmoInvoiceItem> CheckInvoiceItemExists(this InvoiceMutor mutor, DmoInvoiceItem item)
+        => mutor.CurrentEntity.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
+            ? Result<DmoInvoiceItem>.Success(item)
+            : Result<DmoInvoiceItem>.Failure("Invoice Item does not exist");
 
-    public static bool ContainsItem(this List<DmoInvoiceItem> items, DmoInvoiceItem item)
-        => items.Any(_item => item.Id.Equals(_item.Id));
+    public static Result<DmoInvoiceItem> CheckInvoiceItemDoesNotExist(this InvoiceMutor mutor, DmoInvoiceItem item)
+        => mutor.CurrentEntity.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
+            ? Result<DmoInvoiceItem>.Failure("Invoice Item already exists")
+            : Result<DmoInvoiceItem>.Success(item);
 }

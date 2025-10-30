@@ -13,16 +13,13 @@ public record AddInvoiceItemAction
         => _invoiceItem = invoiceItem;
 
     public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
-    {
-        if (mutor.ContainsInvoiceItem(_invoiceItem))
-            return Result<InvoiceMutor>.Failure("The record aready exists in the Invoice Items");
- 
-        var newInvoiceItems = mutor.CurrentEntity.InvoiceItems
-            .ToList()
-            .AddItem(_invoiceItem);
-        
-        return mutor.Mutate(newInvoiceItems);
-    }
+        => mutor
+            .CheckInvoiceItemDoesNotExist(_invoiceItem)
+            .ExecuteFunction(invoiceItem => mutor.CurrentEntity.InvoiceItems
+                    .ToList()
+                    .AddItem(invoiceItem)
+            )
+            .ExecuteTransform(mutor.Mutate);
 
     public static AddInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => (new AddInvoiceItemAction(invoiceItem));

@@ -3,7 +3,7 @@
 @using Blazr.Cadmium.UI
 @using Blazr.Indium
 
-@inherits EditorModalFormBase<DmoCustomer,CustomerRecordMutor, CustomerId>
+@inherits EditorModalFormBase<DmoCustomer, CustomerRecordMutor, CustomerId>
 
 <PageTitle>@this.FormTitle</PageTitle>
 
@@ -13,7 +13,13 @@
     </div>
 </div>
 
-<EditForm EditContext=this.UIBroker.EditContext OnValidSubmit=this.OnSave>
+@if(Loading)
+{
+    <div>Loading...</div>
+    return;
+}
+
+<EditForm EditContext=this.EditContext OnValidSubmit=this.OnSave>
 
     <div class="modal-body px-3">
 
@@ -23,7 +29,7 @@
         <div class="row">
 
             <div class="col-12 col-md-8 col-xl-4 mb-2">
-                <BlazrTextViewControl Label="Id" Value="@this.UIBroker.EditMutator.BaseRecord.Id" />
+                <BlazrTextViewControl Label="Id" Value="@this.EditMutor.BaseRecord.Id" />
             </div>
 
         </div>
@@ -33,7 +39,7 @@
             <BlazrTextControl class="form-control mb-2"
                               ColumnCss="col-12 col-md-8 col-xl-4 mb-2"
                               Label="Name"
-                              @bind-Value="this.UIBroker.EditMutator.Name" />
+                              @bind-Value="this.EditMutor.Name" />
 
         </div>
 

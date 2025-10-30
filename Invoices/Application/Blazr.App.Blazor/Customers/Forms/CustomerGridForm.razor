@@ -10,14 +10,14 @@
         @this.formTitle
     </div>
     <div class="justify-content-end">
-        <UIButton class="btn btn-sm btn-primary" ClickEvent="() => OnAddAsync()">Add New Weather Forecast</UIButton>
+        <UIButton class="btn btn-sm btn-primary" ClickEvent="() => OnAddAsync()">Add New Customer</UIButton>
     </div>
 </div>
 
 <BlazrPaginator State="Pagination" />
 
 <div class="@this.GridCss" tabindex="-1">
-    <QuickGrid Theme="None" TGridItem="DmoCustomer" ItemsProvider="UIBroker.GetItemsAsync" Pagination="Pagination" @ref="this.quickGrid" Class="@this.TableCss">
+    <QuickGrid Theme="None" TGridItem="DmoCustomer" ItemsProvider="this.GetItemsAsync" Pagination="Pagination" @ref="this.quickGrid" Class="@this.TableCss">
 
         <SortedPropertyColumn SortField="Id" Class="nowrap-column" Sortable="true" Title="ID">
              @context.Id.ToString(true)

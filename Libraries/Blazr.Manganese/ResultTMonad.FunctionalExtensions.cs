@@ -83,6 +83,16 @@ public partial record Result<T>
                     );
     }
 
+    public Result<T> ExecuteSideEffect(Action<T>? hasValue = null, Action<Exception>? hasException = null)
+    {
+        if (this.HasValue)
+            hasValue?.Invoke(this.Value!);
+        else
+            hasException?.Invoke(this.Exception!);
+
+        return this;
+    }
+
     public Result<T> ExecuteAction(Action<T>? hasValue = null, Action<Exception>? hasException = null)
     {
         if (this.HasValue)

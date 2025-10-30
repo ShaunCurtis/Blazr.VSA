@@ -13,6 +13,12 @@ public interface IEntityProvider<TRecord, TKey>
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {
+    public string SingleDisplayName { get; }
+    public string PluralDisplayName { get; }
+    public Type? EditForm { get; }
+    public Type? ViewForm { get; }
+    public string Url { get; }
+
     public Task<Result<GridItemsProviderResult<TRecord>>> GetItemsAsync(GridState<TRecord> state);
 
     public Func<TKey, Task<Result<TRecord>>> RecordRequestAsync { get; }
