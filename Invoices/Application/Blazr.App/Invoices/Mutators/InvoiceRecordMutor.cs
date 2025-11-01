@@ -9,8 +9,8 @@ public sealed class InvoiceRecordMutor : IRecordMutor<DmoInvoice>
 {
     public DmoInvoice BaseRecord { get; private init; }
 
-    [TrackState] public DateOnly? Date { get; set; }
-    [TrackState] public Guid CustomerID { get; set; }
+    [TrackState] public DateOnly Date { get; set; }
+    //[TrackState] public Guid CustomerID { get; set; }
 
     public bool IsDirty => !this.ToRecord().Equals(BaseRecord);
 
@@ -30,12 +30,12 @@ public sealed class InvoiceRecordMutor : IRecordMutor<DmoInvoice>
 
     private void SetFields()
     {
-        this.Name = this.BaseRecord.Name.Value;
+        this.Date = this.BaseRecord.Date.Value;
     }
 
     public DmoInvoice ToRecord() => this.BaseRecord with
     {
-        Name = new(this.Name ?? "No Name Set")
+        Date = new Date(this.Date)
     };
 
     public Result<DmoInvoice> ToResult()
@@ -47,6 +47,6 @@ public sealed class InvoiceRecordMutor : IRecordMutor<DmoInvoice>
     public static InvoiceRecordMutor Create(DmoInvoice record)
         => new InvoiceRecordMutor(record);
 
-    public static InvoiceRecordMutor CreateNew()
-        => new InvoiceRecordMutor(DmoInvoice.CreateNewEntity()) { IsNew = true };
+    public static InvoiceRecordMutor CreateNewEntity()
+        => new InvoiceRecordMutor(DmoInvoice.CreateNew()) { IsNew = true };
 }

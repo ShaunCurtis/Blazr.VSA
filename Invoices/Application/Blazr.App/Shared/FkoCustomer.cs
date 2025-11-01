@@ -7,6 +7,9 @@ using Blazr.Diode.Mediator;
 
 namespace Blazr.App.Core;
 
-public record FkoCustomer(CustomerId Id, Title Name);
+public record FkoCustomer(CustomerId Id, Title Name)
+{
+    public static FkoCustomer Default = new(CustomerId.Default, Title.Default);
+}
 
 public readonly record struct CustomerFKRequest() : IRequest<Result<IEnumerable<FkoCustomer>>>;

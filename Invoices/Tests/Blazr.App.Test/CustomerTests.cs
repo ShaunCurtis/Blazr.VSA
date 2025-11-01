@@ -99,7 +99,7 @@ public partial class CustomerTests
         var provider = GetServiceProvider();
         var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 
-        var newCustomer = DmoCustomer.CreateNewEntity() with { Name = new("Alaskan") };
+        var newCustomer = DmoCustomer.CreateNew() with { Name = new("Alaskan") };
 
         var customerAddResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(newCustomer, EditState.New));
 

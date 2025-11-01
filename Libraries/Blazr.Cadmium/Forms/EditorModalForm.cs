@@ -12,43 +12,43 @@ using Microsoft.JSInterop;
 
 namespace Blazr.Cadmium.UI;
 
-public abstract class EditorModalFormBase<TRecord, TRecordMutor, TKey>
+public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     : ComponentBase, IDisposable
     where TRecord : class, new()
     where TKey : notnull, IEntityId
     where TRecordMutor : class, IRecordMutor<TRecord>
 {
-    [Inject] protected IJSRuntime Js { get; set; } = default!;
-    [Inject] private IEntityProvider<TRecord, TKey> EntityProvider { get; set; } = default!;
+    [Inject] private IJSRuntime Js { get; set; } = default!;
+    [Inject] private IUIConnector<TRecord, TKey> UIConnector { get; set; } = default!;
 
     [CascadingParameter] private IModalDialog? ModalDialog { get; set; }
     [Parameter, EditorRequired] public TKey Uid { get; set; } = default!;
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    protected EditState State { get; set; } = EditState.Clean;
+    private EditState State { get; set; } = EditState.Clean;
     protected Result LastResult { get; set; } = Result.Success();
     protected TRecordMutor EditMutor { get; set; } = default!;
     protected EditContext EditContext { get; set; } = default!;
 
     protected EditFormButtonsOptions editFormButtonsOptions = new();
     protected bool IsNewRecord => this.State == EditState.New;
-    protected string FormTitle => $"{this.EntityProvider.SingleDisplayName} Editor";
+    protected string FormTitle => $"{this.UIConnector.SingleDisplayName} Editor";
     protected bool Loading => !_loaded;
     private bool _loaded;
 
     protected async override Task OnInitializedAsync()
     {
         ArgumentNullException.ThrowIfNull(Uid);
-
+        
         this.State = this.Uid.IsDefault
             ? EditState.New
             : EditState.Clean;
 
-        var result = await this.EntityProvider.RecordRequestAsync(this.Uid);
+        var result = await this.UIConnector.RecordRequestAsync(this.Uid);
 
         var record = result.OutputValue(ex => default!);
 
-        this.EditMutor = (TRecordMutor)this.EntityProvider.GetRecordMutor(record);
+        this.EditMutor = (TRecordMutor)this.UIConnector.GetRecordMutor(record);
         this.EditContext = new EditContext(EditMutor);
 
         _loaded = true;
@@ -57,7 +57,7 @@ public abstract class EditorModalFormBase<TRecord, TRecordMutor, TKey>
     }
 
     protected async Task OnSave()
-        => LastResult = await this.EntityProvider.RecordCommandAsync(StateRecord<TRecord>.Create(this.EditMutor.ToRecord(), this.State.AsDirty))
+        => LastResult = await this.UIConnector.RecordCommandAsync(StateRecord<TRecord>.Create(this.EditMutor.ToRecord(), this.State.AsDirty))
             .ToResultAsync()
             .ExecuteSideEffectAsync(this.OnExit);
 
@@ -67,7 +67,7 @@ public abstract class EditorModalFormBase<TRecord, TRecordMutor, TKey>
         if (!confirmed)
             return;
 
-        this.LastResult = await this.EntityProvider.RecordCommandAsync(StateRecord<TRecord>.Create(this.EditMutor.ToRecord(), EditState.Deleted))
+        this.LastResult = await this.UIConnector.RecordCommandAsync(StateRecord<TRecord>.Create(this.EditMutor.ToRecord(), EditState.Deleted))
             .ToResultAsync()
             .ExecuteSideEffectAsync(this.OnExit);
     }

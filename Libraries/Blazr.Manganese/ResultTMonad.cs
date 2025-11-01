@@ -63,6 +63,21 @@ public partial record Result<T>
         return this.Value!;
     }
 
+    public T OutputValue(Func<T> exceptionValue)
+    {
+        if (this.HasException)
+            return exceptionValue.Invoke();
+
+        return this.Value!;
+    }
+    public T OutputValue(T exceptionValue)
+    {
+        if (this.HasException)
+            return exceptionValue;
+
+        return this.Value!;
+    }
+
     public TOut OutputValue<TOut>(Func<T, TOut> hasValue, Func<Exception, TOut> hasException)
         => this.HasValue
         ? hasValue.Invoke(this.Value!)

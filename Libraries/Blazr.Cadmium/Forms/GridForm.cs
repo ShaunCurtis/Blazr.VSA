@@ -14,12 +14,12 @@ using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.Cadmium.UI;
 
-public abstract class GridFormBase<TRecord, TKey> : ComponentBase, IDisposable
+public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {
     [Inject] protected NavigationManager NavManager { get; set; } = default!;
-    [Inject] protected IEntityProvider<TRecord, TKey> EntityProvider { get; set; } = default!;
+    [Inject] protected IUIConnector<TRecord, TKey> UIConnector { get; set; } = default!;
     [Inject] private ScopedStateProvider _gridStateStore { get; set; } = default!;
     [Inject] private IMessageBus _messageBus { get; set; } = default!;
 
@@ -34,7 +34,7 @@ public abstract class GridFormBase<TRecord, TKey> : ComponentBase, IDisposable
     protected GridState<TRecord> GridState = new();
     protected Result LastResult = Result.Success();
 
-    protected string formTitle => this.FormTitle ?? $"List of {this.EntityProvider?.PluralDisplayName ?? "Items"}";
+    protected string formTitle => this.FormTitle ?? $"List of {this.UIConnector?.PluralDisplayName ?? "Items"}";
     protected readonly string TableCss = "table table-sm table-striped table-hover border-bottom no-margin hide-blank-rows";
     protected readonly string GridCss = "grid";
 
@@ -85,15 +85,15 @@ public abstract class GridFormBase<TRecord, TKey> : ComponentBase, IDisposable
         => await UpdateGridRequest<TRecord>
             .CreateAsResult(gridRequest)
             .Dispatch(this.SetGridState)
-            .ExecuteTransformAsync(EntityProvider.GetItemsAsync)
+            .ExecuteTransformAsync(UIConnector.GetItemsAsync)
             .ExecuteSideEffectAsync((result) => this.LastResult = result)
             .OutputValueAsync(ExceptionOutput: ex => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 
     protected virtual async Task OnEditAsync(TKey id)
     {
-        ArgumentNullException.ThrowIfNull(this.EntityProvider.EditForm);
+        ArgumentNullException.ThrowIfNull(this.UIConnector.EditForm);
 
-        var options = new ModalOptions() { ModalDialogType = this.EntityProvider.EditForm };
+        var options = new ModalOptions() { ModalDialogType = this.UIConnector.EditForm };
         options.ControlParameters.Add("Uid", id);
 
         await modalDialog.ShowAsync( options);
@@ -101,9 +101,9 @@ public abstract class GridFormBase<TRecord, TKey> : ComponentBase, IDisposable
 
     protected virtual async Task OnViewAsync(TKey id)
     {
-        ArgumentNullException.ThrowIfNull(this.EntityProvider.ViewForm);
+        ArgumentNullException.ThrowIfNull(this.UIConnector.ViewForm);
 
-        var options = new ModalOptions() { ModalDialogType = this.EntityProvider.ViewForm };
+        var options = new ModalOptions() { ModalDialogType = this.UIConnector.ViewForm };
         options.ControlParameters.Add("Uid", id);
 
         await modalDialog.ShowAsync(options);
@@ -111,17 +111,17 @@ public abstract class GridFormBase<TRecord, TKey> : ComponentBase, IDisposable
 
     protected virtual async Task OnAddAsync()
     {
-        ArgumentNullException.ThrowIfNull(this.EntityProvider.EditForm);
+        ArgumentNullException.ThrowIfNull(this.UIConnector.EditForm);
 
         // we don't set UId, so it will be default telling the edit this is a new record
-        var options = new ModalOptions() { ModalDialogType = this.EntityProvider.EditForm };
+        var options = new ModalOptions() { ModalDialogType = this.UIConnector.EditForm };
 
         await modalDialog.ShowAsync(options);
     }
 
     protected virtual Task OnDashboardAsync(TKey id)
     {
-        this.NavManager.NavigateTo($"{this.EntityProvider.Url}/dash/{id.ToString()}");
+        this.NavManager.NavigateTo($"{this.UIConnector.Url}/dash/{id.ToString()}");
 
         return Task.CompletedTask;
     }

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.Cadmium;
 
-public class EntityProvider<TRecord>
+public class UIConnector<TRecord>
     where TRecord : class, new()
 {
     public static Result<GridItemsProviderResult<TRecord>> FromListItemsProvider(ListItemsProvider<TRecord> itemsProvider)

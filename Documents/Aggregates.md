@@ -162,7 +162,7 @@ And finally the utility properties.
 
 The simplest way to look at usage is through *Tests*.
 
-Here we'll look in detail at `UpdateAnInvoiceItem`.
+As an example let's look in detail at the `UpdateAnInvoiceItem` test.
 
 First call the helpers to get the DI service container, mediator service and a sample Mutor from the database.  *You can see these in detail in the Repo*.
 
@@ -172,11 +172,69 @@ var mediator = provider.GetRequiredService<IMediatorBroker>()!;
 var mutor = await this.GetASampleMutorAsync(mediator);
 ```
 
+Get the first invoice item and update the amount.
+
 ```csharp
 var itemToUpdate = mutor.CurrentEntity.InvoiceItems.First() with { Amount = new(59) };
 ```
 
+`Create` and `Dispatch` a `UpdateInvoiceItemAction`.  We'll look at this in detail shortly.
+
 ```csharp
+var actionResult = UpdateInvoiceItemAction
+    .Create(itemToUpdate)
+    .Dispatch(mutor);
+
+Assert.False(actionResult.HasException);
 ```
+
+Commit the changes to the data store.
+
+```csharp
+var commandResult = await actionResult
+    .ExecuteTransformAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
+
+Assert.False(commandResult.HasException);
+```
+
+Get the entity from the database and check it matches the updated entity in the Mutor and the business rules have been applied.
+
+```csharp
+var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(mutor.Id));
+
+Assert.False(entityResult.HasException);
+
+// Get the Mutor Entities
+var updatedEntity = actionResult.Value!.CurrentEntity;
+var dbEntity = entityResult.Value!;
+
+// Check the stored data is the same as the edited entity
+Assert.Equivalent(updatedEntity, dbEntity);
+
+var rulesCheckResult = InvoiceEntity.CheckEntityRules(dbEntity);
+
+Assert.False(rulesCheckResult.HasException);
+```
+
+`UpdateInvoiceItemAction` creates a new list of the invoice items and replaces the existing item with the new one.  The new list is submitted to `mutor.Mutate`. 
+
+```csharp
+public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
+    => mutor.GetInvoiceItem(_invoiceItem)
+        .ExecuteFunction(invoiceItem => mutor.CurrentEntity.InvoiceItems
+            .ToList()
+            .RemoveItem(invoiceItem)
+            .AddItem(_invoiceItem))
+        .ExecuteTransform(mutor.Mutate);
+```
+
+This creates a new `InvoiceEntity` and from it a new `InvoiceMutor` with the original `BaseEntity`. 
+
+```csharp
+public Result<InvoiceMutor> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
+    => InvoiceEntity.CreateWithEntityRulesApplied(this.CurrentEntity.InvoiceRecord, invoiceItems)
+        .ExecuteTransform(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
+```
+
 ```csharp
 ```

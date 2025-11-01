@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using Blazored.Toast
+@using Blazored.Toast.Configuration
+@inherits LayoutComponentBase
 
 <div class="page">
     <div class="sidebar">
@@ -21,3 +23,5 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+<BlazoredToasts Position="ToastPosition.TopRight" Timeout="10" />

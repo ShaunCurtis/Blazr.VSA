@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.Cadmium.Core;
 
-public interface IEntityProvider<TRecord, TKey>
+public interface IUIConnector<TRecord, TKey>
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {

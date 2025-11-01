@@ -1,0 +1,15 @@
+﻿@page "/invoice/{Id:guid}"
+@page "/invoice/dash/{Id:guid}"
+@page "/invoice/dash"
+
+@inherits BlazrControlBase
+
+@namespace Blazr.App.UI
+
+<InvoiceDashboard InvoiceId="_invoiceId" />
+
+@code {
+    [Parameter] public Guid Id { get; set; } = Guid.Empty;
+
+    private InvoiceId _invoiceId => new(Id);
+}

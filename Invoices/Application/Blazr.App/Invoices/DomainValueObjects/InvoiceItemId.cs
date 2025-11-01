@@ -12,7 +12,8 @@ public readonly record struct InvoiceItemId(Guid Value) : IEntityId
     public static InvoiceItemId Default => new(Guid.Empty);
 
     public override string ToString()
-    {
-        return this.IsDefault ? "Default" : Value.ToString();
-    }
+        => this.IsDefault ? "Default" : Value.ToString();
+
+    public string ToString(bool shortform)
+        => this.IsDefault ? "Default" : Value.ToString().Substring(28);
 }

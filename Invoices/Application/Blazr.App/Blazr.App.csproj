@@ -6,20 +6,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Invoices\Mutators\InvoiceRecordMutor.cs" />
-    <Compile Remove="Invoices\Mutators\InvoiceRecordMutorValidator.cs" />
-  </ItemGroup>
-
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\Libraries\Blazr.Diode\Blazr.Diode.csproj" />
 	  <ProjectReference Include="..\..\..\Libraries\Blazr.Cadmium\Blazr.Cadmium.csproj" />
 	  <ProjectReference Include="..\..\..\Libraries\Blazr.Indium\Blazr.Indium.csproj" />
 	  <ProjectReference Include="..\..\..\Libraries\Blazr.Manganese\Blazr.Manganese.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Invoices\Mutators\" />
 	</ItemGroup>
 
 </Project>

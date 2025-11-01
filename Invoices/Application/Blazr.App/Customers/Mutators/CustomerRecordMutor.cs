@@ -47,5 +47,5 @@ public sealed class CustomerRecordMutor : IRecordMutor<DmoCustomer>
         => new CustomerRecordMutor(record);
 
     public static CustomerRecordMutor CreateNew()
-        => new CustomerRecordMutor(DmoCustomer.CreateNewEntity()) { IsNew = true };
+        => new CustomerRecordMutor(DmoCustomer.CreateNew()) { IsNew = true };
 }

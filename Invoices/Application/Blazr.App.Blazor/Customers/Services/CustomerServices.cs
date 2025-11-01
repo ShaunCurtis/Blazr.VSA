@@ -17,6 +17,6 @@ public static class CustomerServices
 {
     public static void AddCustomerServices(this IServiceCollection services)
     {
-        services.AddScoped<IEntityProvider<DmoCustomer, CustomerId>, CustomerEntityProvider>();
+        services.AddScoped<IUIConnector<DmoCustomer, CustomerId>, CustomerUIConnector>();
     }
 }

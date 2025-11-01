@@ -16,17 +16,17 @@ namespace Blazr.Cadmium.UI;
 /// </summary>
 /// <typeparam name="TRecord"></typeparam>
 /// <typeparam name="TKey"></typeparam>
-public abstract partial class ViewerModalFormBase<TRecord, TKey> : ComponentBase, IDisposable
+public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, IDisposable
     where TRecord : class, new()
     where TKey : notnull, IEntityId
 {
-    [Inject] protected IEntityProvider<TRecord, TKey> PresentationProvider { get; set; } = default!;
+    [Inject] protected IUIConnector<TRecord, TKey> UIConnector { get; set; } = default!;
     [Inject] private IMessageBus _messageBus { get; set; } = default!;
 
     [Parameter] public TKey Uid { get; set; } = default!;
     [CascadingParameter] protected IModalDialog? ModalDialog { get; set; }
 
-    protected string FormTitle => $"{this.PresentationProvider.SingleDisplayName} Viewer";
+    protected string FormTitle => $"{this.UIConnector.SingleDisplayName} Viewer";
 
     protected TRecord Item { get; set; } = new TRecord();
     protected Result LastResult { get; set; } = Result.Success();
@@ -45,7 +45,7 @@ public abstract partial class ViewerModalFormBase<TRecord, TKey> : ComponentBase
     private async Task Load()
     {
         var result = await Result<TKey>.Create(Uid)
-             .ExecuteTransformAsync(PresentationProvider.RecordRequestAsync);
+             .ExecuteTransformAsync(UIConnector.RecordRequestAsync);
 
         this.LastResult = result.ToResult();
 

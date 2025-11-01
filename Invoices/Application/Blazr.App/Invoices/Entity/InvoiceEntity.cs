@@ -26,7 +26,7 @@ public sealed record InvoiceEntity
         => Result<InvoiceEntity>.Create(this);
 
     public static InvoiceEntity CreateNewEntity() =>
-        new InvoiceEntity(DmoInvoice.Create(), Enumerable.Empty<DmoInvoiceItem>());
+        new InvoiceEntity(DmoInvoice.CreateNew(), Enumerable.Empty<DmoInvoiceItem>());
 
     public static Result<InvoiceEntity> CreateWithRulesValidation(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
         CheckEntityRules(new InvoiceEntity(invoice, invoiceItems));

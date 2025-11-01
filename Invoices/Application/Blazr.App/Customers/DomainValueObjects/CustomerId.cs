@@ -13,11 +13,8 @@ public readonly record struct CustomerId(Guid Value) : IEntityId
     public static CustomerId Default => new(Guid.Empty);
 
     public override string ToString()
-    {
-        return this.IsDefault ? "Default" : Value.ToString();
-    }
+        => this.IsDefault ? "Default" : Value.ToString();
+
     public string ToString(bool shortform)
-    {
-        return this.IsDefault ? "Default" : Value.ToString().Substring(28);
-    }
+        => this.IsDefault ? "Default" : Value.ToString().Substring(28);
 }

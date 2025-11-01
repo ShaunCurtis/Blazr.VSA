@@ -77,16 +77,14 @@ public sealed class EntityState<T>
     }
 
     private Result RollBackState(Guid transactionId)
-        => Result<StateRecord<T>>.Create(_lastState)
-        .ExecuteConditionalTransaction(
-            conditionalTest: (state) => state.TransactionId != transactionId,
-            function: (state) => Result<StateRecord<T>>.Failure("There is no rollback data for the transaction.")
-            )
-            .ExecuteAction((state) =>
-            {
-                _currentState = state;
-                _lastState = null;
-            })
-            .ToResult();
+    {
+        if (_lastState is null || _lastState.TransactionId != transactionId)
+            Result.Failure("There is no rollback data for the transaction.");
+
+        _currentState = _lastState!;
+        _lastState = null;
+
+        return Result.Success();
+    }
 }
 

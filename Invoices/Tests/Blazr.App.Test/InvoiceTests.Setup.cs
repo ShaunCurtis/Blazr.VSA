@@ -76,7 +76,7 @@ public partial class InvoiceTests
         return new DmoInvoice
            {
                Id = new InvoiceId(invoice.InvoiceID),
-               Customer = AsInvoiceCustomer(customer),
+               Customer = AsCustomer(customer),
                Date = new Date(invoice.Date),
                TotalAmount = new Money(invoice.TotalAmount),
            };
@@ -91,8 +91,8 @@ public partial class InvoiceTests
             Amount = new Money(invoiceItem.Amount),
         };
 
-    private InvoiceCustomer AsInvoiceCustomer(DboCustomer customer)
-        => new InvoiceCustomer
+    private FkoCustomer AsCustomer(DboCustomer customer)
+        => new FkoCustomer
         (
              new(customer.CustomerID),
              new(customer.CustomerName)

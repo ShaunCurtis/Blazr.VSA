@@ -40,26 +40,6 @@ public partial record Result<T>
             ? function(this.Value!)
             : Result.Failure(this.Exception!);
 
-    public Result<T> ExecuteConditionalTransaction(bool test, Func<T, Result<T>> truefunction, Func<T, Result<T>> falsefunction)
-        => test
-            ? this.ExecuteTransaction(truefunction)
-            : this.ExecuteTransaction(falsefunction);
-
-    public Result<T> ExecuteConditionalTransaction(T testValue, Func<T, Result<T>> function)
-        => this.HasValue && this.Value!.Equals(testValue)
-            ? this.ExecuteTransaction(function)
-            : this;
-    
-    public Result<T> ExecuteConditionalTransaction(Func<T, bool> conditionalTest, Func<T, Result<T>> function)
-        => this.HasValue && conditionalTest.Invoke(this.Value!)
-            ? this.ExecuteTransaction(function)
-            : this;
-
-    public Result<TOut> ExecuteConditionalTransform<TOut>(bool test, Func<T, Result<TOut>> truefunction, Func<T, Result<TOut>> falsefunction)
-        => test
-            ? this.ExecuteTransform<TOut>(truefunction)
-            : this.ExecuteTransform<TOut>(falsefunction);
-
     public Result<T> Dispatch(Func<T, Result<T>> function)
         => this.HasValue
             ? function(this.Value!)
@@ -103,39 +83,11 @@ public partial record Result<T>
         return this;
     }
 
-    public Result<T> ExecuteActionOnSuccess(Action<T> onSuccess)
-    {
-        if (this.HasValue)
-            onSuccess?.Invoke(this.Value!);
-
-        return this;
-    }
-
-    public Result<T> ExecuteAction(bool test, Action<T> trueAction, Action<T> falseAction)
-        => test
-            ? this.ExecuteAction(trueAction, null)
-            : this.ExecuteAction(falseAction, null);
-
-    public Result<T> ExecuteAction(bool test, Action<T> trueAction)
-        => test
-            ? this.ExecuteAction(trueAction, null)
-            : this;
-
     public Result<T> ExecuteAction(Action<Result> Action)
     {
         Action.Invoke(this.ToResult());
         return this;
     }
-
-    public Result<T> SwitchToExceptionOnTrue(bool test, string message)
-        => this.HasValue && test
-            ? Result<T>.Failure(message)
-            : this;
-
-    public Result<T> SwitchToExceptionOnTrue(bool test, Exception exception)
-        => this.HasValue && test
-            ? Result<T>.Failure(exception)
-            : this;
 
     public Result<TOut> ToResult<TOut>(TOut? value)
         => this.HasException

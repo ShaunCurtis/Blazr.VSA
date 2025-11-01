@@ -5,12 +5,12 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public class CustomerRecordMutorValidator : AbstractValidator<CustomerRecordMutor>
+public class InvoiceRecordMutorValidator : AbstractValidator<InvoiceRecordMutor>
 {
-    public CustomerRecordMutorValidator()
+    public InvoiceRecordMutorValidator()
     {
-        this.RuleFor(p => p.Name)
-            .MinimumLength(3)
-            .WithState(p => p);
+        //this.RuleFor(p => p.Name)
+        //    .MinimumLength(3)
+        //    .WithState(p => p);
     }
 }

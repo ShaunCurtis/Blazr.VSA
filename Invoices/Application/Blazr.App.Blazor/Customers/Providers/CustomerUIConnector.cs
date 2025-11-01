@@ -14,9 +14,9 @@ using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.App.Presentation;
 
-public class CustomerEntityProvider
-   : EntityProvider<DmoCustomer>,
-    IEntityProvider<DmoCustomer, CustomerId>
+public class CustomerUIConnector
+   : UIConnector<DmoCustomer>,
+    IUIConnector<DmoCustomer, CustomerId>
 {
     private readonly IMediatorBroker _mediator;
     private readonly IServiceProvider _serviceProvider;
@@ -27,7 +27,7 @@ public class CustomerEntityProvider
     public Type? ViewForm { get; } = typeof(CustomerViewForm);
     public string Url { get; } = "/Customer";
 
-    public CustomerEntityProvider(IMediatorBroker mediator, IServiceProvider serviceProvider)
+    public CustomerUIConnector(IMediatorBroker mediator, IServiceProvider serviceProvider)
     {
         _mediator = mediator;
         _serviceProvider = serviceProvider;
