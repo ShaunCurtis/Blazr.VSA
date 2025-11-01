@@ -14,7 +14,10 @@ public static class AppEFServerServices
         // Add the InMemory Database
         services.AddDbContextFactory<InMemoryInvoiceTestDbContext>(options
             => options.UseInMemoryDatabase($"TestDatabase-{Guid.NewGuid().ToString()}"));
+
+        services.AddScoped<FKProvider>();
     }
+    
     public static void AddInvoiceTestData(this IServiceProvider provider)
     {
         var factory = provider.GetService<IDbContextFactory<InMemoryInvoiceTestDbContext>>();

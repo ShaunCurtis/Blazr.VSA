@@ -1,6 +1,5 @@
 ﻿@namespace Blazr.App.UI
 
-<h3>InvoiceDashboard</h3>
 @inject NavigationManager NavManager
 @inject IToastService ToastService
 @inject InvoiceEntityMutor Mutor
@@ -9,6 +8,8 @@
 @implements IDisposable
 
 <PageTitle>Invoice Dashboard</PageTitle>
+
+<BsModalDialog @ref=_modalDialog />
 
 @if (_loading)
 {
@@ -20,54 +21,49 @@
     return;
 }
 
-<div hidden="@_isClean">
-    <div class="alert alert-danger d-flex align-items-center my-2 p-2" role="alert">
-        @_message
+<CascadingValue Value="this.Mutor">
+    <div hidden="@_isClean">
+        <div class="alert alert-danger d-flex align-items-center my-2 p-2" role="alert">
+            @_message
+        </div>
     </div>
-</div>
 
-<div hidden="@_isNew">
+    <div hidden="@_isNew">
 
-    <div class="d-flex flex-row mb-2 pt-1 border-bottom">
+        <div class="d-flex flex-row mb-2 pt-1 border-bottom">
 
-        <div class="flex-fill justify-content-start h4">
-            Invoice Manager
+            <div class="flex-fill justify-content-start h3">
+                Invoice Manager
+            </div>
+
+            <div class="justify-content-end">
+
+                <button class="btn btn-sm btn-primary ms-1" @onclick="this.EditInvoiceAsync">Edit Invoice Data</button>
+                <button hidden="@_isClean" class="btn btn-sm btn-success ms-1" @onclick="this.SaveAsync">Save Invoice</button>
+                <button hidden="@_isClean" class="btn btn-sm btn-success ms-1" @onclick="this.SaveAndExitAsync">Save And Exit</button>
+                <button hidden="@_isClean" class="btn btn-sm btn-danger ms-1" @onclick="this.ExitWithoutSavingAsync">Exit Without Saving</button>
+                <button hidden="@_isDirty" class="btn btn-sm btn-dark ms-1" @onclick="this.ExitAsync">Exit</button>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card bg-light rounded">
+
+        <div class="card-body p-4">
+            <InvoiceViewer />
         </div>
 
-        <div class="justify-content-end">
-
-            <button class="btn btn-sm btn-primary ms-1" @onclick="this.EditAsync">Edit Invoice Data</button>
-            <button hidden="@_isClean" class="btn btn-sm btn-success ms-1" @onclick="this.SaveAsync">Save Invoice</button>
-            <button hidden="@_isClean" class="btn btn-sm btn-success ms-1" @onclick="this.SaveAndExitAsync">Save And Exit</button>
-            <button hidden="@_isClean" class="btn btn-sm btn-danger ms-1" @onclick="this.ExitWithoutSavingAsync">Exit Without Saving</button>
-            <button hidden="@_isDirty" class="btn btn-sm btn-dark ms-1" @onclick="this.ExitAsync">Exit</button>
-
-        </div>
-
-    </div>
-</div>
-
-@if (_isNew)
-{
-    <div>
-        <InvoiceAddForm />
-    </div>
-}
-else
-{
-    <div>
-        <InvoiceViewer />
     </div>
 
     <div hidden="@_isNew" class="mt-3">
-        <InvoiceItemGridForm />
+        <InvoiceItemGrid />
     </div>
-}
 
-<NavigationLock OnBeforeInternalNavigation="this.OnLocationChanging" ConfirmExternalNavigation="_isDirty" />
+    <NavigationLock OnBeforeInternalNavigation="this.OnLocationChanging" ConfirmExternalNavigation="_isDirty" />
 
-<BsModalDialog @ref=_modalDialog />
-
+</CascadingValue>
 @code {
     [Parameter] public InvoiceId InvoiceId { get; set; } = InvoiceId.Default;
 
@@ -96,6 +92,10 @@ else
         _loading = false;
         this.MessageBus.Subscribe<InvoiceEntity>(OnContextStateChanged);
 
+        await Task.Delay(100);
+
+        if (this.Mutor.IsNew)
+            await EditInvoiceAsync();
     }
 
     private Task OnLocationChanging(LocationChangingContext context)
@@ -116,21 +116,23 @@ else
             this.StateHasChanged();
     }
 
-    private async Task EditAsync()
+    private async Task EditInvoiceAsync()
     {
-        await Task.Yield();
-        // var options = new ModalOptions();
+        Type form = this.Mutor.IsNew
+            ? typeof(InvoiceAddForm)
+            : typeof(InvoiceEditForm);
 
-        // var result = await _modalDialog.ShowAsync(typeof(InvoiceEditForm), options);
-        // // wait for the modal to close
+        var options = new ModalOptions() { ModalDialogType = form };
 
-        // // If we have cancelled new invoice we need to exit back to the invoices page
-        // if (result.ResultType != ModalResultType.OK && _invoice.InvoiceRecord.State == CommandState.Add)
-        // {
-        //     this.ToastService.ShowInfo("You exited creating the new invoice.");
-        //     this.Broker.AllowExit();
-        //     this.NavManager.NavigateTo($"/invoices");
-        // }
+        var result = await _modalDialog.ShowAsync(options);
+        // wait for the modal to close
+
+        // If we have cancelled new invoice we need to exit back to the invoices page
+        if (result.ResultType != ModalResultType.OK && this.Mutor.State == EditState.New)
+        {
+            this.ToastService.ShowInfo("You exited creating the new invoice.");
+            this.NavManager.NavigateTo($"/invoices");
+        }
     }
 
     private async Task SaveAsync()

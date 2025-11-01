@@ -19,12 +19,12 @@
 <div class="@this.GridCss" tabindex="-1">
     <QuickGrid Theme="None" TGridItem="DmoInvoice" ItemsProvider="this.GetItemsAsync" Pagination="Pagination" @ref="this.quickGrid" Class="@this.TableCss">
         <SortedPropertyColumn SortField="@AppDictionary.Invoice.InvoiceID" Class="nowrap-column" Sortable="true" Title="ID">
-            @context
-        </SortedPropertyColumn>
-        <SortedPropertyColumn SortField="@AppDictionary.Invoice.Date" Class="nowrap-column" Sortable="true" Title="Date">
             @context.Id.ToString(true)
         </SortedPropertyColumn>
-        <SortedPropertyColumn SortField="@AppDictionary.Customer.CustomerName" Class="nowrap-column" Sortable="true" Title="Customer Name">
+        <SortedPropertyColumn SortField="@AppDictionary.Invoice.Date" Class="nowrap-column" Sortable="true" Title="Date">
+            @context.Date
+        </SortedPropertyColumn>
+        <SortedPropertyColumn SortField="@AppDictionary.Customer.CustomerName" Class="nowrap-column max-column" Sortable="true" Title="Customer Name">
             @context.Customer.Name
         </SortedPropertyColumn>
         <SortedPropertyColumn SortField="@AppDictionary.Invoice.TotalAmount" Class="nowrap-column" Sortable="true" Title="Total Amount">

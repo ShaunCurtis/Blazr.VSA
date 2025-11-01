@@ -62,7 +62,7 @@
     [CascadingParameter] private InvoiceEntityMutor EntityMutor { get; set; } = default!;
     [CascadingParameter] private IModalDialog? ModalDialog { get; set; }
 
-    private string _formTitle => $"Create A New Invoice";
+    private string _formTitle => $"Edit The Invoice";
 
     private InvoiceRecordMutor EditMutor { get; set; } = InvoiceRecordMutor.CreateNewEntity();
     protected EditContext EditContext { get; set; } = default!;
@@ -70,23 +70,23 @@
     private EditFormButtonsOptions _editFormButtonsOptions = new();
     private List<FkoCustomer> _customerList = new();
 
+    private bool _loading = true;
     private bool _isDirty;
     private bool _isClean => !_isDirty;
-    private bool _loading = true;
 
     protected async override Task OnInitializedAsync()
     {
-        ArgumentNullException.ThrowIfNull(this.EntityMutor);
+        ArgumentNullException.ThrowIfNull(EntityMutor);
         ArgumentNullException.ThrowIfNull(this.ModalDialog);
+
+        this.EditMutor = InvoiceRecordMutor.Create(this.EntityMutor.InvoiceEntity.InvoiceRecord);
         this.EditContext = new(EditMutor);
-        await Task.Yield();
 
         _customerList = (await this.FKProvider.GetCustomerFKAsync())
             .OutputValue(Enumerable.Empty<FkoCustomer>())
             .ToList();
 
         _loading = false;
-
         this.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
     }
 
@@ -96,7 +96,7 @@
     }
 
     /// <summary>
-    /// Set the Fko customer on the Mutor when the customerId is changed
+    /// Set the customer when the customerId is changed
     /// </summary>
     private void OnCustomerUpdate()
         => this.EditMutor.Customer = _customerList.FirstOrDefault(c => c.Id.Value.Equals(this.EditMutor.CustomerId)) ?? FkoCustomer.Default;
@@ -113,13 +113,13 @@
             return Task.CompletedTask;
 
         var action = new UpdateInvoiceAction(EditMutor.ToRecord());
+
         var result = this.EntityMutor.Dispatch(action.Dispatch);
 
         OnExit();
 
         return Task.CompletedTask;
     }
-
     protected void OnExit()
         => ModalDialog?.Close(new ModalResult());
 
@@ -132,5 +132,7 @@
     }
 
     public void Dispose()
-        => this.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
+    {
+        this.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
+    }
 }

@@ -21,6 +21,15 @@ public record AddInvoiceItemAction
             )
             .ExecuteTransform(mutor.Mutate);
 
+    public Result<InvoiceEntity> Dispatch(InvoiceEntity entity)
+        => entity
+        .CheckInvoiceItemDoesNotExist(_invoiceItem)
+            .ExecuteFunction(invoiceItem => entity.InvoiceItems
+                    .ToList()
+                    .AddItem(invoiceItem)
+            )
+            .ExecuteTransform(entity.CreateWithRulesValidation);
+
     public static AddInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => (new AddInvoiceItemAction(invoiceItem));
 }

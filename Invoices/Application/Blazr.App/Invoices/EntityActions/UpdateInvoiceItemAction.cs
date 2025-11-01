@@ -13,12 +13,22 @@ public record UpdateInvoiceItemAction
         => _invoiceItem = invoiceItem;
 
     public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
-        => mutor.GetInvoiceItem(_invoiceItem)
+        => mutor
+            .GetInvoiceItem(_invoiceItem)
             .ExecuteFunction(invoiceItem => mutor.CurrentEntity.InvoiceItems
                 .ToList()
                 .RemoveItem(invoiceItem)
                 .AddItem(_invoiceItem))
             .ExecuteTransform(mutor.Mutate);
+
+    public Result<InvoiceEntity> Dispatch(InvoiceEntity entity)
+    => entity
+            .GetInvoiceItem(_invoiceItem)
+            .ExecuteFunction(invoiceItem => entity.InvoiceItems
+                .ToList()
+                .RemoveItem(invoiceItem)
+                .AddItem(_invoiceItem))
+            .ExecuteTransform(entity.CreateWithRulesValidation);
 
     public static UpdateInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => (new UpdateInvoiceItemAction(invoiceItem));

@@ -28,6 +28,20 @@ public static class TaskFunctionalExtensions
         .OutputValue(hasException: ExceptionOutput);
     }
 
+    public async static Task<T> OutputValueAsync<T>(this Task<Result<T>> task, Func<T> ExceptionOutput)
+    {
+        var result = await task;
+        return result.ExecuteTransaction((value) => CheckForTaskException(task))
+        .OutputValue(ExceptionOutput);
+    }
+
+    public async static Task<T> OutputValueAsync<T>(this Task<Result<T>> task, T ExceptionOutput)
+    {
+        var result = await task;
+        return result.ExecuteTransaction((value) => CheckForTaskException(task))
+        .OutputValue(ExceptionOutput);
+    }
+
     public static async Task<Result<TOut>> ExecuteTransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Result<TOut>> function)
     {
         var result = await task.ContinueWith(CheckForTaskException);

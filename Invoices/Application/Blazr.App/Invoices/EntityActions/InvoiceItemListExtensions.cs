@@ -35,4 +35,20 @@ public static class InvoiceItemListExtensions
         => mutor.CurrentEntity.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
             ? Result<DmoInvoiceItem>.Failure("Invoice Item already exists")
             : Result<DmoInvoiceItem>.Success(item);
+
+
+    public static Result<DmoInvoiceItem> GetInvoiceItem(this InvoiceEntity entity, DmoInvoiceItem item)
+        => Result<DmoInvoiceItem>.Create(
+            value: entity.InvoiceItems.SingleOrDefault(_item => _item.Id == item.Id),
+            errorMessage: "The record does not exist in the Invoice Items");
+
+    public static Result<DmoInvoiceItem> CheckInvoiceItemExists(this InvoiceEntity entity, DmoInvoiceItem item)
+        => entity.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
+            ? Result<DmoInvoiceItem>.Success(item)
+            : Result<DmoInvoiceItem>.Failure("Invoice Item does not exist");
+
+    public static Result<DmoInvoiceItem> CheckInvoiceItemDoesNotExist(this InvoiceEntity entity, DmoInvoiceItem item)
+        => entity.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
+            ? Result<DmoInvoiceItem>.Failure("Invoice Item already exists")
+            : Result<DmoInvoiceItem>.Success(item);
 }

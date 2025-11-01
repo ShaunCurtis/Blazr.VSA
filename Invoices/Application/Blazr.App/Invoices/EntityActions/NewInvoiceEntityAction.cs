@@ -5,20 +5,16 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-    public record UpdateInvoiceAction
-    {
-        private readonly DmoInvoice _invoice;
+public record NewInvoiceEntityAction
+{
+    private readonly DmoInvoice _invoice;
 
-        public UpdateInvoiceAction(DmoInvoice invoice)
-            => _invoice = invoice;
+    public NewInvoiceEntityAction(DmoInvoice invoice)
+        => _invoice = invoice;
 
-    public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
-        => mutor.Mutate(_invoice);
-
-    public Result<InvoiceEntity> Dispatch(InvoiceEntity entity)
-        => entity.CreateWithEntityRulesApplied(_invoice);
+    public Result<InvoiceEntity> Dispatch()
+        => InvoiceEntity.CreateNewEntity(_invoice).ToResult();
 
     public static UpdateInvoiceAction Create(DmoInvoice invoice)
             => (new UpdateInvoiceAction(invoice));
-    }
-
+}

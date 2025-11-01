@@ -19,9 +19,5 @@
 	  <ProjectReference Include="..\..\..\Libraries\Blazr.Manganese\Blazr.Manganese.csproj" />
 	  <ProjectReference Include="..\Blazr.App\Blazr.App.csproj" />
   </ItemGroup>
-	
-  <ItemGroup>
-    <Folder Include="Invoices\Compoments\" />
-  </ItemGroup>
 
 </Project>

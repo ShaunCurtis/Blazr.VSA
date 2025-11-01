@@ -27,12 +27,26 @@ public sealed record InvoiceEntity
 
     public static InvoiceEntity CreateNewEntity() =>
         new InvoiceEntity(DmoInvoice.CreateNew(), Enumerable.Empty<DmoInvoiceItem>());
+    public static InvoiceEntity CreateNewEntity(DmoInvoice invoice) =>
+        new InvoiceEntity(invoice, Enumerable.Empty<DmoInvoiceItem>());
 
     public static Result<InvoiceEntity> CreateWithRulesValidation(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
         CheckEntityRules(new InvoiceEntity(invoice, invoiceItems));
 
+    public Result<InvoiceEntity> CreateWithRulesValidation(DmoInvoice invoice) =>
+        ApplyEntityRules(new InvoiceEntity(invoice, this.InvoiceItems)).ToResult();
+
+    public Result<InvoiceEntity> CreateWithRulesValidation(IEnumerable<DmoInvoiceItem> invoiceItems) =>
+        ApplyEntityRules(new InvoiceEntity(this.InvoiceRecord, invoiceItems)).ToResult();
+
     public static Result<InvoiceEntity> CreateWithEntityRulesApplied(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
-        ApplyEntityRules(new InvoiceEntity(invoice, invoiceItems));
+        ApplyEntityRules(new InvoiceEntity(invoice, invoiceItems)).ToResult();
+
+    public Result<InvoiceEntity> CreateWithEntityRulesApplied(DmoInvoice invoice) =>
+        ApplyEntityRules(new InvoiceEntity(invoice, this.InvoiceItems)).ToResult();
+
+    public Result<InvoiceEntity> CreateWithEntityRulesApplied(IEnumerable<DmoInvoiceItem> invoiceItems) =>
+        ApplyEntityRules(new InvoiceEntity(this.InvoiceRecord, invoiceItems)).ToResult();
 
     private static InvoiceEntity Create(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
         new InvoiceEntity(invoice, invoiceItems);
@@ -42,9 +56,8 @@ public sealed record InvoiceEntity
             ? Result<InvoiceEntity>.Success(entity)
             : Result<InvoiceEntity>.Failure("The Invoice Total Amount is incorrect.");
 
-    public static Result<InvoiceEntity> ApplyEntityRules(InvoiceEntity entity)
+    private static InvoiceEntity ApplyEntityRules(InvoiceEntity entity)
         => InvoiceEntity.Create(
             invoice: entity.InvoiceRecord with { TotalAmount = new(entity.InvoiceItems.Sum(item => item.Amount.Value)) },
-            invoiceItems: entity.InvoiceItems)
-        .ToResult();
+            invoiceItems: entity.InvoiceItems);
 }

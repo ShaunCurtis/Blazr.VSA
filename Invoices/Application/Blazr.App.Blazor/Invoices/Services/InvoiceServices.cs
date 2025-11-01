@@ -6,6 +6,7 @@
 
 using Blazr.App.Core;
 using Blazr.App.Presentation;
+using Blazr.App.UI;
 using Blazr.Cadmium.Core;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,5 +17,6 @@ public static class InvoiceServices
     public static void AddInvoiceServices(this IServiceCollection services)
     {
         services.AddScoped<IUIConnector<DmoInvoice, InvoiceId>, InvoiceUIConnector>();
+        services.AddTransient<InvoiceEntityMutor>();
     }
 }

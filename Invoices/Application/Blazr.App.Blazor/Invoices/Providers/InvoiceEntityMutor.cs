@@ -48,6 +48,36 @@ public sealed class InvoiceEntityMutor
         return this.LastResult;
     }
 
+    public Result Mutate(DmoInvoice invoice)
+    {
+      var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, this.InvoiceEntity.InvoiceItems);
+        LastResult = result.ToResult();
+
+        this.InvoiceEntity = result.OutputValue(this.InvoiceEntity);
+
+        return this.LastResult;
+    }
+
+    public Result Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
+    {
+        var result = InvoiceEntity.CreateWithEntityRulesApplied(this.InvoiceEntity.InvoiceRecord, invoiceItems);
+        LastResult = result.ToResult();
+
+        this.InvoiceEntity = result.OutputValue(this.InvoiceEntity);
+
+        return this.LastResult;
+    }
+
+    public Result Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
+    {
+        var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, invoiceItems);
+        LastResult = result.ToResult();
+
+        this.InvoiceEntity = result.OutputValue(this.InvoiceEntity);
+
+        return this.LastResult;
+    }
+
     public async Task<Result> LoadAsync(InvoiceId id)
     {
         var result = await _mediator.DispatchAsync(new InvoiceRecordRequest(id));
