@@ -25,23 +25,4 @@ public partial record Result
     public static Result Success() => new();
     public static Result Failure(Exception? exception) => new(exception);
     public static Result Failure(string message) => new(new ResultException(message));
-
-    public Result Output(Action? hasNoException = null, Action<Exception>? hasException = null)
-    {
-        if (HasException)
-            hasException?.Invoke(Exception!);
-        else
-            hasNoException?.Invoke();
-
-        return this;
-    }
-
-    public bool OutputValue()
-        => !this.HasException;
-
-    public ValueTask<Result> CompletedValueTask
-        => ValueTask.FromResult(this);
-
-    public Task<Result> CompletedTask
-        => Task.FromResult(this);
 }

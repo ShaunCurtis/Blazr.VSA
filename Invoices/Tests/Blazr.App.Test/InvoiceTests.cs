@@ -8,6 +8,7 @@ using Blazr.App;
 using Blazr.App.Core;
 using Blazr.Diode;
 using Blazr.Diode.Mediator;
+using Blazr.Manganese;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.Test;
@@ -208,7 +209,7 @@ public partial class InvoiceTests
 
         // Commit the changes to the data store
         var commandResult = await deleteActionResult
-            .ExecuteTransformAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
+            .ExecuteTransformToResultAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
 
         Assert.False(commandResult.HasException);
 
@@ -249,7 +250,7 @@ public partial class InvoiceTests
 
         // Commit the changes to the data store
         var commandResult = await actionResult
-            .ExecuteTransformAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
+            .ExecuteTransformToResultAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
 
         Assert.False(commandResult.HasException);
 
@@ -301,7 +302,7 @@ public partial class InvoiceTests
 
         // Commit the changes to the data store
         var commandResult = await actionResult
-            .ExecuteTransformAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
+            .ExecuteTransformToResultAsync(async _mutor => await mediator.DispatchAsync(InvoiceCommandRequest.Create(_mutor)));
 
         Assert.False(commandResult.HasException);
 

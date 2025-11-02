@@ -49,7 +49,7 @@ public class InvoiceUIConnector
 
     public Task<Result<GridItemsProviderResult<DmoInvoice>>> GetItemsAsync(GridState<DmoInvoice> state)
         => InvoiceListRequest.Create(state)
-            .DispatchAsync((request) => _mediator.DispatchAsync(request))
+            .ExecuteTransformAsync((request) => _mediator.DispatchAsync(request))
             .ExecuteFunctionAsync((itemsProvider) => GridItemsProviderResult
                 .From<DmoInvoice>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
 

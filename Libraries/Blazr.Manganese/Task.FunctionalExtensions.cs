@@ -7,20 +7,6 @@ namespace Blazr.Manganese;
 
 public static class TaskFunctionalExtensions
 {
-    public async static Task<Result<T>> OutputAsync<T>(this Task<Result<T>> task, Action<T>? hasValue = null, Action<Exception>? hasException = null)
-    {
-        var result = await task;
-        return result.ExecuteTransaction((value) => CheckForTaskException(task))
-            .Output(hasValue: hasValue, hasException: hasException);
-    }
-
-    public async static Task<Result> OutputAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
-    {
-        var result = await task;
-        return result.ExecuteTransaction(() => CheckForTaskException(task))
-         .Output(hasValue, hasException);
-    }
-
     public async static Task<T> OutputValueAsync<T>(this Task<Result<T>> task, Func<Exception, T> ExceptionOutput)
     {
         var result = await task;
@@ -42,10 +28,10 @@ public static class TaskFunctionalExtensions
         .OutputValue(ExceptionOutput);
     }
 
-    public static async Task<Result<TOut>> ExecuteTransformAsync<TOut, T>(this Task<Result<T>> task, Func<T, Result<TOut>> function)
+    public static async Task<Result<TOut>> ExecuteTransformAsync<T, TOut>(this Task<Result<T>> task, Func<T, Result<TOut>> function)
     {
         var result = await task.ContinueWith(CheckForTaskException);
-        return result.ExecuteTransform<TOut>(function);
+        return result.ExecuteTransform<T, TOut>(function);
     }
 
     public static async Task<Result<T>> ExecuteTransactionAsync<T>(this Task<Result<T>> task, Func<T, Result<T>> function)
@@ -58,7 +44,7 @@ public static class TaskFunctionalExtensions
     {
         var result = await task;
         return result.ExecuteTransform((value) => CheckForTaskException(task))
-            .ExecuteFunction<TOut>(function);
+            .ExecuteFunction<T, TOut>(function);
     }
 
     public async static Task<Result> ToResultAsync<T>(this Task<Result<T>> task)
@@ -71,16 +57,16 @@ public static class TaskFunctionalExtensions
     {
         var result = await task;
         return result.ExecuteTransaction((value) => CheckForTaskException(task))
-            .ToResult<TOut>(value);
+            .ToResult<T, TOut>(value);
     }
 
     public static Task<Result> ExecuteSideEffectAsync(this Task<Result> task, Action? hasValue = null, Action<Exception>? hasException = null)
-        => task.OutputAsync(hasValue, hasException);
+        => task.ExecuteSideEffectAsync(hasValue, hasException);
 
     public async static Task<Result<T>> ExecuteSideEffectAsync<T>(this Task<Result<T>> task, Action<Result> action)
          => (await task)
             .ExecuteTransaction((value) => CheckForTaskException(task))
-            .ExecuteAction(action);
+            .ExecuteSideEffect(action);
 
     private static Result<T> CheckForTaskException<T>(Task<Result<T>> task)
         => task.IsCompletedSuccessfully

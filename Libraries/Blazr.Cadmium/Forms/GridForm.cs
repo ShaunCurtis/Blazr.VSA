@@ -84,7 +84,7 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
     protected async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
         => await UpdateGridRequest<TRecord>
             .CreateAsResult(gridRequest)
-            .Dispatch(this.SetGridState)
+            .ExecuteTransform(this.SetGridState)
             .ExecuteTransformAsync(UIConnector.GetItemsAsync)
             .ExecuteSideEffectAsync((result) => this.LastResult = result)
             .OutputValueAsync(ExceptionOutput: ex => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
