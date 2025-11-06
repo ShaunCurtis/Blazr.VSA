@@ -6,6 +6,7 @@
 using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.Cadmium.QuickGrid;
+
 public readonly record struct UpdateGridRequest<TRecord>(int StartIndex, int PageSize, bool SortDescending, string? SortField)
     where TRecord : class
 {

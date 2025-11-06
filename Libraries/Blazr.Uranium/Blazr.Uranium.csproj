@@ -19,6 +19,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Blazr.Indium\Blazr.Indium.csproj" />
+	  <ProjectReference Include="..\Blazr.Manganese\Blazr.Manganese.csproj" />
 	</ItemGroup>
 
 </Project>

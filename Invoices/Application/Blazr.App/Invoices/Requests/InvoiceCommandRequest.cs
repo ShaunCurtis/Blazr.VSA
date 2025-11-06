@@ -11,6 +11,6 @@ public readonly record struct InvoiceCommandRequest(
         InvoiceEntity Item, EditState State, Guid TransactionId)
     : IRequest<Result>
 {
-    public static InvoiceCommandRequest Create(InvoiceMutor mutor)
-        => new InvoiceCommandRequest(mutor.CurrentEntity, mutor.State, Guid.NewGuid());
+    public static InvoiceCommandRequest Create(InvoiceEntity entity, EditState state)
+        => new InvoiceCommandRequest(entity, state, Guid.NewGuid());
 }

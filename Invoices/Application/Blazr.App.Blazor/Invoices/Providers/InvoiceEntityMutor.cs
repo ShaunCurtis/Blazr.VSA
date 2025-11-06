@@ -13,11 +13,10 @@ namespace Blazr.App.UI;
 public sealed class InvoiceEntityMutor
 {
     private readonly IMediatorBroker _mediator;
-    private readonly IServiceProvider _serviceProvider;
     private readonly IMessageBus _messageBus;
 
-    public InvoiceEntity BaseEntity { get; private set; } = InvoiceEntity.CreateNewEntity();
-    public InvoiceEntity InvoiceEntity { get; private set; } = InvoiceEntity.CreateNewEntity();
+    public InvoiceEntity BaseEntity { get; private set; }
+    public InvoiceEntity InvoiceEntity { get; private set; }
     public Result LastResult { get; private set; } = Result.Success();
 
     public bool IsDirty => !this.InvoiceEntity.Equals(BaseEntity);
@@ -29,11 +28,12 @@ public sealed class InvoiceEntityMutor
             ? EditState.Dirty
             : EditState.Clean;
 
-    public InvoiceEntityMutor(IMediatorBroker mediator, IServiceProvider serviceProvider, IMessageBus messageBus)
+    public InvoiceEntityMutor(IMediatorBroker mediator, IMessageBus messageBus)
     {
         _mediator = mediator;
-        _serviceProvider = serviceProvider;
         _messageBus = messageBus;
+        this.BaseEntity = InvoiceEntity.CreateNewEntity();
+        this.InvoiceEntity = this.BaseEntity;
     }
 
     public Result Dispatch(Func<InvoiceEntity, Result<InvoiceEntity>> dispatcher)

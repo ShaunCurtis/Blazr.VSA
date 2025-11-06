@@ -9,26 +9,27 @@
 
 <PageTitle>Invoice Dashboard</PageTitle>
 
-<BsModalDialog @ref=_modalDialog />
-
-@if (_loading)
-{
-    <div class="text-center">
-        <div class="spinner-border" style="width: 5rem; height: 5rem;" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-    return;
-}
-
 <CascadingValue Value="this.Mutor">
+
+    <BsModalDialog @ref=_modalDialog />
+
+    @if (_loading)
+    {
+        <div class="text-center">
+            <div class="spinner-border" style="width: 5rem; height: 5rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        return;
+    }
+
     <div hidden="@_isClean">
         <div class="alert alert-danger d-flex align-items-center my-2 p-2" role="alert">
             @_message
         </div>
     </div>
 
-    <div hidden="@_isNew">
+    <div hidden="@_showAddInvoiceForm">
 
         <div class="d-flex flex-row mb-2 pt-1 border-bottom">
 
@@ -48,8 +49,11 @@
 
         </div>
     </div>
+    <div hidden="@(!_showAddInvoiceForm)" class="mt-3">
+        <InvoiceAddForm Cancelled="this.OnNewInvoiceClosed" />
+    </div>
 
-    <div class="card bg-light rounded">
+    <div hidden="@_showAddInvoiceForm" class="card bg-light rounded">
 
         <div class="card-body p-4">
             <InvoiceViewer />
@@ -57,7 +61,7 @@
 
     </div>
 
-    <div hidden="@_isNew" class="mt-3">
+    <div hidden="@_showAddInvoiceForm" class="mt-3">
         <InvoiceItemGrid />
     </div>
 
@@ -69,6 +73,7 @@
 
     private bool _loading = true;
     private bool _isError = false;
+    private bool _showAddInvoiceForm = false;
     private IModalDialog _modalDialog = default!;
 
     private bool _isDirty => this.Mutor.IsDirty;
@@ -88,14 +93,12 @@
 
     protected async override Task OnInitializedAsync()
     {
+        _showAddInvoiceForm = this.InvoiceId.IsDefault;
         await this.Mutor.LoadAsync(this.InvoiceId);
         _loading = false;
         this.MessageBus.Subscribe<InvoiceEntity>(OnContextStateChanged);
 
         await Task.Delay(100);
-
-        if (this.Mutor.IsNew)
-            await EditInvoiceAsync();
     }
 
     private Task OnLocationChanging(LocationChangingContext context)
@@ -113,16 +116,22 @@
     private void OnContextStateChanged(object? sender)
     {
         if (sender is InvoiceId id && this.InvoiceId.Equals(id))
-            this.StateHasChanged();
+            this.InvokeAsync(StateHasChanged);
+    }
+
+    private void OnNewInvoiceClosed(bool cancelled)
+    {
+        _showAddInvoiceForm = false;
+        if (cancelled)
+        {
+            this.ToastService.ShowInfo("You exited creating the new invoice.");
+            this.NavManager.NavigateTo($"/invoices");
+        }
     }
 
     private async Task EditInvoiceAsync()
     {
-        Type form = this.Mutor.IsNew
-            ? typeof(InvoiceAddForm)
-            : typeof(InvoiceEditForm);
-
-        var options = new ModalOptions() { ModalDialogType = form };
+        var options = new ModalOptions() { ModalDialogType = typeof(InvoiceEditForm) };
 
         var result = await _modalDialog.ShowAsync(options);
         // wait for the modal to close
@@ -136,10 +145,11 @@
     }
 
     private async Task SaveAsync()
-    => await this.Mutor.SaveAsync();
+        => await this.Mutor.SaveAsync();
 
     private async Task SaveAndExitAsync()
-        => await this.Mutor.SaveAsync().ExecuteSideEffectAsync(Exit);
+        => await this.Mutor.SaveAsync()
+            .ExecuteSideEffectAsync(Exit);
 
     private void Exit()
         => this.NavManager.NavigateTo($"/invoices");

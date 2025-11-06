@@ -12,7 +12,7 @@ public sealed class InMemoryInvoiceTestDbContext
 
     public DbSet<DvoCustomer> DvoCustomers { get; set; } = default!;
 
-    //public DbSet<CustomerLookUpItem> CustomerLookUp { get; set; } = default!;
+    public DbSet<FkCustomer> FkCustomers { get; set; } = default!;
 
     public DbSet<DboInvoice> Invoices { get; set; } = default!;
 
@@ -35,14 +35,14 @@ public sealed class InMemoryInvoiceTestDbContext
                        CustomerName = c.CustomerName,
                    }).HasKey(x => x.CustomerID);
 
-        //    modelBuilder.Entity<CustomerLookUpItem>()
-        //        .ToInMemoryQuery(()
-        //            => from z in this.Customers
-        //               select new CustomerLookUpItem
-        //               {
-        //                   Id = z.CustomerID,
-        //                   Name = z.CustomerName,
-        //               }).HasNoKey();
+        modelBuilder.Entity<FkCustomer>()
+            .ToInMemoryQuery(()
+                => from z in this.Customers
+                   select new FkCustomer
+                   {
+                       Id = z.CustomerID,
+                       Name = z.CustomerName,
+                   }).HasNoKey();
 
         modelBuilder.Entity<DboInvoice>().ToTable("Invoices");
 

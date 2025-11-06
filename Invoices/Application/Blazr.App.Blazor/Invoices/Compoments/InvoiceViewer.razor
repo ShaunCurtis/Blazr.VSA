@@ -38,7 +38,7 @@
     }
 
     private void OnContextStateChanged(object? sender)
-        => this.StateHasChanged();
+        => this.InvokeAsync(StateHasChanged);
 
     public void Dispose()
         => this.MessageBus.UnSubscribe<InvoiceEntity>(OnContextStateChanged);

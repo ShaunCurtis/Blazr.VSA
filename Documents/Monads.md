@@ -1,6 +1,6 @@
 # Monads
 
-Type *Monad* into your search bar.  The Internet is awash with articles.  There are even articles about the articles trying to explain why the original articles fail!
+Type *Monad* into your search bar: the Internet is awash with articles.  There are even articles about the articles trying to explain why the original articles fail!
 
 
 Here's another: but hopefully one that succeeds.
@@ -9,7 +9,7 @@ Why do they fail?  Perhaps because they try to explain this:
 
 > A *Monad* is just a *Monoid* in the *Category* of *EndOfFunctors*.
 
-Mathmatically correct (or so I'm informed), but not for mere mortals.
+Mathmatically correct (or so I'm informed), but meaningless to mere mortals.
 
 Lets come at this from a different angle.
 
@@ -22,12 +22,14 @@ public record Monad<T>(T value)
 }
 ```
 
-It:
+It fulfills the basic requirments. i.e. it has:
 
-1. Has a constructor - `new(value)` 
+1. A constructor - `new(value)` 
 1. A generic method to execute a function with the `Func<T, Monad<TOut>>` pattern: known as a *Manadic Function*.
 
-Now let'a look at a coding problem that the Monad pattern helps us solve.
+Now let'a look at a coding problem the Monad pattern will help us solve.
+
+Consider this simple console application.
 
 ```csharp
 var input = Console.ReadLine();
@@ -43,9 +45,13 @@ else
 }
 ```
 
-It works, but it's ugly.  `TryParse` spouts results at both ends: it returns a `bool` and outputs the parsed value via an `out` parameter.  You have to really look at this code to see what's going on.
+It works, but it's ugly.  
 
-Let's refactor it using a *Result Monad*.
+Why?  Well, you have to really look at this code to see what's going on.  `TryParse` spouts results at both ends: it returns a `bool` and outputs the parsed value via an `out` parameter.
+
+Let's refactor it using the *Result Monad*.
+
+## Result
 
 First, our Monad.
 
@@ -71,7 +77,7 @@ public record Result<T>
 }
 ```
 
-And a specific exception for it:
+A specific exception for it:
 
 ```csharp
 public class ResultException : Exception
@@ -86,19 +92,29 @@ public class ResultException : Exception
 
 `Result<T>` can be in one of two states:
 
-- **HasValue**: The operation completed successfully and produced a Value.
-- **HasException**: The operation failed, and the result contains an exception.
+- **Succeeded or HasValue**: The operation completed successfully and produced a Value.
+- **Failed or HasException**: The operation failed, and the result contains an exception.
 
  Note: it's important the state check is on the `Exception` property.  `T` is not necessarily a `Nullable`: `int` will be set to `0`.
 
  The `ExecuteResult` method executes a function that takes a `T` and returns a new `Result<TOut>`.  If the input `Result<T>`:
 
- - Is in the *HasValue* state, it executes the function and returns the result.  
- - Is in the *HasException* state, it short-circuits, returning a new `Result<TOut>` with the exception from the input `Result<T>`.  It doesn't execute the function.
+ - Is in the *Succeeded* state, it executes the function and returns the result.  
+ - Is in the *Failed* state, it short-circuits, returning a new `Result<TOut>` with the exception from the input `Result<T>`.  It doesn't execute the function.
 
-We can now refactor our console app to use the `Result<T>` Monad:
+## Refactoring
+
+We can now start to refactor our console app using `Result<T>`.
 
 > Note: To enter null in the console use `<Ctl>z <Enter>`.
+
+We create a `Result<string?>` from the console read like this:
+
+```csharp
+new Result<string?>(Console.ReadLine())
+```
+
+And then execute a function against it:
 
 ```csharp
 new Result<string?>(Console.ReadLine())
@@ -122,31 +138,47 @@ new Result<string?>(Console.ReadLine())
 );
 ```
 
-If we look at the code above there are two common patterns:
+### The Map Function
 
-1. `T -> apply function TOut` which we can boilerplate like this:
+Look at the `MapFunction` code. `double.Parse` has the very common basic pattern `TIn -> TOut`.  We can boilerplate the pattern into our monad like this:
 
 ```csharp
-public Result<TOut> ExecuteFunction<TOut>(Func<T, TOut> function)
+public Result<TOut> MapFunction<TOut>(Func<T, TOut> function)
 {
     if (this.Exception is not null)
-        return Result<TOut>.Failure(this.Exception!);
+        return new Result<TOut>(this.Exception!);
 
     try
     {
         var value = function.Invoke(this.Value!);
         return (value is null)
-            ? Result<TOut>.Failure(new ("The function returned a null value."))
-            : Result<TOut>.Create(value);
+            ? new Result<TOut>(new ResultException("The function returned a null value."))
+            : new Result<TOut>(value);
     }
     catch (Exception ex)
     {
-        return Result<TOut>.Failure(ex);
+        return new Result<TOut>(ex);
     }
 }
 ```
 
-2. `T? -> Result<T>` which we can code like this:
+It does two incredibly important things in program flow control:
+
+  - If the result is in failure state, it constructs a new `Result<TOut>` passing in the existing exception.  It short circuits and doesn't execute `function`.
+  - It sinks any raised exception and passes it on through the returned `Result<TOut>`. 
+
+
+### The Create Function
+
+The second very common pattern is `T? -> Result<T>` as in:
+
+```csharp
+return (value is null)
+    ? new Result<double>(ResultException.Create("The input value was nota number."))
+    : new Result<double>(output);
+```
+
+ we can boilerplate this:
 
 ```csharp
     public static Result<T> Create(T? value)
@@ -155,7 +187,9 @@ public Result<TOut> ExecuteFunction<TOut>(Func<T, TOut> function)
             : new(value) ;
 ```
 
-We can also add a local extension to `string?` like this:
+### String Extensions
+
+We can add a local extension to `string?` like this:
 
 ```csharp
 public static class Extensions
@@ -167,23 +201,9 @@ public static class Extensions
 }
 ```
 
+### Output
+
 Finally we need a mechanism to interact with I/O, such as writing to the console.  
-
-Two method singatures are provided here.
-
-`Output` will run pass through the result [return itself], and execute the relevant `Action`.
-
-```csharp
-    public Result<T> Output(Action<T> hasValue, Action<Exception> hasException)
-    {
-        if (this.Exception is not null)
-            hasException.Invoke(Exception!);
-        else
-            hasValue.Invoke(this.Value!);
-
-        return this;
-    }
-```
 
 `OutputValue` will return the value or return the value provided by the `Func`.
 
@@ -199,26 +219,17 @@ Two method singatures are provided here.
             : hasException.Invoke(Exception!);
 ```
 
-We can now refactor our code.
+## Refactoring
 
-This version uses `Output` to write the I/O.
-```csharp
-Console.ReadLine()
-   .ToResult()
-   .ExecuteFunction<double>(double.Parse)
-   .Output(
-        hasValue: (value) => Console.WriteLine($"Value is: {value}"),
-        hasException: (exception) => Console.WriteLine($"Error: {exception.Message}")
-    );
-```
+We can now do some further refactoring to our code.
 
-The second version uses `OutputValue` to provide a value to the I/O.
+The code uses `OutputValue` to provide a value to the I/O.
 
 ```csharp
 Console.WriteLine(
     Console.ReadLine()
    .ToResult()
-   .ExecuteFunction<double>(double.Parse)
+   .MapFunction<double>(double.Parse)
    .OutputValue<string>(
         hasValue: (value) => $"Value is: {value}",
         hasException: (exception) => $"Error: {exception.Message}"
@@ -231,13 +242,37 @@ Adding more processes is simple.  Lets get the square root to two decimal places
 Console.WriteLine(
     Console.ReadLine()
    .ToResult()
-   .ExecuteFunction<double>(double.Parse)
-   .ExecuteFunction(Math.Sqrt)
-   .ExecuteFunction((value) => Math.Round(value, 2))
+   .MapFunction<double>(double.Parse)
+   .MapFunction(Math.Sqrt)
+   .BindFunction(To2Decimals)
    .OutputValue<string>(
         hasValue: (value) => $"Value is: {value}",
         hasException: (exception) => $"Error: {exception.Message}"
     ));
+```
+
+### The Bind Function
+
+The code above introduces `BindFunction` calling `To2Decimals`:
+
+```csharp
+Result<string> To2Decimals(double value)
+    => Result<string>.Create(Math.Round(value, 2).ToString());
+```
+
+Note the pattern used `TIn -> Monad<TOut>`.  This is a very common pattern which we can boilerplate in `Result<T>`:
+
+```csharp
+public Result<TOut> BindFunction<TOut>(Func<T, Result<TOut>> function)
+    => this.Exception is null
+        ? function(Value!)
+        : new Result<TOut>(this.Exception);
+```
+
+Note that you could have written this as a Llambda expression:
+
+```csharp
+.BindFunction(value => Result<string>.Create(Math.Round(value, 2).ToString()))
 ```
 
 
@@ -267,9 +302,9 @@ There are many high level features built into C#: `Task` and `IEnumerable` are g
 
 `Result<T>` is no different.  It's high level code, *syntactic sugar*, that abstracts higher level functionality into lower level boilerplate code.
 
-### Bind, Map, Match
+### Return, Bind, Map, Match
 
-I've deliberately not used the standard FP terms for operations: I've used names that I believe are more descriptive.  I think sticking to the classic terms is counter-productive:  Map, Bind, Match and many other have different means in OOP C#.
+I've deliberately modified the standard FP terms for operations: I've used names that I believe are more descriptive.  I think sticking to the classic terms is counter-productive:  Return, Map, Bind, Match and many other have different means in OOP C#.
 
 ## Appendix
 

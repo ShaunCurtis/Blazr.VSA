@@ -53,6 +53,20 @@ public partial class InvoiceTests
         return provider!;
     }
 
+    private async Task<InvoiceEntity> GetASampleEntityAsync(IMediatorBroker mediator)
+    {
+
+        // Get a test item and it's Id from the Test Provider
+        var controlId = new InvoiceId(_testDataProvider.Invoices.Skip(Random.Shared.Next(3)).First().InvoiceID);
+
+        // Get the Invoice Entity
+        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(controlId));
+
+        Assert.False(entityResult.HasException);
+
+        return entityResult.Value!;
+    }
+
     private async Task<InvoiceMutor> GetASampleMutorAsync(IMediatorBroker mediator)
     {
 

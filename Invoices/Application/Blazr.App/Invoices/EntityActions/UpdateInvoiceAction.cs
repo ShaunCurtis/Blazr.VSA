@@ -15,7 +15,7 @@ namespace Blazr.App.Core;
     public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
         => mutor.Mutate(_invoice);
 
-    public Result<InvoiceEntity> Dispatch(InvoiceEntity entity)
+    public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity.CreateWithEntityRulesApplied(_invoice);
 
     public static UpdateInvoiceAction Create(DmoInvoice invoice)

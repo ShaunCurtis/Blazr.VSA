@@ -25,7 +25,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     [Parameter, EditorRequired] public TKey Uid { get; set; } = default!;
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    private EditState State { get; set; } = EditState.Clean;
+    protected EditState State { get; set; } = EditState.Clean;
     protected Result LastResult { get; set; } = Result.Success();
     protected TRecordMutor EditMutor { get; set; } = default!;
     protected EditContext EditContext { get; set; } = default!;
@@ -33,8 +33,8 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     protected EditFormButtonsOptions editFormButtonsOptions = new();
     protected bool IsNewRecord => this.State == EditState.New;
     protected string FormTitle => $"{this.UIConnector.SingleDisplayName} Editor";
-    protected bool Loading => !_loaded;
-    private bool _loaded;
+    protected bool Loading => !this.Loaded;
+    protected bool Loaded;
 
     protected async override Task OnInitializedAsync()
     {
@@ -51,17 +51,17 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
         this.EditMutor = (TRecordMutor)this.UIConnector.GetRecordMutor(record);
         this.EditContext = new EditContext(EditMutor);
 
-        _loaded = true;
+        Loaded = true;
 
         this.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
     }
 
-    protected async Task OnSave()
+    protected virtual async Task OnSave()
         => LastResult = await this.UIConnector.RecordCommandAsync(StateRecord<TRecord>.Create(this.EditMutor.ToRecord(), this.State.AsDirty))
             .ToResultAsync()
             .ExecuteSideEffectAsync(this.OnExit);
 
-    protected async Task OnDelete()
+    protected virtual async Task OnDelete()
     {
         bool confirmed = await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?");
         if (!confirmed)
@@ -72,15 +72,16 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
             .ExecuteSideEffectAsync(this.OnExit);
     }
 
-    protected void OnExit()
+    protected virtual void OnExit()
         => ModalDialog?.Close(new ModalResult());
 
     protected void OnEditStateMayHaveChanged(object? sender, EventArgs e)
         => this.StateHasChanged();
 
-    protected Task OnReset()
+    protected virtual Task OnReset()
     {
-        // Create a new EditContext - will reset and rebuild the whole Edit Form snd validate
+        //TODO - don't we need to reset the mutor???
+        // Create a new EditContext - will reset and rebuild the whole Edit Form and validate
         this.EditContext = new EditContext(EditMutor);
         this.EditContext.Validate();
 

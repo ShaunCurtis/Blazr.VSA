@@ -4,15 +4,8 @@
 @using Blazr.Cadmium.UI
 
 @inject FKProvider FKProvider
-
-<div>
-    <div class="flex-fill justify-content-start h4">
-        @_formTitle
-    </div>
-    <div class="justify-content-end">
-        @* Header Buttons *@
-    </div>
-</div>
+@inject NavigationManager NavManager
+@inject IToastService ToastService
 
 @if (_loading)
 {
@@ -24,44 +17,58 @@
     return;
 }
 
-<EditForm EditContext=this.EditContext OnValidSubmit="this.OnSaveAsync">
+<div class="modal show" style="display: block;" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                @_formTitle
+            </div>
+            <div class="modal-body">
 
-    <BlazrFluentValidator TRecord="InvoiceRecordMutor" TValidator="InvoiceRecordMutorValidator" />
-    <BlazrEditStateTracker />
+                <ResultAlert Result="this.LastResult" />
 
-    <div class="row">
+                <EditForm EditContext="this.EditContext" OnValidSubmit="this.OnSaveAsync">
+                    <BlazrFluentValidator TRecord="InvoiceRecordMutor" TValidator="InvoiceRecordMutorValidator" />
+                    <BlazrEditStateTracker />
 
-        <BlazrDateControl class="form-control mb-2"
-                          ColumnCss="col-12 col-md-4 mb-2"
-                          Label="Date"
-                          @bind-Value="this.EditMutor.Date" />
+                    <div class="row">
 
-        <BlazrSelectControl class="form-control mb-2"
-                            ColumnCss="col-12 col-md-6 mb-2"
-                            Label="Group"
-                            TValue="Guid"
-                            TListItem="FkoCustomer"
-                            @bind-Value=this.EditMutor.CustomerId
-                            @bind-Value:after="this.OnCustomerUpdate"
-                            DisplayOptionsItems=_customerList
-                            OptionValueDelegate="item => item.Id.Value.ToString()"
-                            OptionTextDelegate="item => item.Name.Value"
-                            PlaceholderText="Choose a Customer" />
+                        <BlazrDateControl class="form-control mb-2"
+                                          ColumnCss="col-12 col-md-4 mb-2"
+                                          Label="Date"
+                                          @bind-Value="this.EditMutor.Date" />
 
-    </div>
+                        <BlazrSelectControl class="form-control mb-2"
+                                            ColumnCss="col-12 col-md-6 mb-2"
+                                            Label="Group"
+                                            TValue="Guid"
+                                            TListItem="FkoCustomer"
+                                            @bind-Value="this.EditMutor.CustomerId"
+                                            @bind-Value:after="this.OnCustomerUpdate"
+                                            DisplayOptionsItems="_customerList"
+                                            OptionValueDelegate="item => item.Id.Value.ToString()"
+                                            OptionTextDelegate="item => item.Name.Value"
+                                            PlaceholderText="Choose a Customer" />
 
-    <div class="row">
-        <div class="text-end">
-            <UIButton Type="button" ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnExit>Exit</UIButton>
-            <UIButton Type="submit" Hidden=@_isClean ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Save>Continue</UIButton>
+                    </div>
+
+                    <div class="row">
+                        <div class="text-end">
+                            <UIButton Type="button" ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnCancel>Cancel</UIButton>
+                            <UIButton Type="submit" Hidden=@_isClean ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Save>Continue</UIButton>
+                        </div>
+                    </div>
+
+                </EditForm>
+
+            </div>
         </div>
     </div>
-</EditForm>
+</div>
 
 @code {
     [CascadingParameter] private InvoiceEntityMutor EntityMutor { get; set; } = default!;
-    [CascadingParameter] private IModalDialog? ModalDialog { get; set; }
-
+    [Parameter] public EventCallback<bool> Cancelled { get; set; }
     private string _formTitle => $"Create A New Invoice";
 
     private InvoiceRecordMutor EditMutor { get; set; } = InvoiceRecordMutor.CreateNewEntity();
@@ -73,21 +80,27 @@
     private bool _isDirty;
     private bool _isClean => !_isDirty;
     private bool _loading = true;
+    private Result LastResult = Result.Success();
 
     protected async override Task OnInitializedAsync()
     {
         ArgumentNullException.ThrowIfNull(this.EntityMutor);
-        ArgumentNullException.ThrowIfNull(this.ModalDialog);
         this.EditContext = new(EditMutor);
-        await Task.Yield();
 
-        _customerList = (await this.FKProvider.GetCustomerFKAsync())
+        var result = await this.FKProvider.GetCustomerFKAsync();
+
+        LastResult = result.ToResult();
+
+        _customerList = result
             .OutputValue(Enumerable.Empty<FkoCustomer>())
             .ToList();
 
         _loading = false;
 
         this.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
+
+        if (this.LastResult.Failed)
+            this.ToastService.ShowError(this.LastResult.Message);
     }
 
     protected override void OnParametersSet()
@@ -103,7 +116,7 @@
 
     private void OnEditStateMayHaveChanged(object? sender, EventArgs e)
     {
-        _isDirty = this.EditContext.GetEditState();
+        _isDirty = this.EditMutor.IsDirty;
         this.StateHasChanged();
     }
 
@@ -113,15 +126,18 @@
             return Task.CompletedTask;
 
         var action = new UpdateInvoiceAction(EditMutor.ToRecord());
-        var result = this.EntityMutor.Dispatch(action.Dispatch);
+        var result = this.EntityMutor.Dispatch(action.Dispatcher);
 
-        OnExit();
+        OnExit(false);
 
         return Task.CompletedTask;
     }
 
-    protected void OnExit()
-        => ModalDialog?.Close(new ModalResult());
+    private void OnExit(bool cancelled = false)
+        => Cancelled.InvokeAsync(cancelled);
+
+    private void OnCancel()
+        => Cancelled.InvokeAsync(true);
 
     private void OnLocationChanged(LocationChangingContext context)
     {

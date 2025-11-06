@@ -9,7 +9,7 @@ public static class ResultMonadExtensions
 {
     public static Result Output(this Result result, Action? hasNoException = null, Action<Exception>? hasException = null)
     {
-        if (result.HasException)
+        if (result.Failed)
             hasException?.Invoke(result.Exception!);
         else
             hasNoException?.Invoke();
@@ -18,21 +18,21 @@ public static class ResultMonadExtensions
     }
 
     public static bool OutputValue(this Result result)
-        => !result.HasException;
+        => result.Succeeded;
 
     public static Result ExecuteTransaction(this Result result, Func<Result> function)
-    => result.Exception is null
+    => result.Succeeded
         ? function()
         : result;
 
     public static Result<T> ExecuteFunction<T>(this Result result, Func<Result<T>> HasNoException, Func<Exception, Result<T>> HasException)
-    => result.HasException
+    => result.Failed
         ? HasException(result.Exception!)
         : HasNoException();
 
     public static Result<TOut> ExecuteFunction<TOut>(this Result result, Func<TOut> function)
     {
-        if (result.Exception is not null)
+        if (result.Failed)
             return Result<TOut>.Failure(result.Exception!);
 
         try
@@ -55,7 +55,7 @@ public static class ResultMonadExtensions
     }
 
     public static Result ExecuteActionWithResult(this Result result, Func<Result> function)
-        => result.HasException
+        => result.Failed
             ? result
             : function();
 }

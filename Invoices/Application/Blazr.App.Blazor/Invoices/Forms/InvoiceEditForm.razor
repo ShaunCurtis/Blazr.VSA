@@ -5,58 +5,65 @@
 
 @inject FKProvider FKProvider
 
-<div>
-    <div class="flex-fill justify-content-start h4">
+<div class="modal-header">
+    <div class="h4">
         @_formTitle
-    </div>
-    <div class="justify-content-end">
-        @* Header Buttons *@
     </div>
 </div>
 
-@if (_loading)
-{
-    <div class="text-center">
-        <div class="spinner-border" style="width: 5rem; height: 5rem;" role="status">
-            <span class="visually-hidden">Loading...</span>
+<LoadingSpinner Loading="_loading">
+
+    <EditForm EditContext=this.EditContext OnValidSubmit="this.OnSaveAsync">
+
+        <div class="modal-body px-3">
+
+            <BlazrFluentValidator TRecord="InvoiceRecordMutor" TValidator="InvoiceRecordMutorValidator" />
+            <BlazrEditStateTracker />
+
+            <div class="row">
+
+                <BlazrDateControl class="form-control mb-2"
+                                  ColumnCss="col-12 col-md-4 mb-2"
+                                  Label="Date"
+                                  @bind-Value="this.EditMutor.Date" />
+
+                <BlazrSelectControl class="form-control mb-2"
+                                    ColumnCss="col-12 col-md-6 mb-2"
+                                    Label="Group"
+                                    TValue="Guid"
+                                    TListItem="FkoCustomer"
+                                    @bind-Value=this.EditMutor.CustomerId
+                                    @bind-Value:after="this.OnCustomerUpdate"
+                                    DisplayOptionsItems=_customerList
+                                    OptionValueDelegate="item => item.Id.Value.ToString()"
+                                    OptionTextDelegate="item => item.Name.Value"
+                                    PlaceholderText="Choose a Customer" />
+
+            </div>
+
         </div>
-    </div>
-    return;
-}
+        <div class="modal-footer bg-light">
 
-<EditForm EditContext=this.EditContext OnValidSubmit="this.OnSaveAsync">
+            <EditFormButtons SaveOnSubmit
+                             ColumnCss="col-12 text-end"
+                             Options=_editFormButtonsOptions
+                             DirtyExit=this.OnExit
+                             Exit=this.OnExit
+                             IsNewRecord=false
+                             Reset=this.OnReset />
 
-    <BlazrFluentValidator TRecord="InvoiceRecordMutor" TValidator="InvoiceRecordMutorValidator" />
-    <BlazrEditStateTracker />
-
-    <div class="row">
-
-        <BlazrDateControl class="form-control mb-2"
-                          ColumnCss="col-12 col-md-4 mb-2"
-                          Label="Date"
-                          @bind-Value="this.EditMutor.Date" />
-
-        <BlazrSelectControl class="form-control mb-2"
-                            ColumnCss="col-12 col-md-6 mb-2"
-                            Label="Group"
-                            TValue="Guid"
-                            TListItem="FkoCustomer"
-                            @bind-Value=this.EditMutor.CustomerId
-                            @bind-Value:after="this.OnCustomerUpdate"
-                            DisplayOptionsItems=_customerList
-                            OptionValueDelegate="item => item.Id.Value.ToString()"
-                            OptionTextDelegate="item => item.Name.Value"
-                            PlaceholderText="Choose a Customer" />
-
-    </div>
-
-    <div class="row">
-        <div class="text-end">
-            <UIButton Type="button" ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnExit>Exit</UIButton>
-            <UIButton Type="submit" Hidden=@_isClean ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Save>Continue</UIButton>
         </div>
-    </div>
-</EditForm>
+
+@*
+                 <div class="row">
+            <div class="text-end">
+                <UIButton Type="button" ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnExit>Exit</UIButton>
+                <UIButton Type="submit" Hidden=@_isClean ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Save>Continue</UIButton>
+            </div>
+        </div>
+ *@
+    </EditForm>
+</LoadingSpinner>
 
 @code {
     [CascadingParameter] private InvoiceEntityMutor EntityMutor { get; set; } = default!;
@@ -114,7 +121,7 @@
 
         var action = new UpdateInvoiceAction(EditMutor.ToRecord());
 
-        var result = this.EntityMutor.Dispatch(action.Dispatch);
+        var result = this.EntityMutor.Dispatch(action.Dispatcher);
 
         OnExit();
 
@@ -122,6 +129,15 @@
     }
     protected void OnExit()
         => ModalDialog?.Close(new ModalResult());
+
+    protected Task OnReset()
+    {
+        this.EditMutor.Reset();
+        this.EditContext = new EditContext(EditMutor);
+        this.EditContext.Validate();
+
+        return Task.CompletedTask;
+    }
 
     private void OnLocationChanged(LocationChangingContext context)
     {

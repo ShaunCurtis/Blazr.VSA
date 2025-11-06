@@ -1,10 +1,12 @@
 # Aggregate Entities in Functional Programing
 
-Updating an object where the consequences of the change are limited to the object being changed is simple.  Changing an object with business rules that encompass other objects is complex.  In OOP the aggregate pattern sets out to address this problem.  
+Updating objects where the consequences of the change are limited to the object are simple.  Changing an object with business rules that encompass other objects is complex.  In OOP the aggregate pattern sets out to address this problem.  
 
 > An aggregate entity is a group of objects bound by one or more application rules.  The purpose of the aggregate is to ensure those rules are applied, and cannot be broken.  
  
-The pattern treats the aggregate as a black box.  All changes are submitted to the black box, not the individual objects within it.  The black box applies the changes and runs the logic to ensure consistency.
+The OOP pattern treats the aggregate as a black box.  All changes are submitted to the black box, not the individual objects within it.  The black box applies the changes and runs the logic to ensure consistency.
+
+A really important point to note is:
 
 > An aggregate only has purpose in a mutation context: you don't need aggregates to list or display data.  
 
@@ -12,11 +14,11 @@ An invoice is a good example of an aggregate. Delete a line item, and the aggreg
 
 ## The Problems with Aggregates
 
-Coding aggregates is not plain sailing.  It's easy to slip the boundary, include more related objects.  Complex aggregate entities quickly grow  into a monster black box class.
+Conceptually coding aggregates seems plain sailing.  The problem is in the detail.  It's easy to slip the boundary, include more related objects.  Complex aggregate entities quickly grow: they become god classes.
 
 ## The Functional Challenge
 
-In Functional programming, all data objects are immutable.  Our invoice entity is a container.  Dealing with container immutability is a challenge.
+In Functional programming, all data objects are immutable.  Our invoice entity is a container.  Dealing with container immutability is a challenge.  Let's look at how we can overcome it.
 
 ### Invoice Entity
 
@@ -42,7 +44,9 @@ private InvoiceEntity(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceInv
 }
 ```
 
-And the constructors:
+At this poimt we have no way to initialize an`InvoiceEntity`.
+
+We define some static constructors:
 
 ```csharp
 public static InvoiceEntity CreateNewEntity() =>
@@ -58,7 +62,7 @@ private static InvoiceEntity Create(DmoInvoice invoice, IEnumerable<DmoInvoiceIt
     new InvoiceEntity(invoice, invoiceItems);
 ```
 
-We need to define our business rules as static functions.  There's both *Check* and *Apply* versions.  Note the *pure* nature of these functions.The *Check* either returns a Result in error state, or the original entity.  The *Apply* function creates and returns a new `InvoiceEntity`. 
+Business rules are defined as static functions.  There's both *Check* and *Apply* versions.  Note the *pure* nature of these functions.  The *Check* either returns a Result in error state, or the original entity.  The *Apply* function creates and returns a new `InvoiceEntity`. 
 
 ```csharp
 public static Result<InvoiceEntity> CheckEntityRules(InvoiceEntity entity)

@@ -25,11 +25,14 @@ Console.WriteLine(
     .ToResult()
     .MapFunction(Double.Parse)
     .MapFunction(Math.Sqrt)
-    .BindFunction((value) => Result<double>.Create(Math.Round(value, 2)))
+    .BindFunction(To2Decimals)
     .OutputValue<string>(
         hasValue: (value) => $"Success: The transformed value is: {value}",
         hasException: (ex) => $"Failure: {ex.Message}"
     ));
+
+Result<string> To2Decimals(double value)
+    => Result<string>.Create(Math.Round(value, 2).ToString());
 
 //Console.WriteLine(
 //    Result<string>
@@ -125,16 +128,6 @@ public record Result<T>
         {
             return new Result<TOut>(ex);
         }
-    }
-
-    public Result<T> Output(Action<T> hasValue, Action<Exception> hasException)
-    {
-        if (this.Exception is not null)
-            hasException.Invoke(Exception!);
-        else
-            hasValue.Invoke(this.Value!);
-
-        return this;
     }
 
     public T OutputValue(Func<Exception, T> hasException)

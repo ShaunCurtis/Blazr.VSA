@@ -19,7 +19,7 @@ public record DeleteInvoiceItemAction
                 .RemoveItem(invoiceItem))
             .ExecuteTransform(mutor.Mutate);
 
-    public Result<InvoiceEntity> Dispatch(InvoiceEntity entity)
+    public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity
             .GetInvoiceItem(_invoiceItem)
             .ExecuteFunction(invoiceItem => entity.InvoiceItems

@@ -12,16 +12,7 @@ public record AddInvoiceItemAction
     public AddInvoiceItemAction(DmoInvoiceItem invoiceItem)
         => _invoiceItem = invoiceItem;
 
-    public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
-        => mutor
-            .CheckInvoiceItemDoesNotExist(_invoiceItem)
-            .ExecuteFunction(invoiceItem => mutor.CurrentEntity.InvoiceItems
-                    .ToList()
-                    .AddItem(invoiceItem)
-            )
-            .ExecuteTransform(mutor.Mutate);
-
-    public Result<InvoiceEntity> Dispatch(InvoiceEntity entity)
+    public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity
         .CheckInvoiceItemDoesNotExist(_invoiceItem)
             .ExecuteFunction(invoiceItem => entity.InvoiceItems

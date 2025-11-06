@@ -8,12 +8,12 @@ namespace Blazr.Manganese;
 public static class ResultMonadAsyncExtensions
 {
     public static async Task<Result> ExecuteFunctionAsync(this Result result,  Func<Task<Result>> function)
-        => result.HasException
+        => result.Failed
             ? result
             : await function();
 
     public static async Task<Result<T>> ExecuteFunctionAsync<T>(this Result result, Func<Task<Result<T>>> function)
-        => result.HasException
+        => result.Failed
             ? Result<T>.Failure(result.Exception!)
             : await function();
 }

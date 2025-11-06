@@ -40,6 +40,7 @@ public abstract class ModalDialogBase : BlazrControlBase, IModalDialog
         InvokeAsync(StateHasChanged);
         return this._ModalTask.Task;
     }
+
     public Task<ModalResult> ShowAsync(ModalOptions options)
     {
         if (!(typeof(IComponent).IsAssignableFrom(options.ModalDialogType)))

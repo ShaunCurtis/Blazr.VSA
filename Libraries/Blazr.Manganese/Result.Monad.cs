@@ -16,13 +16,13 @@ public partial record Result
 public static class ResultMonad
 {
     public static Result Bind(this Result result, Func<Result> function)
-        => !result.HasException
+        => result.Succeeded
             ? function()
             : Result.Failure(result.Exception!);
 
     public static Result Map(this Result result, Action function)
     {
-        if (result.Exception is not null)
+        if (result.Failed)
             return Result.Failure(result.Exception!);
 
         try
@@ -36,14 +36,9 @@ public static class ResultMonad
         }
     }
 
-    public static Result Match<T>(this Result result, Action? hasValue = null, Action<Exception>? hasException = null)
-    {
-        if (!result.HasException)
-            hasValue?.Invoke();
-        else
-            hasException?.Invoke(result.Exception!);
-
-        return result;
-    }
+    public static T Match<T>(this Result result, Func<T> Succeeded, Func<Exception, T> Failed)
+        => result.Succeeded
+        ? Succeeded.Invoke()
+        : Failed.Invoke(result.Exception!);
 }
 

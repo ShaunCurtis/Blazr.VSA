@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Application\Blazr.App.Blazor\Blazr.App.Blazor.csproj" />
     <ProjectReference Include="..\..\Application\Blazr.App.EntityFramework\Blazr.App.EntityFramework.csproj" />
     <ProjectReference Include="..\..\Application\Blazr.App\Blazr.App.csproj" />
   </ItemGroup>

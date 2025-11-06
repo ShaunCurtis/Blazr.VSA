@@ -14,7 +14,10 @@ namespace Blazr.Manganese;
 public partial record Result
 {
     public readonly Exception? Exception;
-    public bool HasException => Exception is not null;
+
+    public bool Succeeded => Exception is null;
+    public bool Failed => Exception is not null;
+    public string Message => this.Exception?.Message ?? "There is no message to display!";
 
     private Result(Exception? exception)
         => Exception = exception

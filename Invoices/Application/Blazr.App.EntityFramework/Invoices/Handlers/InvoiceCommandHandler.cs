@@ -28,7 +28,7 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
 
     public async Task<Result> HandleAsync(InvoiceCommandRequest request, CancellationToken cancellationToken)
     {
-        using var dbContext = _factory.CreateDbContext();
+        using var dbContext = await _factory.CreateDbContextAsync(cancellationToken);
 
         var recordResult = await _recordRequestHandler.HandleAsync(new InvoiceRecordRequest(request.Item.InvoiceRecord.Id), cancellationToken);
 
@@ -36,7 +36,7 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
         {
             var deleteResult = await this.DeleteEntityAsync(recordResult.Value!, cancellationToken);
 
-            if (deleteResult.HasException)
+            if (deleteResult.Failed)
                 return deleteResult;
 
             if (request.State == EditState.Deleted)
@@ -45,7 +45,7 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
 
         var addResult = await this.AddEntityAsync(request.Item, cancellationToken);
 
-        if (addResult.HasException)
+        if (addResult.Failed)
             return addResult;
 
         _messageBus.Publish<InvoiceEntity>(request.Item.InvoiceRecord.Id);

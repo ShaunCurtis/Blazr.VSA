@@ -1,4 +1,139 @@
 ﻿@namespace Blazr.App.UI
 
-@using Blazr.Cadmium.QuickGrid
-@using Blazr.Cadmium.UI
+@inject IJSRuntime Js
+
+<PageTitle>@this.FormTitle</PageTitle>
+
+<div class="modal-header">
+    <div class="h4">
+        @this.FormTitle
+    </div>
+</div>
+
+<LoadingSpinner Loading="_loading">
+
+    <EditForm EditContext=this.EditContext OnValidSubmit=this.OnSave>
+
+        <div class="modal-body px-3">
+
+            <BlazrFluentValidator TRecord="InvoiceItemRecordMutor" TValidator="InvoiceItemRecordMutorValidator" />
+            <BlazrEditStateTracker LockNavigation=this.LockNavigation />
+
+            <div class="row">
+
+                <div class="col-12 col-md-8 col-xl-4 mb-2">
+                    <BlazrTextViewControl Label="Id" Value="@this.EditMutor.BaseRecord.Id" />
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <BlazrTextControl class="form-control mb-2"
+                                  ColumnCss="col-12 col-xl-8 mb-2"
+                                  Label="Name"
+                                  @bind-Value="this.EditMutor.Description" />
+
+            </div>
+            <div class="row">
+
+                <BlazrNumberControl class="form-control mb-2"
+                                    ColumnCss="col-4 col-md-4 col-xl-4 mb-2"
+                                    Label="Amount £"
+                                    @bind-Value="this.EditMutor.Amount" />
+
+            </div>
+
+        </div>
+
+        <div class="modal-footer bg-light">
+
+            <EditFormButtons SaveOnSubmit
+                             ColumnCss="col-12 text-end"
+                             Options=this.editFormButtonsOptions
+                             DirtyExit=this.OnExit
+                             Exit=this.OnExit
+                             IsNewRecord=this.IsNewRecord
+                             Reset=this.ResetRecord
+                             Delete=this.OnDeleteAsync />
+
+        </div>
+
+    </EditForm>
+
+</LoadingSpinner>
+
+@code {
+    [CascadingParameter] private InvoiceEntityMutor EntityMutor { get; set; } = default!;
+    [CascadingParameter] private IModalDialog? ModalDialog { get; set; }
+    [Parameter, EditorRequired] public InvoiceItemId Uid { get; set; } = default!;
+    [Parameter] public bool LockNavigation { get; set; } = true;
+
+    private EditState State { get; set; } = EditState.Clean;
+    private Result LastResult { get; set; } = Result.Success();
+    private InvoiceItemRecordMutor EditMutor { get; set; } = default!;
+    private EditContext EditContext { get; set; } = default!;
+
+    private EditFormButtonsOptions editFormButtonsOptions = new();
+    private bool IsNewRecord => this.State == EditState.New;
+    private string FormTitle => $"Invoice Item Editor";
+    private bool _loading = true;
+
+    protected async override Task OnInitializedAsync()
+    {
+        ArgumentNullException.ThrowIfNull(Uid);
+
+        this.State = this.Uid.IsDefault
+            ? EditState.New
+            : EditState.Clean;
+
+        var result = this.EntityMutor.InvoiceEntity.GetInvoiceItem(this.Uid);
+        var record = result.OutputValue(ex => DmoInvoiceItem.CreateNew( this.EntityMutor.InvoiceEntity.InvoiceRecord.Id));
+        this.EditMutor = InvoiceItemRecordMutor.Create(record);
+        this.EditContext = new EditContext(EditMutor);
+
+        this.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
+
+        _loading = false;
+        await Task.Yield();
+    }
+
+    private async Task OnDeleteAsync()
+    {
+        bool confirmed = await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?");
+        if (!confirmed)
+            return;
+
+        var action = DeleteInvoiceItemAction.Create(EditMutor.ToRecord());
+
+        this.LastResult = EntityMutor.Dispatch(action.Dispatcher)
+        .ExecuteSideEffect(OnExit);
+    }
+
+    private void OnSave()
+    {
+        this.LastResult = (this.State.Index switch
+        { 
+            EditState.StateNewIndex =>  EntityMutor.Dispatch(AddInvoiceItemAction.Create(EditMutor.ToRecord()).Dispatcher),
+            _ => EntityMutor.Dispatch(UpdateInvoiceItemAction.Create(EditMutor.ToRecord()).Dispatcher)
+        })
+        .ExecuteSideEffect(OnExit);
+    }
+
+    private void ResetRecord()
+    {
+        this.EditMutor.Reset();
+        this.EditContext = new EditContext(EditMutor);
+        this.EditContext.Validate();
+    }
+
+    protected virtual void OnExit()
+        => ModalDialog?.Close(new ModalResult());
+
+    protected void OnEditStateMayHaveChanged(object? sender, EventArgs e)
+        => this.StateHasChanged();
+
+    public void Dispose()
+        => this.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
+}
+

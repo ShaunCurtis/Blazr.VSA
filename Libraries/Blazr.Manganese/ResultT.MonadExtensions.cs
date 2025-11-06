@@ -5,15 +5,6 @@
 /// ============================================================
 namespace Blazr.Manganese;
 
-public partial record Result<T>
-{
-    public ValueTask<Result<T>> CompletedValueTask
-        => ValueTask.FromResult(this);
-
-    public Task<Result<T>> CompletedTask
-        => Task.FromResult(this);
-}
-
 public static class ResultTMonadExtensions
 {
     public static Result ToResult<T>(this Result<T> result) => result.Exception is null
