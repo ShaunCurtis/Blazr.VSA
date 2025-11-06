@@ -2,11 +2,8 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Core;
-using Blazr.Diode;
 using Blazr.Diode.Mediator;
 using Blazr.Gallium;
-using Blazr.Manganese;
 
 namespace Blazr.App.UI;
 
@@ -50,7 +47,7 @@ public sealed class InvoiceEntityMutor
 
     public Result Mutate(DmoInvoice invoice)
     {
-      var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, this.InvoiceEntity.InvoiceItems);
+        var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, this.InvoiceEntity.InvoiceItems);
         LastResult = result.ToResult();
 
         this.InvoiceEntity = result.OutputValue(this.InvoiceEntity);
