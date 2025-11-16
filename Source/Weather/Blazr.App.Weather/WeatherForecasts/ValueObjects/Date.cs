@@ -35,7 +35,5 @@ public readonly record struct Date
     }
 
     public override string ToString()
-    {
-        return this.IsValid ? this.Value.ToString("dd-MMM-yy")  : "Not Valid";
-    }
+        => this.IsValid ? this.Value.ToString("dd-MMM-yy")  : "Not Valid";
 }

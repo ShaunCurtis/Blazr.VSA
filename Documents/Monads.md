@@ -1,18 +1,283 @@
 # Monads
 
-Type *Monad* into your search bar: the Internet is awash with articles.  There are even articles about the articles trying to explain why the original articles fail!
+Consider this simple console app:
+
+```csharp
+Console.WriteLine(
+    double.TryParse(Console.ReadLine(), out double value)
+);
+```
+
+which outputs:
+
+```csharp
+12
+True
+```
+
+Where you expect to get the ewault of the parse, you get a bool.  It's designed to be used inside an `if` statement.  It belches and farts at the same time!
+
+`TryParse` is a horible piece of *OOP* code.  There are versions implemented all over C#.
+
+Let's unwrap the `catch`:
+
+```csharp
+try
+{
+    Console.WriteLine(double.Parse(Console.ReadLine()!));
+}
+catch {
+    Console.WriteLine("It looks like things went BANG!");
+}
+```
+
+Better, but a little hard to read. Can we create something more generic to use on any `Func<In, Out>`.
+
+We could return a `Tuple<bool, T>', but using a wrapper object is more elegant.
+
+## `Bool<T>`
+
+Introducing `Bool<T>`.  It combines a `bool` with a value of T when `true`.
+
+The basic implementation looks like this:
+
+```csharp
+public readonly record struct Bool<T>
+{
+    [MemberNotNullWhen(true, nameof(Value))]
+    public bool HasValue { get; private init; } = false;
+
+    public T Value { get; private init; } = default!;
+    
+    public Bool() { }
+
+    public Bool(T? value)
+    {
+        if (value is not null)
+        {
+            HasValue = true;
+            Value = value;
+        }
+    }
+
+    public static Bool<T> True(T value)
+        => new Bool<T>(value);
+
+    public static Bool<T> False()
+        => new Bool<T>();
+}
+```
+
+Armed with this, we could write a replacement `TryParse` method that returns a `Bool<T>`:
+
+```csharp
+Bool<double> TryParseString(string? value)
+{
+    if (value is null)
+        return Bool<double>.False();
+
+    try
+    {
+        return Bool<double>.True(value));
+    }
+    catch
+    {
+        return Bool<double>.False();
+    }
+}
+```
+
+The console app:
+
+```csharp
+Console.WriteLine(
+    TryParseString(Console.ReadLine())
+);
+```
+
+Which produces:
+
+```text
+> 12
+Bool { HasValue = True, Value = 12 }
+```
+
+OK, but, as suggested earlier, we can go further the functionality to `Bool<T>`.
+
+I've split this into two steps.  
+
+First a simple `Map` function: you'll see why shortly.  It takes a function with the pattern `Func<T, TOut>`:  for example `double.Parse`. 
+
+```csharp
+public Bool<TOut> Map<TOut>(Func<T, TOut> map)
+    => this.HasValue 
+        ? new(map.Invoke(this.Value)) 
+        : new Bool<TOut>();
+```
+
+If `Bool<T>`'s state is:
+
+  -  *false*, it returns a new *false* `Bool<Out>` instance.
+  -  *true*, it executes the `map` function and returns the result wrapped in a new `Bool<T>` instance.
+
+Second the *Try* version, which simply wraps the `Map` in a try:
+
+```csharp
+public Bool<TOut> TryMap<TOut>(Func<T, TOut> map)
+{
+    try
+    {
+        return Map<TOut>(map);
+    }
+    catch
+    {
+        return new Bool<TOut>();
+    }
+}
+```
+
+At this point we need an elegant way to get the console input into a `Bool<string>`: commonly known as lifting or elevating.
+
+There are several ways: my favourite is a helper wrapper around `Console.ReadLine`:
+
+```csharp
+public static class ConsoleHelper
+{
+    public static Bool<string> ReadLine()
+    {
+        string? input = Console.ReadLine();
+        return new Bool<string>(input);
+    }
+}
+```
+
+The console app now refactors to this:
+
+```csharp
+Console.WriteLine(
+    ConsoleHelper.ReadLine()
+    .Map(double.Parse)
+);
+```
+
+And a test output:
+
+```text
+16
+Bool { HasValue = True, Value = 16 }
+```
+
+## Functors
+
+Definition [from Wikipedia]:
+
+> In functional programming, a functor is a design pattern ... that allows a function to be applied to values inside a generic type without changing the structure of the generic type.
+
+The *function* is normally called `Map`.
+
+Here's our `Map`.
+
+```csharp
+public Bool<TOut> Map<TOut>(Func<T, TOut> map)
+    => this.HasValue 
+        ? new(map.Invoke(this.Value)) 
+        : new Bool<TOut>();
+```
+
+It takes a function that is applied to the internal `T` and produces a new `Bool<TOut>`.  It doesn't change the existing object's structure.  `TOut` can be a different type to `T` or the same.  It's a *Functor*.
+
+Great, but what do *functors* give us?  
+
+Consider this modified console app:
+
+```csharp
+Console.WriteLine(
+    ConsoleHelper.ReadLine()
+    .TryMap(double.Parse)
+    .Map(Math.Sqrt)
+    .Map(value => Math.Round(value, 2))
+);
+```
+
+which outputs:
+
+```text
+16
+Bool { HasValue = True, Value = 4 }
+```
+
+or:
+
+```text
+sixteen
+Bool { HasValue = False, Value = 0 }
+```
+
+*Functors* provide two very powerful attributes:
+
+1. **Chaining** of functions.
+2. **Railway Orientated Programming** where subsequent steps are only executed if the `Bool<T>` has a valid value.  Once *Tripped*, all subsequent steps short circuit.
+
+We can see both of thesein action in the above console app.   
+
+## Outputting
+
+Up to this point, we've just used the default `ToString()` method to output the `Bool<T>`.
+
+Let's add some specific methods for outputting `T`.
+
+The first takes a default value.  It outputs the internal value on `true` and the provided `defaultValue` on `false`.
+
+```csharp
+public T OutputValue(T defaultValue)
+    => this.HasValue ? this.Value : defaultValue;
+```
+
+The second returns the result of `defaultFunction` on `false`.
+
+```csharp
+public T OutputValue(Func<T> defaultFunction)
+    => this.HasValue ? this.Value : defaultFunction.Invoke();
+```
+
+Refactor the console app:
+
+```csharp
+Console.WriteLine(
+    ConsoleHelper.ReadLine()
+    .TryMap(double.Parse)
+    .Map(Math.Sqrt)
+    .Map(value => Math.Round(value, 2))
+    .Map<string>(value => $"Success: The transformed value is: {value}")
+    .OutputValue(defaultValue: "The input value could not be parsed.")
+);
+```
+
+## Match
+
+For completeness wrappers normally implement a `Match` method like this:
+
+```csharp
+public void Match(Action<T> hasValue, Action hasNoValue)
+{
+    if (this.HasValue)
+        hasValue.Invoke(this.Value);
+    else
+        hasNoValue.Invoke();
+}
+```
 
 
-Here's another: but hopefully one that succeeds.
 
-Why do they fail?  Perhaps because they try to explain this:
 
-> A *Monad* is just a *Monoid* in the *Category* of *EndOfFunctors*.
 
-Mathmatically correct (or so I'm informed), but meaningless to mere mortals.
 
-Lets come at this from a different angle.
 
+
+
+
+
+===============================================
 Here's a C# skeleton Monad:
 
 ```csharp

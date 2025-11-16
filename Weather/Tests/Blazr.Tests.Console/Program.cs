@@ -1,9 +1,62 @@
-﻿//using Blazr.Manganese;
+﻿using Blazr.Manganese;
 using System;
 using System.Data.SqlTypes;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-//var value = Console.ReadLine();
+Console.WriteLine(
+    ConsoleHelper.ReadLine()
+    .TryMap(double.Parse)
+    .Map(Math.Sqrt)
+    .Map(value => Math.Round(value, 2))
+);
+
+//Console.WriteLine(
+//    ConsoleHelper.ReadLine()
+//    .TryMap(double.Parse)
+//    .Map(Math.Sqrt)
+//    .Map(value => Math.Round(value, 2))
+//    .Map<string>(value => $"Success: The transformed value is: {value}")
+//    .OutputValue(defaultValue: "The input value could not be parsed.")
+//);
+
+//Console.WriteLine(
+//    double.TryParse(Console.ReadLine(), out double value)
+//);
+
+//try
+//{
+//    Console.WriteLine(double.Parse(Console.ReadLine()!));
+//}
+//catch {
+//    Console.WriteLine("It looks like things went BANG!");
+//}
+
+//  Console.WriteLine(
+//    Console.ReadLine()
+//    .ToResult()
+//    .MapFunction(Double.Parse)
+//    .MapFunction(Math.Sqrt)
+//    .BindFunction(To2Decimals)
+//    .OutputValue<string>(
+//        hasValue: (value) => $"Success: The transformed value is: {value}",
+//        hasException: (ex) => $"Failure: {ex.Message}"
+//    ));
+
+
+Bool<decimal> TryParseString(string? value)
+{
+    if (value is null)
+        return Bool<decimal>.False();
+
+    try
+    {
+        return Bool<decimal>.True(decimal.Parse(value));
+    }
+    catch
+    {
+        return Bool<decimal>.False();
+    }
+}
 
 //if (value is null)
 //    Console.WriteLine("Value is Null.");
@@ -20,19 +73,8 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 //    }
 //}
 
-Console.WriteLine(
-    Console.ReadLine()
-    .ToResult()
-    .MapFunction(Double.Parse)
-    .MapFunction(Math.Sqrt)
-    .BindFunction(To2Decimals)
-    .OutputValue<string>(
-        hasValue: (value) => $"Success: The transformed value is: {value}",
-        hasException: (ex) => $"Failure: {ex.Message}"
-    ));
-
-Result<string> To2Decimals(double value)
-    => Result<string>.Create(Math.Round(value, 2).ToString());
+//Result<string> To2Decimals(double value)
+//    => Result<string>.Create(Math.Round(value, 2).ToString());
 
 //Console.WriteLine(
 //    Result<string>
@@ -82,6 +124,23 @@ public static class ResultExtensions
         => value is null
             ? new Result<string>(ResultException.Create("Value can'tbe null."))
             : new Result<string>(value);
+}
+public static class Extensions
+{
+    extension(string? value)
+    {
+        public Bool<string> ToBoolT()
+            => new Bool<string>(value);
+    }
+}
+
+public static class ConsoleHelper
+{
+    public static Bool<string> ReadLine()
+    {
+        string? input = Console.ReadLine();
+        return new Bool<string>(input);
+    }
 }
 
 public record Result<T>

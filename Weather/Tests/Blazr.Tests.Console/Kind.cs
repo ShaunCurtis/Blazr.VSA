@@ -1,0 +1,1 @@
+﻿public interface Kind<F, A>;
