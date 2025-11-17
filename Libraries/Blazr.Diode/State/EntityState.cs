@@ -25,24 +25,24 @@ public sealed class EntityState<T>
         _baseState = _currentState;
     }
 
-    public Result Reset()
+    public Bool Reset()
     {
         _currentState = _baseState;
         _lastState = null;
-        return Result.Success();
+        return Bool.Success();
     }
 
-    public Result Update(T record, Guid transactionId)
+    public Bool Update(T record, Guid transactionId)
         => this.SaveState(transactionId)
-            .ExecuteActionWithResult(() => UpdateState(record));
+            .Map(() => UpdateState(record));
 
-    public Result MarkAsDeleted(Guid transactionId)
+    public Bool MarkAsDeleted(Guid transactionId)
         => this.SaveState(transactionId)
-            .ExecuteActionWithResult(DeleteState);
+            .Map(DeleteState);
 
-    public Result MarkAsPersisted()
+    public Bool MarkAsPersisted()
             => this.PersistedState();
-    public Result RollBackLastUpdate(Guid transactionId)
+    public Bool RollBackLastUpdate(Guid transactionId)
         => RollBackState(transactionId);
 
     //==============================================================
@@ -51,40 +51,40 @@ public sealed class EntityState<T>
     private StateRecord<T> _currentState;
     private StateRecord<T> _baseState;
 
-    private Result PersistedState()
+    private Bool PersistedState()
     {
         _currentState = _currentState with { State = EditState.Clean };
-        return Result.Success();
+        return Bool.Success();
     }
 
-    private Result DeleteState()
+    private Bool DeleteState()
     {
         _currentState = _currentState with { State = EditState.Deleted };
-        return Result.Success();
+        return Bool.Success();
     }
 
-    private Result SaveState(Guid transactionId)
+    private Bool SaveState(Guid transactionId)
     {
         _lastState = this.AsStateRecord with { TransactionId = transactionId };
-        return Result.Success();
+        return Bool.Success();
     }
 
-    private Result UpdateState(T record)
+    private Bool UpdateState(T record)
     {
         if (!this.Record.Equals(record))
             _currentState = new StateRecord<T>(record, this.State.AsDirty);
-        return Result.Success();
+        return Bool.Success();
     }
 
-    private Result RollBackState(Guid transactionId)
+    private Bool RollBackState(Guid transactionId)
     {
         if (_lastState is null || _lastState.TransactionId != transactionId)
-            Result.Failure("There is no rollback data for the transaction.");
+            Bool.Failure("There is no rollback data for the transaction.");
 
         _currentState = _lastState!;
         _lastState = null;
 
-        return Result.Success();
+        return Bool.Success();
     }
 }
 

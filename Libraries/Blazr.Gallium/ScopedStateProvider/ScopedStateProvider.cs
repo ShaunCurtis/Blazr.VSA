@@ -10,9 +10,9 @@ namespace Blazr.Gallium;
 public interface IScopedStateProvider<TKey, TData>
      where TData : class
 {
-    public Result Dispatch(TKey key, TData data);
+    public Bool Dispatch(TKey key, TData data);
 
-    public Result ClearState(TKey key);
+    public Bool ClearState(TKey key);
 
     public Result<T> GetState<T>(TKey key) where T : class;
 }
@@ -27,7 +27,7 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
     private Dictionary<Guid, StateSubscription> _subscriptions = new();
     private TimeSpan StateTTL = TimeSpan.FromMinutes(60);
 
-    public Result Dispatch(Guid key, object data)
+    public Bool Dispatch(Guid key, object data)
     {
         if (_subscriptions.ContainsKey(key))
             _subscriptions[key] = new(data);
@@ -36,7 +36,7 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
 
         this.ClearExpiredStates();
 
-        return Result.Success();
+        return Bool.Success();
     }
 
     public Result<T> Dispatch<T>(T data) where T : class, IScopedState
@@ -51,12 +51,12 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
         return Result<T>.Success(data);
     }
 
-    public Result ClearState(Guid key)
+    public Bool ClearState(Guid key)
     {
         if (_subscriptions.ContainsKey(key))
             _subscriptions.Remove(key);
 
-        return Result.Success();
+        return Bool.Success();
     }
 
     public Result<T> GetState<T>(Guid key) where T : class

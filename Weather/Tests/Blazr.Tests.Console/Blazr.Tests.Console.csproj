@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="BoolT.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Libraries\Blazr.Cadmium\Blazr.Cadmium.csproj" />
     <ProjectReference Include="..\..\..\Libraries\Blazr.Manganese\Blazr.Manganese.csproj" />
   </ItemGroup>

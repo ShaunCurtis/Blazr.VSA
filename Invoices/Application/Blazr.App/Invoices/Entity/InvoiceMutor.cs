@@ -47,7 +47,7 @@ public sealed record InvoiceMutor
     /// <returns></returns>
     public Result<InvoiceMutor> Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
         => InvoiceEntity.CreateWithEntityRulesApplied(invoice, invoiceItems)
-            .ExecuteTransform(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
+            .Bind(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
 
     /// <summary>
     /// Creates and returns a new InvoiceMutor using the supplied invoice
@@ -58,7 +58,7 @@ public sealed record InvoiceMutor
     /// <returns></returns>
     public Result<InvoiceMutor> Mutate(DmoInvoice invoice)
         => InvoiceEntity.CreateWithEntityRulesApplied(invoice, this.CurrentEntity.InvoiceItems)
-            .ExecuteTransform(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
+            .Bind(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
 
     /// <summary>
     /// Creates and returns a new InvoiceMutor using the supplied invoice items
@@ -69,7 +69,7 @@ public sealed record InvoiceMutor
     /// <returns></returns>
     public Result<InvoiceMutor> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
         => InvoiceEntity.CreateWithEntityRulesApplied(this.CurrentEntity.InvoiceRecord, invoiceItems)
-            .ExecuteTransform(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
+            .Bind(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
 
     /// <summary>
     /// Contructor to create a New Invoice i.e. an Invoice with default values

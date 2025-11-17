@@ -29,7 +29,7 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
     protected string FormTitle => $"{this.UIConnector.SingleDisplayName} Viewer";
 
     protected TRecord Item { get; set; } = new TRecord();
-    protected Result LastResult { get; set; } = Result.Success();
+    protected Bool LastResult { get; set; } = Bool.Success();
 
     protected async override Task OnInitializedAsync()
     {
@@ -49,7 +49,7 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
 
         this.LastResult = result.ToResult();
 
-        this.Item = result.OutputValue(exception => new TRecord());
+        this.Item = result.Output(exception => new TRecord());
     }
 
     protected virtual async void OnRecordChanged(object? sender)

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -12,7 +12,7 @@
 	
   <ItemGroup>
 	  <PackageReference Include="Blazored.Toast" Version="4.2.1" />
-	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.10" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
 	  <ProjectReference Include="..\..\..\Libraries\Blazr.Diode\Blazr.Diode.csproj" />
 	  <ProjectReference Include="..\..\..\Libraries\Blazr.Cadmium\Blazr.Cadmium.csproj" />
 	  <ProjectReference Include="..\..\..\Libraries\Blazr.Indium\Blazr.Indium.csproj" />

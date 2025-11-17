@@ -15,7 +15,7 @@ public record UpdateInvoiceItemAction
     public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
         => mutor
             .GetInvoiceItem(_invoiceItem)
-            .ExecuteFunction(invoiceItem => mutor.CurrentEntity.InvoiceItems
+            .Map(invoiceItem => mutor.CurrentEntity.InvoiceItems
                 .ToList()
                 .RemoveItem(invoiceItem)
                 .AddItem(_invoiceItem))
@@ -24,7 +24,7 @@ public record UpdateInvoiceItemAction
     public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity
                 .GetInvoiceItem(_invoiceItem)
-                .ExecuteFunction(invoiceItem => entity.InvoiceItems
+                .Map(invoiceItem => entity.InvoiceItems
                     .ToList()
                     .RemoveItem(invoiceItem)
                     .AddItem(_invoiceItem))

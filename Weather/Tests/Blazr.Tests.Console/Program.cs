@@ -1,14 +1,31 @@
 ﻿using Blazr.Manganese;
-using System;
-using System.Data.SqlTypes;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
+Console.WriteLine(
+    double.Parse(Console.ReadLine())
+);
+
+//Console.WriteLine(
+//    ConsoleHelper.ReadLine()
+//    .Bind(TryParseString)
+//    //.TryMap(double.Parse)
+//    .Map(Math.Sqrt)
+//    .Map(value => Math.Round(value, 2))
+//    .Map<string>(value => $"Success: The transformed value is: {value}")
+//    .OutputValue(defaultValue: "The input value could not be parsed.")
+//);
 
 Console.WriteLine(
     ConsoleHelper.ReadLine()
-    .TryMap(double.Parse)
+    .Bind(TryParseString)
     .Map(Math.Sqrt)
     .Map(value => Math.Round(value, 2))
+    .Match<double, string>(
+        hasValue: value => $"Success: The transformed value is: {value}",
+        hasNoValue: () => "The input value could not be parsed.",
+        hasException: ex => $"An error occurred: {ex.Message}"
+    )
 );
+
 
 //Console.WriteLine(
 //    ConsoleHelper.ReadLine()
@@ -43,18 +60,18 @@ Console.WriteLine(
 //    ));
 
 
-Bool<decimal> TryParseString(string? value)
+Bool<double> TryParseString(string? value)
 {
     if (value is null)
-        return Bool<decimal>.False();
+        return Bool<double>.Failure();
 
     try
     {
-        return Bool<decimal>.True(decimal.Parse(value));
+        return Bool<double>.Success(double.Parse(value));
     }
-    catch
+    catch (Exception ex)
     {
-        return Bool<decimal>.False();
+        return Bool<double>.Failure(ex);
     }
 }
 
@@ -130,7 +147,7 @@ public static class Extensions
     extension(string? value)
     {
         public Bool<string> ToBoolT()
-            => new Bool<string>(value);
+            => Bool<string>.Create(value);
     }
 }
 
@@ -139,7 +156,7 @@ public static class ConsoleHelper
     public static Bool<string> ReadLine()
     {
         string? input = Console.ReadLine();
-        return new Bool<string>(input);
+        return Bool<string>.Create(input);
     }
 }
 

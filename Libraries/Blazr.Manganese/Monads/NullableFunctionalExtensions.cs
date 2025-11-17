@@ -11,7 +11,7 @@ public static class NullableFunctionalExtensions
         where T : struct
         => value.HasValue
             ? value
-            : throw new ResultException("T was null.");
+            : throw new BoolException("T was null.");
 
     public static Nullable<T> ExecuteAction<T>(this Nullable<T> value, Action<T>? IsNotNull = null, Action? IsNull = null)
         where T : struct

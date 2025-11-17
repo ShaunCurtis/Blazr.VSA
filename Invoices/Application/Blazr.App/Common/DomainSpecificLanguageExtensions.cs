@@ -8,12 +8,12 @@ namespace Blazr.App;
 
 public static class DomainSpecificLanguageExtensions
 {
-    public static Result RollbackOnFailure(this Result result, Action rollback)
-        => result.ExecuteSideEffect(hasException: (ex) => rollback.Invoke());
+    public static Bool RollbackOnFailure(this Bool result, Action rollback)
+        => result.Output(hasException: (ex) => rollback.Invoke());
 
-    public static Result<T> RollbackOnFailure<T>(this Result<T> result, Action rollback)
-    => result.ExecuteSideEffect(hasException: (ex) => rollback.Invoke());
+    public static Bool<T> RollbackOnFailure<T>(this Bool<T> result, Action rollback)
+    => result.Output(hasException: (ex) => rollback.Invoke());
 
-    public static Result<T> NotifyOnSuccess<T>(this Result<T> result, Action<T> notify)
-        => result.ExecuteSideEffect(hasValue: (value) => notify.Invoke(value));
+    public static Bool<T> NotifyOnSuccess<T>(this Bool<T> result, Action<T> notify)
+        => result.Output(hasValue: (value) => notify.Invoke(value));
 }

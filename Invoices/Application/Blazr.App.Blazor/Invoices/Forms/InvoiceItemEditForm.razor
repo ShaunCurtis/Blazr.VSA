@@ -70,7 +70,7 @@
     [Parameter] public bool LockNavigation { get; set; } = true;
 
     private EditState State { get; set; } = EditState.Clean;
-    private Result LastResult { get; set; } = Result.Success();
+    private Bool LastResult { get; set; } = Bool.Success();
     private InvoiceItemRecordMutor EditMutor { get; set; } = default!;
     private EditContext EditContext { get; set; } = default!;
 
@@ -107,7 +107,7 @@
         var action = DeleteInvoiceItemAction.Create(EditMutor.ToRecord());
 
         this.LastResult = EntityMutor.Dispatch(action.Dispatcher)
-        .ExecuteSideEffect(OnExit);
+        .Output(OnExit);
     }
 
     private void OnSave()
@@ -117,7 +117,7 @@
             EditState.StateNewIndex =>  EntityMutor.Dispatch(AddInvoiceItemAction.Create(EditMutor.ToRecord()).Dispatcher),
             _ => EntityMutor.Dispatch(UpdateInvoiceItemAction.Create(EditMutor.ToRecord()).Dispatcher)
         })
-        .ExecuteSideEffect(OnExit);
+        .Output(OnExit);
     }
 
     private void ResetRecord()

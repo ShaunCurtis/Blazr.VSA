@@ -32,7 +32,7 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
     protected QuickGrid<TRecord> quickGrid = default!;
     protected PaginationState Pagination = new PaginationState { ItemsPerPage = 10 };
     protected GridState<TRecord> GridState = new();
-    protected Result LastResult = Result.Success();
+    protected Bool LastResult = Bool.Success();
 
     protected string formTitle => this.FormTitle ?? $"List of {this.UIConnector?.PluralDisplayName ?? "Items"}";
     protected readonly string TableCss = "table table-sm table-striped table-hover border-bottom no-margin hide-blank-rows";
@@ -46,7 +46,7 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
             ? this.GetGridState()
             : this.ResetGridState();
 
-        this.GridState = result.OutputValue(exception => new GridState<TRecord>());
+        this.GridState = result.Output(exception => new GridState<TRecord>());
         this.LastResult = result.ToResult();
 
         _messageBus.Subscribe<TKey>(OnRecordChanged);
@@ -84,10 +84,10 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
     protected async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
         => await UpdateGridRequest<TRecord>
             .CreateAsResult(gridRequest)
-            .ExecuteTransform(this.SetGridState)
-            .ExecuteTransformAsync(UIConnector.GetItemsAsync)
-            .ExecuteSideEffectAsync((result) => this.LastResult = result)
-            .OutputValueAsync(ExceptionOutput: ex => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+            .Bind(this.SetGridState)
+            .BindAsync(UIConnector.GetItemsAsync)
+            .OutputAsync((result) => this.LastResult = result)
+            .OutputAsync(ExceptionOutput: ex => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 
     protected virtual async Task OnEditAsync(TKey id)
     {

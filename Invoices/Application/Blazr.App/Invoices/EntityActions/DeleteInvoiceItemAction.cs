@@ -14,7 +14,7 @@ public record DeleteInvoiceItemAction
 
     public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
         => mutor.GetInvoiceItem(_invoiceItem)
-            .ExecuteFunction(invoiceItem => mutor.CurrentEntity.InvoiceItems
+            .Map(invoiceItem => mutor.CurrentEntity.InvoiceItems
                 .ToList()
                 .RemoveItem(invoiceItem))
             .ExecuteTransform(mutor.Mutate);
@@ -22,7 +22,7 @@ public record DeleteInvoiceItemAction
     public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity
             .GetInvoiceItem(_invoiceItem)
-            .ExecuteFunction(invoiceItem => entity.InvoiceItems
+            .Map(invoiceItem => entity.InvoiceItems
                 .ToList()
                 .RemoveItem(invoiceItem))
             .ExecuteTransform(entity.CreateWithRulesValidation);

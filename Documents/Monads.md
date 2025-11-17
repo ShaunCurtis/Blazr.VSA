@@ -1,6 +1,33 @@
 # Monads
 
+I'm not sure how to start *Not Yet Another Monad Article*, so let's forget the **M** word until the end of this article.  Instead, let's write some code to address two fundimental C# coding problems:
+
+1. Passing errors through the system from *Input* [a database call, the user typing,...] to *Output* [data on a screen, an API response,...].
+2. Handling nullable return values `List<T>? GetData(DataId id)` in a structured way.  No more `if (result is null) ...`
+
+The aim is to remove the need to write hundreds/thousands of lines of defensive code:   No more `if (result is null) ...`..
+
+## The simple Demo App
+
 Consider this simple console app:
+
+```csharp
+Console.WriteLine(
+    double.Parse(Console.ReadLine())
+);
+```
+
+Enter `Twelve` and **BANG**:
+
+```cshrp
+twelve
+Unhandled exception. System.FormatException: The input string 'twelve' was not in a correct format.
+   at System.Number.ThrowFormatException[TChar](ReadOnlySpan`1 value)
+   at System.Double.Parse(String s)
+   at Program.<Main>$(String[] args) in C:\Users\Surface\source\Blazr\Blazr.VSA\Weather\Tests\Blazr.Tests.Console\Program.cs:line 6
+```
+
+So you change to `TryParse`:
 
 ```csharp
 Console.WriteLine(
@@ -15,11 +42,17 @@ which outputs:
 True
 ```
 
-Where you expect to get the ewault of the parse, you get a bool.  It's designed to be used inside an `if` statement.  It belches and farts at the same time!
+Where's `12`, the result you would expect?  
 
-`TryParse` is a horible piece of *OOP* code.  There are versions implemented all over C#.
+You need to examine the methods rear end.  `Tryxxxxx` belches and farts at the same time!   It's designed specifically for `if` statements.  
 
-Let's unwrap the `catch`:
+So why doesn't the language go further? Do the `if` wrapping for you?  It would if it could, but C# out-of-the-box doesn't support *discriminated unions*.  It's not baked into the language.  Yet, but, don't hold your breath:  we've been waiting a long time on that promise.
+
+Instead we have the horrible `Tryxxxxx` cludge sprinkled through the C# libraries.
+
+Let's do better.
+
+We need a generic version of this:
 
 ```csharp
 try
@@ -31,24 +64,26 @@ catch {
 }
 ```
 
-Better, but a little hard to read. Can we create something more generic to use on any `Func<In, Out>`.
+Wrapping a try within a `Func<In, Out>`.
 
-We could return a `Tuple<bool, T>', but using a wrapper object is more elegant.
+A `Tuple<bool, T>' works, but applying the *Decorator Pattern* is more elegant.
+
+Introducing `Bool<T>`.
 
 ## `Bool<T>`
 
-Introducing `Bool<T>`.  It combines a `bool` with a value of T when `true`.
+`Bool<T>` combines a `bool` with a value of T when `true`.
 
-The basic implementation looks like this:
+This is the basic implementation:
 
 ```csharp
 public readonly record struct Bool<T>
 {
     [MemberNotNullWhen(true, nameof(Value))]
     public bool HasValue { get; private init; } = false;
+    public T? Value { get; private init; } = default!;
+    public Exception? Exception { get; private init; }
 
-    public T Value { get; private init; } = default!;
-    
     public Bool() { }
 
     public Bool(T? value)
@@ -60,15 +95,21 @@ public readonly record struct Bool<T>
         }
     }
 
+    public Bool(Exception? exception)
+        => Exception = exception;
+
     public static Bool<T> True(T value)
         => new Bool<T>(value);
 
     public static Bool<T> False()
         => new Bool<T>();
+
+    public static Bool<T> False(Exception? exception)
+        => new Bool<T>(exception);
 }
 ```
 
-Armed with this, we could write a replacement `TryParse` method that returns a `Bool<T>`:
+We can now code a new `TryParse` returning a `Bool<double>`:
 
 ```csharp
 Bool<double> TryParseString(string? value)
@@ -78,16 +119,16 @@ Bool<double> TryParseString(string? value)
 
     try
     {
-        return Bool<double>.True(value));
+        return Bool<double>.True(double.Parse(value));
     }
-    catch
+    catch(Exception ex)
     {
-        return Bool<double>.False();
+        return Bool<double>.False(ex);
     }
 }
 ```
 
-The console app:
+The refactored console app:
 
 ```csharp
 Console.WriteLine(
@@ -102,25 +143,27 @@ Which produces:
 Bool { HasValue = True, Value = 12 }
 ```
 
-OK, but, as suggested earlier, we can go further the functionality to `Bool<T>`.
+We'll come back to this method shortly, but for now we'll build this functionality into `Bool<T>`. 
 
-I've split this into two steps.  
+## Map
 
-First a simple `Map` function: you'll see why shortly.  It takes a function with the pattern `Func<T, TOut>`:  for example `double.Parse`. 
+Breaking this down into two steps [we'll see why later]:  
+
+**First** a simple `Map` function.  It takes a function with the pattern `Func<T, TOut>`:  for example `double.Parse`. 
 
 ```csharp
 public Bool<TOut> Map<TOut>(Func<T, TOut> map)
-    => this.HasValue 
-        ? new(map.Invoke(this.Value)) 
-        : new Bool<TOut>();
+    => this.HasValue
+        ? Bool<TOut>.True(map.Invoke(this.Value))
+        : Bool<TOut>.False(this.Exception);
 ```
 
 If `Bool<T>`'s state is:
 
-  -  *false*, it returns a new *false* `Bool<Out>` instance.
   -  *true*, it executes the `map` function and returns the result wrapped in a new `Bool<T>` instance.
+  -  *false*, it returns a new *false* `Bool<Out>` instance and transfers over any exception.
 
-Second the *Try* version, which simply wraps the `Map` in a try:
+**Second** the *Try* version, which simply wraps the `Map` in a try:
 
 ```csharp
 public Bool<TOut> TryMap<TOut>(Func<T, TOut> map)
@@ -131,14 +174,16 @@ public Bool<TOut> TryMap<TOut>(Func<T, TOut> map)
     }
     catch
     {
-        return new Bool<TOut>();
+        return Bool<TOut>.False(this.Exception);
     }
 }
 ```
 
-At this point we need an elegant way to get the console input into a `Bool<string>`: commonly known as lifting or elevating.
+## Extending Existing Types
 
-There are several ways: my favourite is a helper wrapper around `Console.ReadLine`:
+We need an elegant construct to get the console input into a `Bool<string>`: wrapping it.
+
+There are several ways: my favourite in this case [until we get static extension methods] is another *Decorator Pattern* implementation: a helper wrapper around `Console.ReadLine`:
 
 ```csharp
 public static class ConsoleHelper
@@ -151,12 +196,12 @@ public static class ConsoleHelper
 }
 ```
 
-The console app now refactors to this:
+The console app now refactors to:
 
 ```csharp
 Console.WriteLine(
     ConsoleHelper.ReadLine()
-    .Map(double.Parse)
+    .TryMap(double.Parse)
 );
 ```
 
@@ -169,24 +214,26 @@ Bool { HasValue = True, Value = 16 }
 
 ## Functors
 
-Definition [from Wikipedia]:
+A definition [from Wikipedia]:
 
 > In functional programming, a functor is a design pattern ... that allows a function to be applied to values inside a generic type without changing the structure of the generic type.
 
 The *function* is normally called `Map`.
 
-Here's our `Map`.
+Here's our `Map`: we coded it in the first of the two steps above.
 
 ```csharp
 public Bool<TOut> Map<TOut>(Func<T, TOut> map)
-    => this.HasValue 
-        ? new(map.Invoke(this.Value)) 
-        : new Bool<TOut>();
+    => this.HasValue
+        ? Bool<TOut>.True(map.Invoke(this.Value))
+        : Bool<TOut>.False(this.Exception);
 ```
 
-It takes a function that is applied to the internal `T` and produces a new `Bool<TOut>`.  It doesn't change the existing object's structure.  `TOut` can be a different type to `T` or the same.  It's a *Functor*.
+It takes a function that it applies to the internal `T` and produces a new `Bool<TOut>`.  It doesn't change the existing object's structure.  `TOut` can be a different type to `T` or the same.  
 
-Great, but what do *functors* give us?  
+Bool(T) is a *Functor*.
+
+### What do *Functors* give us?  
 
 Consider this modified console app:
 
@@ -213,12 +260,12 @@ sixteen
 Bool { HasValue = False, Value = 0 }
 ```
 
-*Functors* provide two very powerful attributes:
+*Functors* provide two very powerful abstractions:
 
-1. **Chaining** of functions.
-2. **Railway Orientated Programming** where subsequent steps are only executed if the `Bool<T>` has a valid value.  Once *Tripped*, all subsequent steps short circuit.
+1. **Chaining** of functions.  The ouput of one method is passed as the argument to the next method.
+2. **Railway Orientated Programming** where subsequent steps are only executed if `Bool<T>` has a valid value.  Once *Tripped*, all subsequent steps short circuit.
 
-We can see both of thesein action in the above console app.   
+We can see both in the above console app.   
 
 ## Outputting
 
@@ -240,7 +287,7 @@ public T OutputValue(Func<T> defaultFunction)
     => this.HasValue ? this.Value : defaultFunction.Invoke();
 ```
 
-Refactor the console app:
+The refactored console app:
 
 ```csharp
 Console.WriteLine(
@@ -253,333 +300,151 @@ Console.WriteLine(
 );
 ```
 
-## Match
+## Monadic Functions
 
-For completeness wrappers normally implement a `Match` method like this:
+The basic pattern for a *Monadic Function* is `A -> Monad<B>` or `Func<T, Monad<TOut>>`.
+
+Look at `TryParseString` from earlier:  it fits the pattern.
 
 ```csharp
-public void Match(Action<T> hasValue, Action hasNoValue)
+Bool<double> TryParseString(string? value)
 {
-    if (this.HasValue)
-        hasValue.Invoke(this.Value);
-    else
-        hasNoValue.Invoke();
-}
-```
-
-
-
-
-
-
-
-
-
-
-
-===============================================
-Here's a C# skeleton Monad:
-
-```csharp
-public record Monad<T>(T value) 
-{
-    Monad<TOut> ExecuteFunction(Func<T, Monad<TOut>> f);
-}
-```
-
-It fulfills the basic requirments. i.e. it has:
-
-1. A constructor - `new(value)` 
-1. A generic method to execute a function with the `Func<T, Monad<TOut>>` pattern: known as a *Manadic Function*.
-
-Now let'a look at a coding problem the Monad pattern will help us solve.
-
-Consider this simple console application.
-
-```csharp
-var input = Console.ReadLine();
-
-if(double.TryParse(input, out double value))
-{
-    value = Math.Sqrt(value);
-    Console.WriteLine($"The square root is: {Math.Round(value, 2)}");
-}
-else
-{
-    Console.WriteLine($"The input is not a valid");
-}
-```
-
-It works, but it's ugly.  
-
-Why?  Well, you have to really look at this code to see what's going on.  `TryParse` spouts results at both ends: it returns a `bool` and outputs the parsed value via an `out` parameter.
-
-Let's refactor it using the *Result Monad*.
-
-## Result
-
-First, our Monad.
-
-```csharp
-public record Result<T>
-{
-    public T? Value { get; private init; }
-    public Exception? Exception { get; private init; }
-
-    public Result(T value) : this(value, null) { }
-    public Result(Exception exception) : this(default, exception) { }
-
-    private Result(T? value, Exception? exception)
-    {
-        Value = value;
-        Exception = exception;
-    }
-
-    public Result<TOut> ExecuteFunction<TOut>(Func<T, Result<TOut>> function)
-        => this.Exception is null
-            ? function(Value!)
-            : new Result<TOut>(this.Exception);
-}
-```
-
-A specific exception for it:
-
-```csharp
-public class ResultException : Exception
-{
-    public ResultException() : base("The Result is Failure.") { }
-    public ResultException(string message) : base(message) { }
-
-    public static ResultException Create(string message)
-        => new ResultException(message);
-}
-```
-
-`Result<T>` can be in one of two states:
-
-- **Succeeded or HasValue**: The operation completed successfully and produced a Value.
-- **Failed or HasException**: The operation failed, and the result contains an exception.
-
- Note: it's important the state check is on the `Exception` property.  `T` is not necessarily a `Nullable`: `int` will be set to `0`.
-
- The `ExecuteResult` method executes a function that takes a `T` and returns a new `Result<TOut>`.  If the input `Result<T>`:
-
- - Is in the *Succeeded* state, it executes the function and returns the result.  
- - Is in the *Failed* state, it short-circuits, returning a new `Result<TOut>` with the exception from the input `Result<T>`.  It doesn't execute the function.
-
-## Refactoring
-
-We can now start to refactor our console app using `Result<T>`.
-
-> Note: To enter null in the console use `<Ctl>z <Enter>`.
-
-We create a `Result<string?>` from the console read like this:
-
-```csharp
-new Result<string?>(Console.ReadLine())
-```
-
-And then execute a function against it:
-
-```csharp
-new Result<string?>(Console.ReadLine())
-    .ExecuteFunction<double>((value) =>
-    {
-        if (value is null)
-            return new Result<double>(ResultException.Create("The input value was null"));
-
-        try
-        {
-            var output = double.Parse(value!);
-            return (value is null)
-                ? new Result<double>(ResultException.Create("The input value was nota number."))
-                : new Result<double>(output);
-        }
-        catch (Exception ex)
-        {
-            return new Result<double>(ex);
-        }
-    }
-);
-```
-
-### The Map Function
-
-Look at the `MapFunction` code. `double.Parse` has the very common basic pattern `TIn -> TOut`.  We can boilerplate the pattern into our monad like this:
-
-```csharp
-public Result<TOut> MapFunction<TOut>(Func<T, TOut> function)
-{
-    if (this.Exception is not null)
-        return new Result<TOut>(this.Exception!);
+    if (value is null)
+        return Bool<double>.False();
 
     try
     {
-        var value = function.Invoke(this.Value!);
-        return (value is null)
-            ? new Result<TOut>(new ResultException("The function returned a null value."))
-            : new Result<TOut>(value);
+        return Bool<double>.True(double.Parse(value));
     }
-    catch (Exception ex)
+    catch(Exception ex)
     {
-        return new Result<TOut>(ex);
+        return Bool<double>.False(ex);
     }
 }
 ```
 
-It does two incredibly important things in program flow control:
+It's similar to `Map`, but far more powerful: you're in full control of the state of the returned `Bool<T>`.
 
-  - If the result is in failure state, it constructs a new `Result<TOut>` passing in the existing exception.  It short circuits and doesn't execute `function`.
-  - It sinks any raised exception and passes it on through the returned `Result<TOut>`. 
-
-
-### The Create Function
-
-The second very common pattern is `T? -> Result<T>` as in:
+*Monadic Functions* are handled within Monads using a `Bind` function.  We can add this to `Bool<T>`:
 
 ```csharp
-return (value is null)
-    ? new Result<double>(ResultException.Create("The input value was nota number."))
-    : new Result<double>(output);
+public Bool<TOut> Bind<TOut>(Func<T, Bool<TOut>> bind)
+    => this.HasValue ? bind.Invoke(this.Value) : new Bool<TOut>();
 ```
 
- we can boilerplate this:
+The console app refactored to use it:
 
 ```csharp
-    public static Result<T> Create(T? value)
-        => value is null
-            ? new( default, ResultException.Create("Value was null"))
-            : new(value) ;
+Console.WriteLine(
+    ConsoleHelper.ReadLine()
+    .Bind(TryParseString)
+    .Map(Math.Sqrt)
+    .Map(value => Math.Round(value, 2))
+    .Map<string>(value => $"Success: The transformed value is: {value}")
+    .OutputValue(defaultValue: "The input value could not be parsed.")
+);
 ```
 
-### String Extensions
+```text
+12
+Success: The transformed value is: 3.46
+```
+```test
+sixteen
+The input value could not be parsed.
+```
 
-We can add a local extension to `string?` like this:
+## Match
+
+Match is similar to `OutputValue`, it unwraps the wrapper, but provides a lot more flexibility:
+
+ - `TOut` can be a different type. In our example we switch from a `double` to a `string`.
+ - the optional `hasException` provides access to the exception if it exists.
 
 ```csharp
-public static class Extensions
+public TOut Match<TOut>(Func<T, TOut> hasValue, Func<TOut> hasNoValue, Func<Exception, TOut>? hasException = null)
 {
-    public static Result<string> ToResult(this string? value)
-        => value is null
-            ? new Result<string>(ResultException.Create("Value can'tbe null."))
-            : new Result<string>(value);
+    if (this.Exception is not null && hasException is not null)
+        return hasException.Invoke(this.Exception);
+
+    if (this.HasValue && hasValue is not null)
+        return hasValue.Invoke(this.Value);
+
+    return hasNoValue!.Invoke();
 }
 ```
 
-### Output
-
-Finally we need a mechanism to interact with I/O, such as writing to the console.  
-
-`OutputValue` will return the value or return the value provided by the `Func`.
-
-```csharp
-    public T OutputValue(Func<Exception, T> hasException)
-        => this.Exception is null
-            ? this.Value!
-            : hasException.Invoke(Exception!);
-
-    public TOut OutputValue<TOut>(Func<T, TOut> hasValue, Func<Exception, TOut> hasException)
-        => this.Exception is null
-            ? hasValue.Invoke(this.Value!)
-            : hasException.Invoke(Exception!);
-```
-
-## Refactoring
-
-We can now do some further refactoring to our code.
-
-The code uses `OutputValue` to provide a value to the I/O.
+The refactored console app:
 
 ```csharp
 Console.WriteLine(
-    Console.ReadLine()
-   .ToResult()
-   .MapFunction<double>(double.Parse)
-   .OutputValue<string>(
-        hasValue: (value) => $"Value is: {value}",
-        hasException: (exception) => $"Error: {exception.Message}"
-    ));
+    ConsoleHelper.ReadLine()
+    .Bind(TryParseString)
+    .Map(Math.Sqrt)
+    .Map(value => Math.Round(value, 2))
+    .Match<string>(
+        hasValue: value => $"Success: The transformed value is: {value}",
+        hasNoValue: () => "The input value could not be parsed.",
+        hasException: ex => $"An error occurred: {ex.Message}"
+    )
 ```
 
-Adding more processes is simple.  Lets get the square root to two decimal places.
+which produces this output:
 
-```csharp
-Console.WriteLine(
-    Console.ReadLine()
-   .ToResult()
-   .MapFunction<double>(double.Parse)
-   .MapFunction(Math.Sqrt)
-   .BindFunction(To2Decimals)
-   .OutputValue<string>(
-        hasValue: (value) => $"Value is: {value}",
-        hasException: (exception) => $"Error: {exception.Message}"
-    ));
+```text
+twelve
+An error occurred: The input string 'twelve' was not in a correct format.
 ```
 
-### The Bind Function
+## Monads
 
-The code above introduces `BindFunction` calling `To2Decimals`:
-
-```csharp
-Result<string> To2Decimals(double value)
-    => Result<string>.Create(Math.Round(value, 2).ToString());
-```
-
-Note the pattern used `TIn -> Monad<TOut>`.  This is a very common pattern which we can boilerplate in `Result<T>`:
-
-```csharp
-public Result<TOut> BindFunction<TOut>(Func<T, Result<TOut>> function)
-    => this.Exception is null
-        ? function(Value!)
-        : new Result<TOut>(this.Exception);
-```
-
-Note that you could have written this as a Llambda expression:
-
-```csharp
-.BindFunction(value => Result<string>.Create(Math.Round(value, 2).ToString()))
-```
-
-
-## So What [Hopefully] Have You Learnt from this Exercise
-
-*Monads* are wrappers/containers: an implementation of the **Decorator Pattern** with some specific *functional* methods.  They provide high level generic functions abstracting underlying standard C# coded functionality. 
-
-I find this the best definition I've seen:
+This the best definition I've seen:
 
 > A monad is a design pattern that structures computations. It encapsulate values and operations, enabling: chaining; composition; and handling of side effects such as null values and errors.
 
+The basic requirements for a *Monad* are:
+
+1. A constructor - `new(value)` 
+1. A generic method to execute a function with the `Func<T, Monad<TOut>>` pattern: a *Manadic Function*.
+
+Our `Bool<T>` has both.  It's a Monad.
+
+## So What [Hopefully] Have You Learnt from this Article
+
+*Monads* are just wrappers/containers that implement some specific *functional* methods.  They provide high level generic functions abstracting underlying standard C# coded functionality. 
+
 ### Functions
 
-In FP the phrase "Functions are first class citizens" is used a lot.  C# has delegates and `Func` and `Action` implementations.  In OOP you will rarely see them used.
+In FP "Functions are first class citizens".  C# has delegates and `Func` and `Action` implementations.  In OOP you rarely see them used, in FP they are everywhere.
 
-*Functions* are methods that take an input, apply one or more functions to that input, and produce an output.  *Functions* are the building blocks of FP.
+*Functions* are methods that take an input, apply one or more transforms to that input, and produce an output.  *Functions* are the building blocks of FP.
 
-In FP you apply functions to data and produce a result.  In OOP you pass data into methods to mutate state.
+In FP you apply functions to data and produce a result.  In OOP you pass data into methods which mostly mutate state.
+
+### State
+
+`Bool<T>` has three states:
+1. True
+2. False
+3. False with an Exception
 
 ### Railway Orientated Programming
 
-Whether you realised it or not, the FP patterns I've used implement *Railway Orientated Programming*.  If the input `Result<T>` is in *Exception* state, any function short-circuits, passing the exception to the output `Result<TOut>`: the function function is not executed.  Once on the *Exception* track, you stay there..
+`Bool<T>` implements *Railway Orientated Programming*.  If the input `Bool<T>` is in *False* state, any function short-circuits, passing any exception from the owner to the output `Bool<TOut>`: the function is not executed.  Once on the *False* track, you stay there..
 
 ### High Level Features
 
 There are many high level features built into C#: `Task` and `IEnumerable` are good examples.  The low level code C# code is very different from the code we type.  `Linq` is a library that adds Monadic functionality to `IEnumerable`.
 
-`Result<T>` is no different.  It's high level code, *syntactic sugar*, that abstracts higher level functionality into lower level boilerplate code.
-
-### Return, Bind, Map, Match
-
-I've deliberately modified the standard FP terms for operations: I've used names that I believe are more descriptive.  I think sticking to the classic terms is counter-productive:  Return, Map, Bind, Match and many other have different means in OOP C#.
+`Bool<T>` is no different.  It's high level code, *syntactic sugar*, that abstracts higher level functionality into lower level boilerplate code.
 
 ## Appendix
 
-The `ResultException`:
+The `BoolTException`:
 
 ```csharp
-public class ResultException : Exception
+public class BoolTException : Exception
 {
-    public ResultException() : base("The Result is Failure.") { }
     public ResultException(string message) : base(message) { }
 }
 ```
-

@@ -31,7 +31,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
                     Cancellation = cancellationToken
                 }
             )
-           .ExecuteTransformAsync((provider) =>
+           .BindAsync((provider) =>
                 Result<ListItemsProvider<DmoCustomer>>
                     .Create(new ListItemsProvider<DmoCustomer>(
                         Items: provider.Items.Select(item => DvoCustomer.Map(item)),

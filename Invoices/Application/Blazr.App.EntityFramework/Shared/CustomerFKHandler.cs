@@ -23,7 +23,7 @@ public record CustomerFKHandler : IRequestHandler<CustomerFKRequest, Result<IEnu
         return await dbContext
             .GetItemsAsync<FkCustomer>(ListQueryRequest<FkCustomer>
                 .Create(cancellationToken))
-            .ExecuteTransformAsync(provider => Result<IEnumerable<FkoCustomer>>
+            .BindAsync(provider => Result<IEnumerable<FkoCustomer>>
                 .Create(provider.Items.Select(item => item.Map)));
     }
 }

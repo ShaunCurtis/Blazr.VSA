@@ -14,7 +14,7 @@ public sealed class InvoiceEntityMutor
 
     public InvoiceEntity BaseEntity { get; private set; }
     public InvoiceEntity InvoiceEntity { get; private set; }
-    public Result LastResult { get; private set; } = Result.Success();
+    public Bool LastResult { get; private set; } = Bool.Success();
 
     public bool IsDirty => !this.InvoiceEntity.Equals(BaseEntity);
     public bool IsNew { get; private set; } = true;
@@ -33,7 +33,7 @@ public sealed class InvoiceEntityMutor
         this.InvoiceEntity = this.BaseEntity;
     }
 
-    public Result Dispatch(Func<InvoiceEntity, Result<InvoiceEntity>> dispatcher)
+    public Bool Dispatch(Func<InvoiceEntity, Result<InvoiceEntity>> dispatcher)
     {
         var result = dispatcher.Invoke(InvoiceEntity);
 
@@ -45,7 +45,7 @@ public sealed class InvoiceEntityMutor
         return this.LastResult;
     }
 
-    public Result Mutate(DmoInvoice invoice)
+    public Bool Mutate(DmoInvoice invoice)
     {
         var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, this.InvoiceEntity.InvoiceItems);
         LastResult = result.ToResult();
@@ -55,7 +55,7 @@ public sealed class InvoiceEntityMutor
         return this.LastResult;
     }
 
-    public Result Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
+    public Bool Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
     {
         var result = InvoiceEntity.CreateWithEntityRulesApplied(this.InvoiceEntity.InvoiceRecord, invoiceItems);
         LastResult = result.ToResult();
@@ -65,7 +65,7 @@ public sealed class InvoiceEntityMutor
         return this.LastResult;
     }
 
-    public Result Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
+    public Bool Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
     {
         var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, invoiceItems);
         LastResult = result.ToResult();
@@ -75,19 +75,19 @@ public sealed class InvoiceEntityMutor
         return this.LastResult;
     }
 
-    public async Task<Result> LoadAsync(InvoiceId id)
+    public async Task<Bool> LoadAsync(InvoiceId id)
     {
         var result = await _mediator.DispatchAsync(new InvoiceRecordRequest(id));
 
         this.InvoiceEntity = result.OutputValue(InvoiceEntity.CreateNewEntity);
         this.BaseEntity = this.InvoiceEntity;
         this.LastResult = result.ToResult();
-        this.IsNew = !this.LastResult.OutputValue();
+        this.IsNew = !this.LastResult.Output();
 
         return this.LastResult;
     }
 
-    public async Task<Result> SaveAsync()
+    public async Task<Bool> SaveAsync()
     {
         var result = await _mediator.DispatchAsync(new InvoiceCommandRequest(this.InvoiceEntity, EditState.Dirty, Guid.NewGuid()));
 
@@ -96,10 +96,10 @@ public sealed class InvoiceEntityMutor
         return this.LastResult;
     }
 
-    public Result Reset()
+    public Bool Reset()
     {
         this.InvoiceEntity = this.BaseEntity;
-        this.LastResult = Result.Success();
+        this.LastResult = Bool.Success();
         return this.LastResult;
     }
 }

@@ -9,7 +9,7 @@ namespace Blazr.App.Core;
 
 public readonly record struct InvoiceCommandRequest(
         InvoiceEntity Item, EditState State, Guid TransactionId)
-    : IRequest<Result>
+    : IRequest<Bool>
 {
     public static InvoiceCommandRequest Create(InvoiceEntity entity, EditState state)
         => new InvoiceCommandRequest(entity, state, Guid.NewGuid());

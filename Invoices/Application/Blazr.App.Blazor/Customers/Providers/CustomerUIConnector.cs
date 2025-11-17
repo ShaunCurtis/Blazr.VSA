@@ -50,8 +50,8 @@ public class CustomerUIConnector
 
     public Task<Result<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
         => CustomerListRequest.Create(state)
-            .ExecuteTransformAsync((request) => _mediator.DispatchAsync(request))
-            .ExecuteFunctionAsync((itemsProvider) => GridItemsProviderResult
+            .BindAsync((request) => _mediator.DispatchAsync(request))
+            .MapAsync((itemsProvider) => GridItemsProviderResult
                 .From<DmoCustomer>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
 
     public Result<CustomerId> GetKey(object? obj)

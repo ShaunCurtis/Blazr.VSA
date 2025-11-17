@@ -13,7 +13,7 @@ namespace Blazr.App.EntityFramework;
 ///  - Delete the whole data set if it exists
 ///  - Add the data set if we are adding or updating 
 /// </summary>
-public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandRequest, Result>
+public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandRequest, Bool>
 {
     private readonly IMessageBus _messageBus;
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
@@ -26,7 +26,7 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
         _recordRequestHandler = requestHandler;
     }
 
-    public async Task<Result> HandleAsync(InvoiceCommandRequest request, CancellationToken cancellationToken)
+    public async Task<Bool> HandleAsync(InvoiceCommandRequest request, CancellationToken cancellationToken)
     {
         using var dbContext = await _factory.CreateDbContextAsync(cancellationToken);
 
@@ -40,7 +40,7 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
                 return deleteResult;
 
             if (request.State == EditState.Deleted)
-                return Result.Success();
+                return Bool.Success();
         }
 
         var addResult = await this.AddEntityAsync(request.Item, cancellationToken);
@@ -50,10 +50,10 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
 
         _messageBus.Publish<InvoiceEntity>(request.Item.InvoiceRecord.Id);
 
-        return Result.Success();
+        return Bool.Success();
     }
 
-    private async Task<Result> DeleteEntityAsync(InvoiceEntity entity, CancellationToken cancellationToken)
+    private async Task<Bool> DeleteEntityAsync(InvoiceEntity entity, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 
@@ -65,12 +65,12 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
         var addedItems = await dbContext.SaveChangesAsync(cancellationToken);
 
         if (addedItems != entity.InvoiceItems.Count + 1)
-            return Result.Failure("The Invoice was not added corectly.  Check the result.");
+            return Bool.Failure("The Invoice was not added corectly.  Check the result.");
 
-        return Result.Success();
+        return Bool.Success();
     }
 
-    private async Task<Result> AddEntityAsync(InvoiceEntity entity, CancellationToken cancellationToken)
+    private async Task<Bool> AddEntityAsync(InvoiceEntity entity, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 
@@ -82,8 +82,8 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
         var addedItems = await dbContext.SaveChangesAsync(cancellationToken);
 
         if (addedItems != entity.InvoiceItems.Count + 1)
-            return Result.Failure("The Invoice was not added corectly.  Check the result.");
+            return Bool.Failure("The Invoice was not added corectly.  Check the result.");
 
-        return Result.Success();
+        return Bool.Success();
     }
 }

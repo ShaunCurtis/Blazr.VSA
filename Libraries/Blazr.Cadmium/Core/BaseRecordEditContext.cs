@@ -33,7 +33,7 @@ public abstract class BaseRecordEditContext<TRecord, TKey>
     public bool IsDirty
         => this.BaseRecord != this.AsRecord;
 
-    public abstract Result Load(TRecord record);
+    public abstract Bool Load(TRecord record);
 
     public void Reset()
     {

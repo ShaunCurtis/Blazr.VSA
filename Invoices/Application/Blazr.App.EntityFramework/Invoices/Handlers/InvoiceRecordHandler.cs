@@ -23,7 +23,7 @@ public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceRecordRequest,
 
         var invoiceResult = await dbContext
             .GetRecordAsync<DvoInvoice>(new RecordQueryRequest<DvoInvoice>(item => item.InvoiceID == request.Id.Value))
-            .ExecuteTransformAsync(DvoInvoice.MapToResult);
+            .BindAsync(DvoInvoice.MapToResult);
 
         if (invoiceResult.HasException)
             return Result<InvoiceEntity>.Failure(invoiceResult.Exception!);
@@ -33,7 +33,7 @@ public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceRecordRequest,
                 {
                     FilterExpression = item => item.InvoiceID == request.Id.Value, 
                 })
-            .ExecuteTransformAsync(provider => provider.Items.Select(item => DvoInvoiceItem.Map(item)).ToResult());
+            .BindAsync(provider => provider.Items.Select(item => DvoInvoiceItem.Map(item)).ToResult());
 
         if (invoiceItemsResult.HasException)
             return Result<InvoiceEntity>.Failure(invoiceItemsResult.Exception!);

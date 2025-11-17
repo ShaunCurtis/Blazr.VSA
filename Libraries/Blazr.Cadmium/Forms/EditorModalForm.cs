@@ -26,7 +26,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     [Parameter] public bool LockNavigation { get; set; } = true;
 
     protected EditState State { get; set; } = EditState.Clean;
-    protected Result LastResult { get; set; } = Result.Success();
+    protected Bool LastResult { get; set; } = Bool.Success();
     protected TRecordMutor EditMutor { get; set; } = default!;
     protected EditContext EditContext { get; set; } = default!;
 
@@ -46,7 +46,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
 
         var result = await this.UIConnector.RecordRequestAsync(this.Uid);
 
-        var record = result.OutputValue(ex => default!);
+        var record = result.Output(ex => default!);
 
         this.EditMutor = (TRecordMutor)this.UIConnector.GetRecordMutor(record);
         this.EditContext = new EditContext(EditMutor);
@@ -58,8 +58,8 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
 
     protected virtual async Task OnSave()
         => LastResult = await this.UIConnector.RecordCommandAsync(StateRecord<TRecord>.Create(this.EditMutor.ToRecord(), this.State.AsDirty))
-            .ToResultAsync()
-            .ExecuteSideEffectAsync(this.OnExit);
+            .ToBoolAsync()
+            .OutputAsync(this.OnExit);
 
     protected virtual async Task OnDelete()
     {
@@ -68,8 +68,8 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
             return;
 
         this.LastResult = await this.UIConnector.RecordCommandAsync(StateRecord<TRecord>.Create(this.EditMutor.ToRecord(), EditState.Deleted))
-            .ToResultAsync()
-            .ExecuteSideEffectAsync(this.OnExit);
+            .ToBoolAsync()
+            .OutputAsync(this.OnExit);
     }
 
     protected virtual void OnExit()

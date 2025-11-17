@@ -15,11 +15,11 @@ public record AddInvoiceItemAction
     public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity
         .CheckInvoiceItemDoesNotExist(_invoiceItem)
-            .ExecuteFunction(invoiceItem => entity.InvoiceItems
+            .Map(invoiceItem => entity.InvoiceItems
                     .ToList()
                     .AddItem(invoiceItem)
             )
-            .ExecuteTransform(entity.CreateWithRulesValidation);
+            .Bind(entity.CreateWithRulesValidation);
 
     public static AddInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => (new AddInvoiceItemAction(invoiceItem));
