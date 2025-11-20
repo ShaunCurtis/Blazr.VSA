@@ -7,14 +7,14 @@ namespace Blazr.Manganese;
 
 public static class BoolMonadAsyncExtensions
 {
-    public static async Task<Bool> BindAsync(this Bool result,  Func<Task<Bool>> function)
-        => result.Failed
-            ? result
+    public static async Task<Bool> BindAsync(this Bool boolMonad,  Func<Task<Bool>> function)
+        => boolMonad.Failed
+            ? boolMonad
             : await function();
 
-    public static async Task<Result<T>> BindAsync<T>(this Bool result, Func<Task<Result<T>>> function)
-        => result.Failed
-            ? Result<T>.Failure(result.Exception!)
+    public static async Task<Bool<T>> BindAsync<T>(this Bool boolMonad, Func<Task<Bool<T>>> function)
+        => boolMonad.Failed
+            ? Bool<T>.Failure(boolMonad.Exception!)
             : await function();
 }
 

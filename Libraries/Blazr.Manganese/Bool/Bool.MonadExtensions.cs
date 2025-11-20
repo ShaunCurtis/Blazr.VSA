@@ -30,7 +30,7 @@ public static class BoolMonadExtensions
             var value = function.Invoke();
             return (value is null)
                 ? Bool<TOut>.Failure(new BoolException("The transform function returned a null value."))
-                : Bool<TOut>.Create(value);
+                : BoolT.Success(value);
         }
         catch (Exception ex)
         {

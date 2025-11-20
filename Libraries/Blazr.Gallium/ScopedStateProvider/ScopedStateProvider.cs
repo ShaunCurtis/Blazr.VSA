@@ -14,7 +14,7 @@ public interface IScopedStateProvider<TKey, TData>
 
     public Bool ClearState(TKey key);
 
-    public Result<T> GetState<T>(TKey key) where T : class;
+    public Bool<T> GetState<T>(TKey key) where T : class;
 }
 
 public class ScopedStateProvider : IScopedStateProvider<Guid, object>
@@ -39,7 +39,7 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
         return Bool.Success();
     }
 
-    public Result<T> Dispatch<T>(T data) where T : class, IScopedState
+    public Bool<T> Dispatch<T>(T data) where T : class, IScopedState
         {
         if (_subscriptions.ContainsKey(data.Key))
             _subscriptions[data.Key] = new(data);
@@ -48,7 +48,7 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
 
         this.ClearExpiredStates();
 
-        return Result<T>.Success(data);
+        return Bool<T>.Success(data);
     }
 
     public Bool ClearState(Guid key)
@@ -59,11 +59,11 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
         return Bool.Success();
     }
 
-    public Result<T> GetState<T>(Guid key) where T : class
+    public Bool<T> GetState<T>(Guid key) where T : class
         => _subscriptions.ContainsKey(key)
-            ? Result<T>.Create(_subscriptions[key].Data as T)
-            : Result<T>.Failure($"No state found for key {key}");
-
+            ? Bool<T>.Input(_subscriptions[key].Data as T)
+            : Bool<T>.Failure($"No state found for key {key}");
+        
     private void ClearExpiredStates()
     {
         var expiredStates = _subscriptions.Where(item => DateTime.UtcNow > item.Value.TimeStamp.AddTicks(StateTTL.Ticks)).Select(item => item.Key);

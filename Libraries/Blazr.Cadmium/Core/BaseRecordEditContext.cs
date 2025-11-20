@@ -18,7 +18,7 @@ public abstract class BaseRecordEditContext<TRecord, TKey>
 
     public abstract TRecord AsRecord { get; }
 
-    public abstract Result<TRecord> ToResult { get; }
+    public abstract Bool<TRecord> ToBoolT{ get; }
 
     public BaseRecordEditContext()
     {

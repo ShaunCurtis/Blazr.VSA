@@ -40,8 +40,8 @@ public sealed class InvoiceItemRecordMutor : IRecordMutor<DmoInvoiceItem>
         Amount = new(this.Amount)
     };
 
-    public Result<DmoInvoiceItem> ToResult()
-        => Result<DmoInvoiceItem>.Success(this.ToRecord());
+    public Bool<DmoInvoiceItem> ToBoolT()
+        => Bool<DmoInvoiceItem>.Success(this.ToRecord());
 
     public void Reset()
         => this.SetFields();

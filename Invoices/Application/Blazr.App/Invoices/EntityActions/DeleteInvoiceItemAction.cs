@@ -12,20 +12,20 @@ public record DeleteInvoiceItemAction
     public DeleteInvoiceItemAction(DmoInvoiceItem invoiceItem)
         => _invoiceItem = invoiceItem;
 
-    public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
+    public Bool<InvoiceMutor> Dispatch(InvoiceMutor mutor)
         => mutor.GetInvoiceItem(_invoiceItem)
             .Map(invoiceItem => mutor.CurrentEntity.InvoiceItems
                 .ToList()
                 .RemoveItem(invoiceItem))
-            .ExecuteTransform(mutor.Mutate);
+            .Bind(mutor.Mutate);
 
-    public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
+    public Bool<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity
             .GetInvoiceItem(_invoiceItem)
             .Map(invoiceItem => entity.InvoiceItems
                 .ToList()
                 .RemoveItem(invoiceItem))
-            .ExecuteTransform(entity.CreateWithRulesValidation);
+            .Bind(entity.CreateWithRulesValidation);
 
     public static DeleteInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => new DeleteInvoiceItemAction(invoiceItem);

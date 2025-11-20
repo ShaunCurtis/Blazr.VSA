@@ -42,8 +42,8 @@ public sealed class InvoiceRecordMutor : IRecordMutor<DmoInvoice>
          Customer = this.Customer
     };
 
-    public Result<DmoInvoice> ToResult()
-        => Result<DmoInvoice>.Success(this.ToRecord());
+    public Bool<DmoInvoice> ToBoolT()
+        => Bool<DmoInvoice>.Success(this.ToRecord());
 
     public void Reset()
         => this.SetFields();

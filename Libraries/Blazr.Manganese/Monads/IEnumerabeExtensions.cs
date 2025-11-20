@@ -7,6 +7,6 @@ namespace Blazr.Manganese;
 
 public static class IEnumerableFunctionalExtensions
 {
-    public static Result<IEnumerable<T>> ToResult<T>(this IEnumerable<T> value)
-        => Result<IEnumerable<T>>.Create(value);
+    public static Bool<IEnumerable<T>> ToBoolMonad<T>(this IEnumerable<T> value)
+        => BoolT.Success(value);
 }

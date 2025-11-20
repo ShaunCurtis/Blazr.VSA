@@ -12,7 +12,7 @@ public record AddInvoiceItemAction
     public AddInvoiceItemAction(DmoInvoiceItem invoiceItem)
         => _invoiceItem = invoiceItem;
 
-    public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
+    public Bool<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity
         .CheckInvoiceItemDoesNotExist(_invoiceItem)
             .Map(invoiceItem => entity.InvoiceItems

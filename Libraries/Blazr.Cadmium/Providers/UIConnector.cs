@@ -11,8 +11,8 @@ namespace Blazr.Cadmium;
 public class UIConnector<TRecord>
     where TRecord : class, new()
 {
-    public static Result<GridItemsProviderResult<TRecord>> FromListItemsProvider(ListItemsProvider<TRecord> itemsProvider)
-        => Result<GridItemsProviderResult<TRecord>>
-            .Create(GridItemsProviderResult
+    public static Bool<GridItemsProviderResult<TRecord>> FromListItemsProvider(ListItemsProvider<TRecord> itemsProvider)
+        => Bool<GridItemsProviderResult<TRecord>>
+            .Input(GridItemsProviderResult
                 .From<TRecord>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
 }

@@ -43,15 +43,15 @@ public record GridState<TRecord> : IGridState<TRecord>, IScopedState
 
 public static class GridStateExtensions
 {
-    public static Result<GridState<TRecord>> ToResult<TRecord>(this GridState<TRecord> state)
+    public static Bool<GridState<TRecord>> ToBoolT<TRecord>(this GridState<TRecord> state)
     where TRecord : class
-        => Result<GridState<TRecord>>.Create(state);
+        => Bool<GridState<TRecord>>.Input(state);
 
-    public static async Task<Result<ListItemsProvider<TRecord>>> ExecuteFunctionOnException<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Task<Result<ListItemsProvider<TRecord>>>> mapper)
+    public static async Task<Bool<ListItemsProvider<TRecord>>> ExecuteFunctionOnException<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Task<Bool<ListItemsProvider<TRecord>>>> mapper)
         where TRecord : class
         => await mapper(state);
 
-    public static Result<ListItemsProvider<TRecord>> ExecuteFunction<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Result<ListItemsProvider<TRecord>>> mapper)
+    public static Bool<ListItemsProvider<TRecord>> ExecuteFunction<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Bool<ListItemsProvider<TRecord>>> mapper)
     where TRecord : class
         => mapper(state);
 }

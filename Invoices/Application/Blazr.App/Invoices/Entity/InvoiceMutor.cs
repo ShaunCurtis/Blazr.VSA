@@ -16,7 +16,7 @@ public sealed record InvoiceMutor
 
     public InvoiceId Id => BaseEntity.InvoiceRecord.Id;
 
-    public Result<InvoiceMutor> ToResult => Result<InvoiceMutor>.Create(this);
+    public Bool<InvoiceMutor> ToResult => Bool<InvoiceMutor>.Input(this);
 
     public bool IsDirty => this.CurrentEntity.IsDirty(BaseEntity);
 
@@ -45,7 +45,7 @@ public sealed record InvoiceMutor
     /// <param name="invoice"></param>
     /// <param name="invoiceItems"></param>
     /// <returns></returns>
-    public Result<InvoiceMutor> Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
+    public Bool<InvoiceMutor> Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
         => InvoiceEntity.CreateWithEntityRulesApplied(invoice, invoiceItems)
             .Bind(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
 
@@ -56,7 +56,7 @@ public sealed record InvoiceMutor
     /// <param name="invoice"></param>
     /// <param name="invoiceItems"></param>
     /// <returns></returns>
-    public Result<InvoiceMutor> Mutate(DmoInvoice invoice)
+    public Bool<InvoiceMutor> Mutate(DmoInvoice invoice)
         => InvoiceEntity.CreateWithEntityRulesApplied(invoice, this.CurrentEntity.InvoiceItems)
             .Bind(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
 
@@ -67,7 +67,7 @@ public sealed record InvoiceMutor
     /// <param name="invoice"></param>
     /// <param name="invoiceItems"></param>
     /// <returns></returns>
-    public Result<InvoiceMutor> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
+    public Bool<InvoiceMutor> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
         => InvoiceEntity.CreateWithEntityRulesApplied(this.CurrentEntity.InvoiceRecord, invoiceItems)
             .Bind(entity => InvoiceMutor.CreateMutation(entity, this.BaseEntity).ToResult);
 

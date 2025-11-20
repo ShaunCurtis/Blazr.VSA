@@ -89,10 +89,10 @@
 
         var result = await this.FKProvider.GetCustomerFKAsync();
 
-        LastResult = result.ToResult();
+        LastResult = result.ToBoolT();
 
         _customerList = result
-            .OutputValue(Enumerable.Empty<FkoCustomer>())
+            .Output(Enumerable.Empty<FkoCustomer>())
             .ToList();
 
         _loading = false;

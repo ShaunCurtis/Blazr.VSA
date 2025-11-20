@@ -26,7 +26,8 @@ public record Bool
     private Bool() { }
 
     public static Bool Success() => new();
-    
+
+
     public static Bool Failure() => new() { Failed = true };
     
     public static Bool Failure(Exception? exception) => exception is null 

@@ -47,7 +47,7 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
             : this.ResetGridState();
 
         this.GridState = result.Output(exception => new GridState<TRecord>());
-        this.LastResult = result.ToResult();
+        this.LastResult = result.ToBoolT();
 
         _messageBus.Subscribe<TKey>(OnRecordChanged);
 
@@ -65,13 +65,13 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
         ArgumentNullException.ThrowIfNull(this.quickGrid);
     }
 
-    protected Result<GridState<TRecord>> GetGridState()
+    protected Bool<GridState<TRecord>> GetGridState()
         => _gridStateStore.GetState<GridState<TRecord>>(GridContextId);
 
-    protected Result<GridState<TRecord>> SetGridState(UpdateGridRequest<TRecord> request)
+    protected Bool<GridState<TRecord>> SetGridState(UpdateGridRequest<TRecord> request)
         => _gridStateStore.Dispatch(request.ToGridState(this.GridContextId));
 
-    protected Result<GridState<TRecord>> ResetGridState()
+    protected Bool<GridState<TRecord>> ResetGridState()
         => _gridStateStore.Dispatch(new GridState<TRecord>
         {
             Key = this.GridContextId,

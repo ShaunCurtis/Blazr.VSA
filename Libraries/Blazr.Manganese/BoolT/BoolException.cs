@@ -7,18 +7,9 @@ namespace Blazr.Manganese;
 
 public class BoolException : Exception
 {
-    public BoolException() : base("The Result is Failure.") { }
+    public BoolException() : base("The Bool operation failed.") { }
     public BoolException(string message) : base(message) { }
 
     public static BoolException Create(string message)
-        => new BoolException(message);
+        => new (message);
 }
-
-//public class BoolException : Exception
-//{
-//    public BoolException() : base("The operation Failed.") { }
-//    public BoolException(string message) : base(message) { }
-
-//    public static BoolException Create(string message)
-//        => new BoolException(message);
-//}

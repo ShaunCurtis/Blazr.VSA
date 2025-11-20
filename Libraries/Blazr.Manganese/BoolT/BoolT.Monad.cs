@@ -22,7 +22,7 @@ public static class BoolTMonad
             var value = function.Invoke(boolMonad.Value!);
             return (value is null)
                 ? Bool<TOut>.Failure(new BoolException("The function returned a null value."))
-                : Bool<TOut>.Create(value);
+                : Bool<TOut>.Input(value);
         }
         catch (Exception ex)
         {
@@ -40,11 +40,11 @@ public static class BoolTMonad
         return boolMonad;
     }
 
-    public static TOut Match<T, TOut>(this Bool<T> boolMonad, Func<TOut> hasNoValue, Func<T, TOut>? hasValue = null, Func<Exception, TOut>? hasException = null)
+    public static IOMonad<TOut> Match<T, TOut>(this Bool<T> boolMonad, Func<TOut> hasNoValue, Func<T, TOut>? hasValue = null, Func<Exception, TOut>? hasException = null)
         => (Tuple.Create(boolMonad.HasValue, boolMonad.HasException)) switch
         {
-            (true, false) => hasValue is not null ? hasValue.Invoke(boolMonad.Value!) : default!,
-            (false, true) => hasException is not null ? hasException.Invoke(boolMonad.Exception!) : default!,
-            _ => hasNoValue.Invoke(),
+            (true, false) => IOMonad.Input(hasValue is not null ? hasValue.Invoke(boolMonad.Value!) : default!),
+            (false, true) => IOMonad.Input(hasException is not null ? hasException.Invoke(boolMonad.Exception!) : default!),
+            _ => IOMonad.Input(hasNoValue.Invoke()),
         };
 }

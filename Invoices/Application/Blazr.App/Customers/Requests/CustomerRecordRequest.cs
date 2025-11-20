@@ -8,4 +8,4 @@ using Blazr.Diode.Mediator;
 namespace Blazr.App.Core;
 
 public readonly record struct CustomerRecordRequest(CustomerId Id) 
-    : IRequest<Result<DmoCustomer>>;
+    : IRequest<Bool<DmoCustomer>>;

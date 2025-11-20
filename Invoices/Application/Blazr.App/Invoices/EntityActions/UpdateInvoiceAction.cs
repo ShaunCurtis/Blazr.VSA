@@ -12,10 +12,10 @@ namespace Blazr.App.Core;
         public UpdateInvoiceAction(DmoInvoice invoice)
             => _invoice = invoice;
 
-    public Result<InvoiceMutor> Dispatch(InvoiceMutor mutor)
+    public Bool<InvoiceMutor> Dispatch(InvoiceMutor mutor)
         => mutor.Mutate(_invoice);
 
-    public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
+    public Bool<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity.CreateWithEntityRulesApplied(_invoice);
 
     public static UpdateInvoiceAction Create(DmoInvoice invoice)

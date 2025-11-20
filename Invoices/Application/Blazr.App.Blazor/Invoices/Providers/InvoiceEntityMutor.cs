@@ -33,12 +33,12 @@ public sealed class InvoiceEntityMutor
         this.InvoiceEntity = this.BaseEntity;
     }
 
-    public Bool Dispatch(Func<InvoiceEntity, Result<InvoiceEntity>> dispatcher)
+    public Bool Dispatch(Func<InvoiceEntity, Bool<InvoiceEntity>> dispatcher)
     {
         var result = dispatcher.Invoke(InvoiceEntity);
 
-        LastResult = result.ToResult();
-        InvoiceEntity = result.OutputValue(this.InvoiceEntity);
+        LastResult = result.ToBoolT();
+        InvoiceEntity = result.Output(this.InvoiceEntity);
 
         _messageBus.Publish<InvoiceEntity>(this.InvoiceEntity.InvoiceRecord.Id);
 
@@ -48,9 +48,9 @@ public sealed class InvoiceEntityMutor
     public Bool Mutate(DmoInvoice invoice)
     {
         var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, this.InvoiceEntity.InvoiceItems);
-        LastResult = result.ToResult();
+        LastResult = result.ToBoolT();
 
-        this.InvoiceEntity = result.OutputValue(this.InvoiceEntity);
+        this.InvoiceEntity = result.Output(this.InvoiceEntity);
 
         return this.LastResult;
     }
@@ -58,9 +58,9 @@ public sealed class InvoiceEntityMutor
     public Bool Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
     {
         var result = InvoiceEntity.CreateWithEntityRulesApplied(this.InvoiceEntity.InvoiceRecord, invoiceItems);
-        LastResult = result.ToResult();
+        LastResult = result.ToBoolT();
 
-        this.InvoiceEntity = result.OutputValue(this.InvoiceEntity);
+        this.InvoiceEntity = result.Output(this.InvoiceEntity);
 
         return this.LastResult;
     }
@@ -68,9 +68,9 @@ public sealed class InvoiceEntityMutor
     public Bool Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
     {
         var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, invoiceItems);
-        LastResult = result.ToResult();
+        LastResult = result.ToBoolT();
 
-        this.InvoiceEntity = result.OutputValue(this.InvoiceEntity);
+        this.InvoiceEntity = result.Output(this.InvoiceEntity);
 
         return this.LastResult;
     }
@@ -79,9 +79,9 @@ public sealed class InvoiceEntityMutor
     {
         var result = await _mediator.DispatchAsync(new InvoiceRecordRequest(id));
 
-        this.InvoiceEntity = result.OutputValue(InvoiceEntity.CreateNewEntity);
+        this.InvoiceEntity = result.Output(InvoiceEntity.CreateNewEntity);
         this.BaseEntity = this.InvoiceEntity;
-        this.LastResult = result.ToResult();
+        this.LastResult = result.ToBoolT();
         this.IsNew = !this.LastResult.Output();
 
         return this.LastResult;

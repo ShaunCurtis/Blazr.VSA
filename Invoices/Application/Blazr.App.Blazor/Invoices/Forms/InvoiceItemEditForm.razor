@@ -88,7 +88,7 @@
             : EditState.Clean;
 
         var result = this.EntityMutor.InvoiceEntity.GetInvoiceItem(this.Uid);
-        var record = result.OutputValue(ex => DmoInvoiceItem.CreateNew( this.EntityMutor.InvoiceEntity.InvoiceRecord.Id));
+        var record = result.Output(ex => DmoInvoiceItem.CreateNew( this.EntityMutor.InvoiceEntity.InvoiceRecord.Id));
         this.EditMutor = InvoiceItemRecordMutor.Create(record);
         this.EditContext = new EditContext(EditMutor);
 

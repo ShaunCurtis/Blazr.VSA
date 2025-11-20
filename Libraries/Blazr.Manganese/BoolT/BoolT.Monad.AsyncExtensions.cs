@@ -69,13 +69,13 @@ public static class BoolTAsyncExtensions
     {
         var boolMonad = await task;
         return boolMonad.Bind((value) => CheckForTaskException(task))
-            .ToBool();
+            .ToBoolT();
     }
     public async static Task<Bool<TOut>> ToBoolAsync<T, TOut>(this Task<Bool<T>> task, TOut value)
     {
         var boolMonad = await task;
         return boolMonad.Bind((value) => CheckForTaskException(task))
-            .ToBool<T, TOut>(value);
+            .ToBoolT<T, TOut>(value);
     }
 
     public static async Task<Bool> OutputAsync(this Task<Bool> task, Action? hasValue = null, Action<Exception>? hasException = null)

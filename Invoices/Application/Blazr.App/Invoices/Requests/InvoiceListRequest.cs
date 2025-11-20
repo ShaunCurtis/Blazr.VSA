@@ -3,17 +3,16 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.Cadmium.Core;
 using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode.Mediator;
 
 namespace Blazr.App.Core;
 
 public record InvoiceListRequest
-    : BaseListRequest, IRequest<Result<ListItemsProvider<DmoInvoice>>>
+    : BaseListRequest, IRequest<Bool<ListItemsProvider<DmoInvoice>>>
 {
-    public static Result<InvoiceListRequest> Create(GridState<DmoInvoice> state)
-        => Result<InvoiceListRequest>.Create(new InvoiceListRequest()
+    public static Bool<InvoiceListRequest> Create(GridState<DmoInvoice> state)
+        => Bool<InvoiceListRequest>.Input(new InvoiceListRequest()
         {
             PageSize = state.PageSize,
             StartIndex = state.StartIndex,

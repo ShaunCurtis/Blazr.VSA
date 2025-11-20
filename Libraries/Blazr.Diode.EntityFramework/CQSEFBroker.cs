@@ -13,11 +13,11 @@ namespace Blazr.Diode.Infrastructure.EntityFramework;
 public static class CQSEFBroker<TDbContext>
     where TDbContext : DbContext
 {
-    public static async Task<Result<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+    public static async Task<Bool<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
         where TRecord : class
     {
         if ((request.Item is not ICommandEntity))
-            return Result<TRecord>.Failure($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly.");
+            return Bool<TRecord>.Failure($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly.");
 
         var stateRecord = request.Item;
         var result = 0;
@@ -28,31 +28,31 @@ public static class CQSEFBroker<TDbContext>
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
                 return result == 1
-                    ? Result<TRecord>.Success(request.Item)
-                    : Result<TRecord>.Failure("Error adding Record");
+                    ? Bool<TRecord>.Success(request.Item)
+                    : Bool<TRecord>.Failure("Error adding Record");
 
             case EditState.StateDeletedIndex:
                 dbContext.Remove<TRecord>(request.Item);
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
                 return result == 1
-                    ? Result<TRecord>.Success(request.Item)
-                    : Result<TRecord>.Failure("Error deleting Record");
+                    ? Bool<TRecord>.Success(request.Item)
+                    : Bool<TRecord>.Failure("Error deleting Record");
 
             case EditState.StateDirtyIndex:
                 dbContext.Update<TRecord>(request.Item);
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
                 return result == 1
-                    ? Result<TRecord>.Success(request.Item)
-                    : Result<TRecord>.Failure("Error saving Record");
+                    ? Bool<TRecord>.Success(request.Item)
+                    : Bool<TRecord>.Failure("Error saving Record");
 
             default:
-                return Result<TRecord>.Failure("Nothing executed.  Unrecognised State.");
+                return Bool<TRecord>.Failure("Nothing executed.  Unrecognised State.");
         }
     }
 
-    public static async Task<Result<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
+    public static async Task<Bool<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
         where TRecord : class
     {
         int totalRecordCount;
@@ -91,10 +91,10 @@ public static class CQSEFBroker<TDbContext>
             ? await query.ToListAsync().ConfigureAwait(ConfigureAwaitOptions.None)
             : query.ToList();
 
-        return Result<ListItemsProvider<TRecord>>.Success(new ListItemsProvider<TRecord>(list, totalRecordCount));
+        return Bool<ListItemsProvider<TRecord>>.Success(new ListItemsProvider<TRecord>(list, totalRecordCount));
     }
 
-    public static async Task<Result<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
+    public static async Task<Bool<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
         where TRecord : class
     {
         dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
@@ -104,8 +104,8 @@ public static class CQSEFBroker<TDbContext>
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (record is null)
-            return Result<TRecord>.Failure($"No record retrieved with the Key provided");
+            return Bool<TRecord>.Failure($"No record retrieved with the Key provided");
 
-        return Result<TRecord>.Success(record);
+        return Bool<TRecord>.Success(record);
     }
 }

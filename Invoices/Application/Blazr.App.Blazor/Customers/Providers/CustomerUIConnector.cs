@@ -33,13 +33,13 @@ public class CustomerUIConnector
         _serviceProvider = serviceProvider;
     }
 
-    public Func<CustomerId, Task<Result<DmoCustomer>>> RecordRequestAsync
+    public Func<CustomerId, Task<Bool<DmoCustomer>>> RecordRequestAsync
         => id => id.IsDefault ? NewRecordRequestAsync(id) : ExistingRecordRequestAsync(id);
 
-    public Func<StateRecord<DmoCustomer>, Task<Result<CustomerId>>> RecordCommandAsync
+    public Func<StateRecord<DmoCustomer>, Task<Bool<CustomerId>>> RecordCommandAsync
         => record => _mediator.DispatchAsync(new CustomerCommandRequest(record));
 
-    public Func<GridState<DmoCustomer>, Task<Result<ListItemsProvider<DmoCustomer>>>> GridItemsRequestAsync
+    public Func<GridState<DmoCustomer>, Task<Bool<ListItemsProvider<DmoCustomer>>>> GridItemsRequestAsync
         => state => _mediator.DispatchAsync(new CustomerListRequest()
         {
             PageSize = state.PageSize,
@@ -48,19 +48,19 @@ public class CustomerUIConnector
             SortDescending = state.SortDescending
         });
 
-    public Task<Result<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
+    public Task<Bool<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
         => CustomerListRequest.Create(state)
             .BindAsync((request) => _mediator.DispatchAsync(request))
             .MapAsync((itemsProvider) => GridItemsProviderResult
                 .From<DmoCustomer>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
 
-    public Result<CustomerId> GetKey(object? obj)
+    public Bool<CustomerId> GetKey(object? obj)
         => obj switch
         {
-            CustomerId id => Result<CustomerId>.Create(id),
-            DmoCustomer record => Result<CustomerId>.Create(record.Id),
-            Guid guid => Result<CustomerId>.Create(new(guid)),
-            _ => Result<CustomerId>.Failure($"Could not convert the provided key - {obj?.ToString()}")
+            CustomerId id => Bool<CustomerId>.Input(id),
+            DmoCustomer record => Bool<CustomerId>.Input(record.Id),
+            Guid guid => BoolT.Input(new CustomerId(guid)),
+            _ => Bool<CustomerId>.Failure($"Could not convert the provided key - {obj?.ToString()}")
         };
 
     public DmoCustomer NewRecord
@@ -72,9 +72,9 @@ public class CustomerUIConnector
     public IRecordMutor<DmoCustomer> GetNewRecordMutor()
         => CustomerRecordMutor.CreateNew();
 
-    private Func<CustomerId, Task<Result<DmoCustomer>>> ExistingRecordRequestAsync
+    private Func<CustomerId, Task<Bool<DmoCustomer>>> ExistingRecordRequestAsync
         => id => _mediator.DispatchAsync(new CustomerRecordRequest(id));
 
-    private Func<CustomerId, Task<Result<DmoCustomer>>> NewRecordRequestAsync
-        => id => Task.FromResult(Result<DmoCustomer>.Create(new DmoCustomer { Id = CustomerId.Default }));
+    private Func<CustomerId, Task<Bool<DmoCustomer>>> NewRecordRequestAsync
+        => id => Task.FromResult(BoolT.Input(new DmoCustomer { Id = CustomerId.Default }));
 }

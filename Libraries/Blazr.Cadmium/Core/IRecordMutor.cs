@@ -13,6 +13,6 @@ public interface IRecordMutor<TRecord>
     public bool IsNew { get; }
 
     public TRecord ToRecord();
-    public Result<TRecord> ToResult();
+    public Bool<TRecord> ToBoolT();
     public void Reset();
 }

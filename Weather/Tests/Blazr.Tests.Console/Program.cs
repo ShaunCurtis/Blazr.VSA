@@ -1,7 +1,8 @@
 ﻿using Blazr.Manganese;
 
+
 Console.WriteLine(
-    double.Parse(Console.ReadLine())
+    Console.ReadLine()
 );
 
 //Console.WriteLine(
@@ -14,17 +15,27 @@ Console.WriteLine(
 //    .OutputValue(defaultValue: "The input value could not be parsed.")
 //);
 
-Console.WriteLine(
-    ConsoleHelper.ReadLine()
-    .Bind(TryParseString)
-    .Map(Math.Sqrt)
-    .Map(value => Math.Round(value, 2))
-    .Match<double, string>(
-        hasValue: value => $"Success: The transformed value is: {value}",
-        hasNoValue: () => "The input value could not be parsed.",
-        hasException: ex => $"An error occurred: {ex.Message}"
-    )
-);
+//Bool.Input(Console.ReadLine)
+//    .Bind(TryParseString)
+//    .Map(Math.Sqrt)
+//    .Map(value => Math.Round(value, 2))
+//    .Match(
+//        hasValue: value => $"Success: The transformed value is: {value}",
+//        hasNoValue: () => "The input value could not be parsed.",
+//        hasException: ex => $"An error occurred: {ex.Message}")
+//    .Output(Console.WriteLine);
+
+//Console.WriteLine(
+//    ConsoleHelper.ReadLine()
+//    .Bind(TryParseString)
+//    .Map(Math.Sqrt)
+//    .Map(value => Math.Round(value, 2))
+//    .Match<double, string>(
+//        hasValue: value => $"Success: The transformed value is: {value}",
+//        hasNoValue: () => "The input value could not be parsed.",
+//        hasException: ex => $"An error occurred: {ex.Message}"
+//    )
+//);
 
 
 //Console.WriteLine(
@@ -36,9 +47,44 @@ Console.WriteLine(
 //    .OutputValue(defaultValue: "The input value could not be parsed.")
 //);
 
-//Console.WriteLine(
-//    double.TryParse(Console.ReadLine(), out double value)
-//);
+//{
+//    var input = Console.ReadLine();
+//    Console.WriteLine(input);
+//}
+
+//IOMonad.Input(Console.ReadLine())
+//    .Map(value => value?.Trim() ?? null)
+//    .Bind( value => IOMonad.Input(value?.ToUpper() ?? "[Null]"))
+//    .Bind(value => IOMonad.Input($"The Value is:{value}"))
+//    .Output(Console.WriteLine);
+
+{
+    var input = Console.ReadLine();
+    if (double.TryParse(input, out double result))
+    {
+        result = Math.Sqrt(result);
+        result = Math.Round(result, 2);
+        Console.WriteLine($"The result is {result}");
+
+    }
+    else
+        Console.WriteLine("The input value could not be parsed.");
+}
+
+{
+    var input = Console.ReadLine();
+    try
+    {
+        var result = double.Parse(input!);
+        result = Math.Sqrt(result);
+        result = Math.Round(result, 2);
+        Console.WriteLine($"The result is {result}");
+    }
+    catch
+    {
+        Console.WriteLine("The input value could not be parsed.");
+    }
+}
 
 //try
 //{
@@ -134,20 +180,12 @@ Bool<double> TryParseString(string? value)
 //        hasValue: (value) => $"Value is: {value}",
 //        hasException: (exception) => $"Error: {exception.Message}"
 //    ));
-
-public static class ResultExtensions
-{
-    public static Result<string> ToResult(this string? value)
-        => value is null
-            ? new Result<string>(ResultException.Create("Value can'tbe null."))
-            : new Result<string>(value);
-}
 public static class Extensions
 {
     extension(string? value)
     {
         public Bool<string> ToBoolT()
-            => Bool<string>.Create(value);
+            => BoolT.Input(value);
     }
 }
 
@@ -156,72 +194,6 @@ public static class ConsoleHelper
     public static Bool<string> ReadLine()
     {
         string? input = Console.ReadLine();
-        return Bool<string>.Create(input);
+        return BoolT.Input(input);
     }
-}
-
-public record Result<T>
-{
-    private T? Value { get; init; }
-    private Exception? Exception { get; init; }
-
-    private Result(T? value, Exception? exception)
-    {
-        Value = value;
-        Exception = exception;
-    }
-
-    public Result(T value) : this(value, null) { }
-
-    public Result(Exception exception) : this(default, exception) { }
-
-    public static Result<T> Create(T? value)
-        => value is null
-            ? new(default, ResultException.Create("Value was null"))
-            : new(value);
-
-    public static Result<T> Error(string message)
-        => new(default, ResultException.Create(message));
-
-    public Result<TOut> BindFunction<TOut>(Func<T, Result<TOut>> function)
-        => this.Exception is null
-            ? function(Value!)
-            : new Result<TOut>(this.Exception);
-
-    public Result<TOut> MapFunction<TOut>(Func<T, TOut> function)
-    {
-        if (this.Exception is not null)
-            return new Result<TOut>(this.Exception!);
-
-        try
-        {
-            var value = function.Invoke(this.Value!);
-            return (value is null)
-                ? new Result<TOut>(new ResultException("The function returned a null value."))
-                : new Result<TOut>(value);
-        }
-        catch (Exception ex)
-        {
-            return new Result<TOut>(ex);
-        }
-    }
-
-    public T OutputValue(Func<Exception, T> hasException)
-        => this.Exception is null
-            ? this.Value!
-            : hasException.Invoke(Exception!);
-
-    public TOut OutputValue<TOut>(Func<T, TOut> hasValue, Func<Exception, TOut> hasException)
-        => this.Exception is null
-            ? hasValue.Invoke(this.Value!)
-            : hasException.Invoke(Exception!);
-}
-
-public class ResultException : Exception
-{
-    public ResultException() : base("The Result is Failure.") { }
-    public ResultException(string message) : base(message) { }
-
-    public static ResultException Create(string message)
-        => new ResultException(message);
 }

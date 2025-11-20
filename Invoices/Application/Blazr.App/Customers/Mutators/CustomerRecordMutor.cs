@@ -37,8 +37,8 @@ public sealed class CustomerRecordMutor : IRecordMutor<DmoCustomer>
         Name = new(this.Name ?? "No Name Set")
     };
 
-    public Result<DmoCustomer> ToResult()
-        => Result<DmoCustomer>.Success(this.ToRecord());
+    public Bool<DmoCustomer> ToBoolT()
+        => Bool<DmoCustomer>.Success(this.ToRecord());
 
     public void Reset()
         => this.SetFields();

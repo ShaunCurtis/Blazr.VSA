@@ -24,6 +24,6 @@ public sealed record DvoInvoice
         Date = new(item.Date)
     };
 
-    public static Result<DmoInvoice> MapToResult(DvoInvoice item)
-        => Result<DmoInvoice>.Create(Map(item));
+    public static Bool<DmoInvoice> MapToBool(DvoInvoice item)
+        => Bool<DmoInvoice>.Input(Map(item));
 }

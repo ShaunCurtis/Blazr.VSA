@@ -12,8 +12,8 @@ public record NewInvoiceEntityAction
     public NewInvoiceEntityAction(DmoInvoice invoice)
         => _invoice = invoice;
 
-    public Result<InvoiceEntity> Dispatcher()
-        => InvoiceEntity.CreateNewEntity(_invoice).ToResult();
+    public Bool<InvoiceEntity> Dispatcher()
+        => InvoiceEntity.CreateNewEntity(_invoice).ToBoolT();
 
     public static UpdateInvoiceAction Create(DmoInvoice invoice)
             => (new UpdateInvoiceAction(invoice));

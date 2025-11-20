@@ -21,38 +21,38 @@ public static class InvoiceItemListExtensions
         return items;
     }
 
-    public static Result<DmoInvoiceItem> GetInvoiceItem(this InvoiceMutor mutor, DmoInvoiceItem item)
-        => Result<DmoInvoiceItem>.Create( 
+    public static Bool<DmoInvoiceItem> GetInvoiceItem(this InvoiceMutor mutor, DmoInvoiceItem item)
+        => Bool<DmoInvoiceItem>.Input( 
             value: mutor.CurrentEntity.InvoiceItems.SingleOrDefault(_item => _item.Id == item.Id), 
             errorMessage: "The record does not exist in the Invoice Items");
 
-    public static Result<DmoInvoiceItem> CheckInvoiceItemExists(this InvoiceMutor mutor, DmoInvoiceItem item)
+    public static Bool<DmoInvoiceItem> CheckInvoiceItemExists(this InvoiceMutor mutor, DmoInvoiceItem item)
         => mutor.CurrentEntity.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
-            ? Result<DmoInvoiceItem>.Success(item)
-            : Result<DmoInvoiceItem>.Failure("Invoice Item does not exist");
+            ? Bool<DmoInvoiceItem>.Success(item)
+            : Bool<DmoInvoiceItem>.Failure("Invoice Item does not exist");
 
-    public static Result<DmoInvoiceItem> CheckInvoiceItemDoesNotExist(this InvoiceMutor mutor, DmoInvoiceItem item)
+    public static Bool<DmoInvoiceItem> CheckInvoiceItemDoesNotExist(this InvoiceMutor mutor, DmoInvoiceItem item)
         => mutor.CurrentEntity.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
-            ? Result<DmoInvoiceItem>.Failure("Invoice Item already exists")
-            : Result<DmoInvoiceItem>.Success(item);
+            ? Bool<DmoInvoiceItem>.Failure("Invoice Item already exists")
+            : Bool<DmoInvoiceItem>.Success(item);
 
-    public static Result<DmoInvoiceItem> GetInvoiceItem(this InvoiceEntity entity, DmoInvoiceItem item)
-        => Result<DmoInvoiceItem>.Create(
+    public static Bool<DmoInvoiceItem> GetInvoiceItem(this InvoiceEntity entity, DmoInvoiceItem item)
+        => Bool<DmoInvoiceItem>.Input(
             value: entity.InvoiceItems.SingleOrDefault(_item => _item.Id == item.Id),
             errorMessage: "The record does not exist in the Invoice Items");
 
-    public static Result<DmoInvoiceItem> GetInvoiceItem(this InvoiceEntity entity, InvoiceItemId id)
-        => Result<DmoInvoiceItem>.Create(
+    public static Bool<DmoInvoiceItem> GetInvoiceItem(this InvoiceEntity entity, InvoiceItemId id)
+        => Bool<DmoInvoiceItem>.Input(
             value: entity.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
             errorMessage: "The record does not exist in the Invoice Items");
 
-    public static Result<DmoInvoiceItem> CheckInvoiceItemExists(this InvoiceEntity entity, DmoInvoiceItem item)
+    public static Bool<DmoInvoiceItem> CheckInvoiceItemExists(this InvoiceEntity entity, DmoInvoiceItem item)
         => entity.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
-            ? Result<DmoInvoiceItem>.Success(item)
-            : Result<DmoInvoiceItem>.Failure("Invoice Item does not exist");
+            ? Bool<DmoInvoiceItem>.Success(item)
+            : Bool<DmoInvoiceItem>.Failure("Invoice Item does not exist");
 
-    public static Result<DmoInvoiceItem> CheckInvoiceItemDoesNotExist(this InvoiceEntity entity, DmoInvoiceItem item)
+    public static Bool<DmoInvoiceItem> CheckInvoiceItemDoesNotExist(this InvoiceEntity entity, DmoInvoiceItem item)
         => entity.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
-            ? Result<DmoInvoiceItem>.Failure("Invoice Item already exists")
-            : Result<DmoInvoiceItem>.Success(item);
+            ? Bool<DmoInvoiceItem>.Failure("Invoice Item already exists")
+            : Bool<DmoInvoiceItem>.Success(item);
 }

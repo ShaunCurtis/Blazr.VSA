@@ -22,39 +22,39 @@ public sealed record InvoiceEntity
     public bool IsDirty(InvoiceEntity control)
         => !this.Equals(control);
 
-    public Result<InvoiceEntity> ToResult()
-        => Result<InvoiceEntity>.Create(this);
+    public Bool<InvoiceEntity> ToBoolT()
+        => Bool<InvoiceEntity>.Input(this);
 
     public static InvoiceEntity CreateNewEntity() =>
         new InvoiceEntity(DmoInvoice.CreateNew(), Enumerable.Empty<DmoInvoiceItem>());
     public static InvoiceEntity CreateNewEntity(DmoInvoice invoice) =>
         new InvoiceEntity(invoice, Enumerable.Empty<DmoInvoiceItem>());
 
-    public static Result<InvoiceEntity> CreateWithRulesValidation(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
+    public static Bool<InvoiceEntity> CreateWithRulesValidation(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
         CheckEntityRules(new InvoiceEntity(invoice, invoiceItems));
 
-    public Result<InvoiceEntity> CreateWithRulesValidation(DmoInvoice invoice) =>
-        ApplyEntityRules(new InvoiceEntity(invoice, this.InvoiceItems)).ToResult();
+    public Bool<InvoiceEntity> CreateWithRulesValidation(DmoInvoice invoice) =>
+        ApplyEntityRules(new InvoiceEntity(invoice, this.InvoiceItems)).ToBoolT();
 
-    public Result<InvoiceEntity> CreateWithRulesValidation(IEnumerable<DmoInvoiceItem> invoiceItems) =>
-        ApplyEntityRules(new InvoiceEntity(this.InvoiceRecord, invoiceItems)).ToResult();
+    public Bool<InvoiceEntity> CreateWithRulesValidation(IEnumerable<DmoInvoiceItem> invoiceItems) =>
+        ApplyEntityRules(new InvoiceEntity(this.InvoiceRecord, invoiceItems)).ToBoolT();
 
-    public static Result<InvoiceEntity> CreateWithEntityRulesApplied(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
-        ApplyEntityRules(new InvoiceEntity(invoice, invoiceItems)).ToResult();
+    public static Bool<InvoiceEntity> CreateWithEntityRulesApplied(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
+        ApplyEntityRules(new InvoiceEntity(invoice, invoiceItems)).ToBoolT();
 
-    public Result<InvoiceEntity> CreateWithEntityRulesApplied(DmoInvoice invoice) =>
-        ApplyEntityRules(new InvoiceEntity(invoice, this.InvoiceItems)).ToResult();
+    public Bool<InvoiceEntity> CreateWithEntityRulesApplied(DmoInvoice invoice) =>
+        ApplyEntityRules(new InvoiceEntity(invoice, this.InvoiceItems)).ToBoolT();
 
-    public Result<InvoiceEntity> CreateWithEntityRulesApplied(IEnumerable<DmoInvoiceItem> invoiceItems) =>
-        ApplyEntityRules(new InvoiceEntity(this.InvoiceRecord, invoiceItems)).ToResult();
+    public Bool<InvoiceEntity> CreateWithEntityRulesApplied(IEnumerable<DmoInvoiceItem> invoiceItems) =>
+        ApplyEntityRules(new InvoiceEntity(this.InvoiceRecord, invoiceItems)).ToBoolT();
 
     private static InvoiceEntity Create(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
         new InvoiceEntity(invoice, invoiceItems);
 
-    public static Result<InvoiceEntity> CheckEntityRules(InvoiceEntity entity)
+    public static Bool<InvoiceEntity> CheckEntityRules(InvoiceEntity entity)
         => entity.InvoiceItems.Sum(item => item.Amount.Value) == entity.InvoiceRecord.TotalAmount.Value
-            ? Result<InvoiceEntity>.Success(entity)
-            : Result<InvoiceEntity>.Failure("The Invoice Total Amount is incorrect.");
+            ? Bool<InvoiceEntity>.Success(entity)
+            : Bool<InvoiceEntity>.Failure("The Invoice Total Amount is incorrect.");
 
     private static InvoiceEntity ApplyEntityRules(InvoiceEntity entity)
         => InvoiceEntity.Create(

@@ -8,12 +8,12 @@ namespace Blazr.App.Core;
 
 public static class ResultExtensions
 {
-    public static Result<DmoCustomer> ToResult(this DmoCustomer item)
-        => Result<DmoCustomer>.Success(item);
+    public static Bool<DmoCustomer> ToResult(this DmoCustomer item)
+        => Bool<DmoCustomer>.Success(item);
 
-    public static Result<DmoInvoice> ToResult(this DmoInvoice item)
-        => Result<DmoInvoice>.Success(item);
+    public static Bool<DmoInvoice> ToResult(this DmoInvoice item)
+        => Bool<DmoInvoice>.Success(item);
 
-    public static Result<DmoInvoiceItem> ToResult(this DmoInvoiceItem item)
-        => Result<DmoInvoiceItem>.Success(item);
+    public static Bool<DmoInvoiceItem> ToResult(this DmoInvoiceItem item)
+        => Bool<DmoInvoiceItem>.Success(item);
 }

@@ -149,7 +149,7 @@
 
     private async Task SaveAndExitAsync()
         => await this.Mutor.SaveAsync()
-            .ExecuteSideEffectAsync(Exit);
+            .OutputAsync(Exit);
 
     private void Exit()
         => this.NavManager.NavigateTo($"/invoices");

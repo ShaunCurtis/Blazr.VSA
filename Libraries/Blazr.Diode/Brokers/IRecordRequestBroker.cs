@@ -7,6 +7,6 @@ namespace Blazr.Diode;
 
 public interface IRecordRequestBroker
 {
-    public ValueTask<Result<TRecord>> ExecuteAsync<TRecord>(RecordQueryRequest<TRecord> request)
+    public ValueTask<Bool<TRecord>> ExecuteAsync<TRecord>(RecordQueryRequest<TRecord> request)
         where TRecord : class;
 }

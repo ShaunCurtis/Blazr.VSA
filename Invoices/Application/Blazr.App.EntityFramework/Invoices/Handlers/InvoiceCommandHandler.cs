@@ -17,9 +17,9 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
 {
     private readonly IMessageBus _messageBus;
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
-    private readonly IRequestHandler<InvoiceRecordRequest, Result<InvoiceEntity>> _recordRequestHandler;
+    private readonly IRequestHandler<InvoiceRecordRequest, Bool<InvoiceEntity>> _recordRequestHandler;
 
-    public InvoiceCommandHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus, IRequestHandler<InvoiceRecordRequest, Result<InvoiceEntity>> requestHandler)
+    public InvoiceCommandHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus, IRequestHandler<InvoiceRecordRequest, Bool<InvoiceEntity>> requestHandler)
     {
         _factory = factory;
         _messageBus = messageBus;
