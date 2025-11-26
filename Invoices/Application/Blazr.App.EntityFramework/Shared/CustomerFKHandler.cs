@@ -24,7 +24,7 @@ public record CustomerFKHandler : IRequestHandler<CustomerFKRequest, Bool<IEnume
             .GetItemsAsync<FkCustomer>(ListQueryRequest<FkCustomer>
                 .Create(cancellationToken))
             .BindAsync(provider => BoolT
-                .Input(provider.Items.Select(item => item.Map)));
+                .Read(provider.Items.Select(item => item.Map)));
     }
 }
 

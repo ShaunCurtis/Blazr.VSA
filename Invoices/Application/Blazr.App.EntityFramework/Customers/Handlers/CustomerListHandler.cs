@@ -33,7 +33,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, B
             )
            .BindAsync((provider) =>
                 Bool<ListItemsProvider<DmoCustomer>>
-                    .Input(new ListItemsProvider<DmoCustomer>(
+                    .Read(new ListItemsProvider<DmoCustomer>(
                         Items: provider.Items.Select(item => DvoCustomer.Map(item)),
                         TotalCount: provider.TotalCount))
             );

@@ -13,7 +13,7 @@ public sealed class InvoiceRecordMutor : IRecordMutor<DmoInvoice>
     [TrackState] public Guid CustomerId { get; set; }
     public FkoCustomer Customer { get; set; } = FkoCustomer.Default;
 
-    public bool IsDirty => !this.ToRecord().Equals(BaseRecord);
+    public bool IsDirty => !this.Mutate().Equals(BaseRecord);
 
     public bool IsNew { get; private init; }
 
@@ -36,21 +36,18 @@ public sealed class InvoiceRecordMutor : IRecordMutor<DmoInvoice>
         this.Customer = this.BaseRecord.Customer;
     }
 
-    public DmoInvoice ToRecord() => this.BaseRecord with
+    public DmoInvoice Mutate() => this.BaseRecord with
     {
         Date = new Date(this.Date),
          Customer = this.Customer
     };
 
-    public Bool<DmoInvoice> ToBoolT()
-        => Bool<DmoInvoice>.Success(this.ToRecord());
-
     public void Reset()
         => this.SetFields();
 
-    public static InvoiceRecordMutor Create(DmoInvoice record)
+    public static InvoiceRecordMutor Read(DmoInvoice record)
         => new InvoiceRecordMutor(record);
 
-    public static InvoiceRecordMutor CreateNewEntity()
+    public static InvoiceRecordMutor Create()
         => new InvoiceRecordMutor(DmoInvoice.CreateNew()) { IsNew = true };
 }

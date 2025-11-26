@@ -45,7 +45,7 @@ public static class GridStateExtensions
 {
     public static Bool<GridState<TRecord>> ToBoolT<TRecord>(this GridState<TRecord> state)
     where TRecord : class
-        => Bool<GridState<TRecord>>.Input(state);
+        => Bool<GridState<TRecord>>.Read(state);
 
     public static async Task<Bool<ListItemsProvider<TRecord>>> ExecuteFunctionOnException<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Task<Bool<ListItemsProvider<TRecord>>>> mapper)
         where TRecord : class

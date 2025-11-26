@@ -11,7 +11,7 @@ public sealed class CustomerRecordMutor : IRecordMutor<DmoCustomer>
 
     [TrackState] public string? Name { get; set; }
 
-    public bool IsDirty => !this.ToRecord().Equals(BaseRecord);
+    public bool IsDirty => !this.Mutate().Equals(BaseRecord);
 
     public bool IsNew { get; private init; }
 
@@ -32,20 +32,17 @@ public sealed class CustomerRecordMutor : IRecordMutor<DmoCustomer>
         this.Name = this.BaseRecord.Name.Value;
     }
 
-    public DmoCustomer ToRecord() => this.BaseRecord with
+    public DmoCustomer Mutate() => this.BaseRecord with
     {
         Name = new(this.Name ?? "No Name Set")
     };
 
-    public Bool<DmoCustomer> ToBoolT()
-        => Bool<DmoCustomer>.Success(this.ToRecord());
-
     public void Reset()
         => this.SetFields();
 
-    public static CustomerRecordMutor Create(DmoCustomer record)
+    public static CustomerRecordMutor Read(DmoCustomer record)
         => new CustomerRecordMutor(record);
 
-    public static CustomerRecordMutor CreateNew()
+    public static CustomerRecordMutor Create()
         => new CustomerRecordMutor(DmoCustomer.CreateNew()) { IsNew = true };
 }

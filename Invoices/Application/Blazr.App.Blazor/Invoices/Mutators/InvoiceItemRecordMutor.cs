@@ -12,7 +12,7 @@ public sealed class InvoiceItemRecordMutor : IRecordMutor<DmoInvoiceItem>
     [TrackState] public string Description { get; set; } = string.Empty;
     [TrackState] public decimal Amount { get; set; }
 
-    public bool IsDirty => !this.ToRecord().Equals(BaseRecord);
+    public bool IsDirty => !this.Mutate().Equals(BaseRecord);
 
     public bool IsNew { get; private init; }
 
@@ -34,21 +34,18 @@ public sealed class InvoiceItemRecordMutor : IRecordMutor<DmoInvoiceItem>
         this.Amount = this.BaseRecord.Amount.Value;
     }
 
-    public DmoInvoiceItem ToRecord() => this.BaseRecord with
+    public DmoInvoiceItem Mutate() => this.BaseRecord with
     {
         Description = new(this.Description),
         Amount = new(this.Amount)
     };
 
-    public Bool<DmoInvoiceItem> ToBoolT()
-        => Bool<DmoInvoiceItem>.Success(this.ToRecord());
-
     public void Reset()
         => this.SetFields();
 
-    public static InvoiceItemRecordMutor Create(DmoInvoiceItem record)
+    public static InvoiceItemRecordMutor Read(DmoInvoiceItem record)
         => new InvoiceItemRecordMutor(record);
 
-    public static InvoiceItemRecordMutor CreateNewEntity(InvoiceId invoiceId)
+    public static InvoiceItemRecordMutor Create(InvoiceId invoiceId)
         => new InvoiceItemRecordMutor(DmoInvoiceItem.CreateNew(invoiceId)) { IsNew = true };
 }

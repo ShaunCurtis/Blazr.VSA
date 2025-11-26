@@ -3,6 +3,8 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using System.Diagnostics.CodeAnalysis;
+
 namespace Blazr.Manganese;
 
 /// <summary>
@@ -13,8 +15,10 @@ namespace Blazr.Manganese;
 
 public record Bool
 {
-    public Exception? Exception { get; private init; }
+    [MemberNotNullWhen(false, nameof(Exception))]
     public bool Failed { get; private init; }
+
+    public Exception? Exception { get; private init; }
 
     public bool Succeeded => !this.Failed;
     public string Message => this.Exception?.Message ?? "There is no message to display!";
@@ -26,7 +30,6 @@ public record Bool
     private Bool() { }
 
     public static Bool Success() => new();
-
 
     public static Bool Failure() => new() { Failed = true };
     

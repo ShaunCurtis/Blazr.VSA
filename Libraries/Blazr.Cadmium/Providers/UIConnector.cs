@@ -13,6 +13,6 @@ public class UIConnector<TRecord>
 {
     public static Bool<GridItemsProviderResult<TRecord>> FromListItemsProvider(ListItemsProvider<TRecord> itemsProvider)
         => Bool<GridItemsProviderResult<TRecord>>
-            .Input(GridItemsProviderResult
+            .Read(GridItemsProviderResult
                 .From<TRecord>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
 }

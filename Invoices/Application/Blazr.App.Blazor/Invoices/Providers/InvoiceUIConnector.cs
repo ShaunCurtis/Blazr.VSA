@@ -45,9 +45,11 @@ public class InvoiceUIConnector
 
     public Task<Bool<GridItemsProviderResult<DmoInvoice>>> GetItemsAsync(GridState<DmoInvoice> state)
         => InvoiceListRequest.Create(state)
-            .ExecuteTransformAsync((request) => _mediator.DispatchAsync(request))
+            .BindAsync((request) => _mediator.DispatchAsync(request))
             .MapAsync((itemsProvider) => GridItemsProviderResult
-                .From<DmoInvoice>(itemsProvider.Items.ToList(), itemsProvider.TotalCount));
+                    .From<DmoInvoice>(itemsProvider.Items
+                    .ToList(), 
+                itemsProvider.TotalCount));
 
     public Func<InvoiceListRequest, Task<Bool<ListItemsProvider<DmoInvoice>>>> ListItemsRequestAsync
         => (request) => _mediator.DispatchAsync(request);
@@ -55,9 +57,9 @@ public class InvoiceUIConnector
     public Bool<InvoiceId> GetKey(object? obj)
         => obj switch
         {
-            InvoiceId id => BoolT.Input(id),
-            DmoInvoice record => BoolT.Input(record.Id),
-            Guid guid => BoolT.Input(new InvoiceId(guid)),
+            InvoiceId id => BoolT.Read(id),
+            DmoInvoice record => BoolT.Read(record.Id),
+            Guid guid => BoolT.Read(new InvoiceId(guid)),
             _ => Bool<InvoiceId>.Failure($"Could not convert the provided key - {obj?.ToString()}")
         };
 

@@ -7,44 +7,58 @@ namespace Blazr.Manganese;
 
 public static class BoolTMonad
 {
-    public static Bool<TOut> Bind<T, TOut>(this Bool<T> boolMonad, Func<T, Bool<TOut>> function)
-        => boolMonad.HasValue
-            ? function(boolMonad.Value!)
-            : Bool<TOut>.Failure(boolMonad.Exception!);
-
-    public static Bool<TOut> Map<T, TOut>(this Bool<T> boolMonad, Func<T, TOut> function)
+    extension<T>(Bool<T> @this)
     {
-        if (boolMonad.Exception is not null)
-            return Bool<TOut>.Failure(boolMonad.Exception!);
+        public Bool<TOut> Bind<TOut>(Func<T, Bool<TOut>> function)
+            => @this.HasValue
+                ? function(@this.Value!)
+                : Bool<TOut>.Failure(@this.Exception!);
 
-        try
+        public Bool<TOut> Map<TOut>(Func<T, TOut> function)
         {
-            var value = function.Invoke(boolMonad.Value!);
-            return (value is null)
-                ? Bool<TOut>.Failure(new BoolException("The function returned a null value."))
-                : Bool<TOut>.Input(value);
+            if (@this.Exception is not null)
+                return Bool<TOut>.Failure(@this.Exception!);
+
+                var value = function.Invoke(@this.Value!);
+                return (value is null)
+                    ? Bool<TOut>.Failure(new BoolException("The function returned a null value."))
+                    : BoolT.Read(value);
         }
-        catch (Exception ex)
+
+        public Bool<TOut> TryMap<TOut>(Func<T, TOut> function)
         {
-            return Bool<TOut>.Failure(ex);
+            if (@this.Exception is not null)
+                return Bool<TOut>.Failure(@this.Exception!);
+
+            try
+            {
+                var value = function.Invoke(@this.Value!);
+                return (value is null)
+                    ? Bool<TOut>.Failure(new BoolException("The function returned a null value."))
+                    : BoolT.Read(value);
+            }
+            catch (Exception ex)
+            {
+                return Bool<TOut>.Failure(ex);
+            }
         }
-    }
 
-    public static Bool<T> Map<T>(this Bool<T> boolMonad, Action<T>? hasValue = null, Action<Exception>? hasException = null)
-    {
-        if (boolMonad.HasValue)
-            hasValue?.Invoke(boolMonad.Value!);
-        else
-            hasException?.Invoke(boolMonad.Exception!);
-
-        return boolMonad;
-    }
-
-    public static IOMonad<TOut> Match<T, TOut>(this Bool<T> boolMonad, Func<TOut> hasNoValue, Func<T, TOut>? hasValue = null, Func<Exception, TOut>? hasException = null)
-        => (Tuple.Create(boolMonad.HasValue, boolMonad.HasException)) switch
+        public Bool<T> Map(Action<T>? hasValue = null, Action<Exception>? hasException = null)
         {
-            (true, false) => IOMonad.Input(hasValue is not null ? hasValue.Invoke(boolMonad.Value!) : default!),
-            (false, true) => IOMonad.Input(hasException is not null ? hasException.Invoke(boolMonad.Exception!) : default!),
-            _ => IOMonad.Input(hasNoValue.Invoke()),
-        };
+            if (@this.HasValue)
+                hasValue?.Invoke(@this.Value!);
+            else
+                hasException?.Invoke(@this.Exception!);
+
+            return @this;
+        }
+
+        public IOMonad<TOut> ToIOMonad<TOut>(Func<TOut> hasNoValue, Func<T, TOut>? hasValue = null, Func<Exception, TOut>? hasException = null)
+            => (Tuple.Create(@this.HasValue, @this.HasException)) switch
+            {
+                (true, false) => IOMonad.Input(hasValue is not null ? hasValue.Invoke(@this.Value!) : default!),
+                (false, true) => IOMonad.Input(hasException is not null ? hasException.Invoke(@this.Exception!) : default!),
+                _ => IOMonad.Input(hasNoValue.Invoke()),
+            };
+    }
 }

@@ -61,7 +61,7 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
 
     public Bool<T> GetState<T>(Guid key) where T : class
         => _subscriptions.ContainsKey(key)
-            ? Bool<T>.Input(_subscriptions[key].Data as T)
+            ? Bool<T>.Read(_subscriptions[key].Data as T)
             : Bool<T>.Failure($"No state found for key {key}");
         
     private void ClearExpiredStates()

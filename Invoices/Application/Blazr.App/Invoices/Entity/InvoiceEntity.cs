@@ -23,7 +23,7 @@ public sealed record InvoiceEntity
         => !this.Equals(control);
 
     public Bool<InvoiceEntity> ToBoolT()
-        => Bool<InvoiceEntity>.Input(this);
+        => Bool<InvoiceEntity>.Read(this);
 
     public static InvoiceEntity CreateNewEntity() =>
         new InvoiceEntity(DmoInvoice.CreateNew(), Enumerable.Empty<DmoInvoiceItem>());

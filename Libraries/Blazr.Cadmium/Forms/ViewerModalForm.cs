@@ -45,11 +45,11 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
     private async Task Load()
     {
         var result = await BoolT.Success(Uid)
-             .ExecuteTransformAsync(UIConnector.RecordRequestAsync);
+             .BindAsync(UIConnector.RecordRequestAsync);
 
-        this.LastResult = result.ToBoolT();
+        this.LastResult = result.ToBool();
 
-        this.Item = result.Output(exception => new TRecord());
+        this.Item = result.Write(exception => new TRecord());
     }
 
     protected virtual async void OnRecordChanged(object? sender)

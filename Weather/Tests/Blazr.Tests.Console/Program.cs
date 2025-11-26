@@ -15,15 +15,15 @@ Console.WriteLine(
 //    .OutputValue(defaultValue: "The input value could not be parsed.")
 //);
 
-//Bool.Input(Console.ReadLine)
-//    .Bind(TryParseString)
-//    .Map(Math.Sqrt)
-//    .Map(value => Math.Round(value, 2))
-//    .Match(
-//        hasValue: value => $"Success: The transformed value is: {value}",
-//        hasNoValue: () => "The input value could not be parsed.",
-//        hasException: ex => $"An error occurred: {ex.Message}")
-//    .Output(Console.WriteLine);
+BoolT.Read(Console.ReadLine)
+    .Bind(TryParseString)
+    .Map(Math.Sqrt)
+    .Map(value => Math.Round(value, 2))
+    .ToIOMonad(
+        hasValue: value => $"Success: The transformed value is: {value}",
+        hasNoValue: () => "The input value could not be parsed.",
+        hasException: ex => $"An error occurred: {ex.Message}")
+    .Output(Console.WriteLine);
 
 //Console.WriteLine(
 //    ConsoleHelper.ReadLine()
@@ -58,33 +58,33 @@ Console.WriteLine(
 //    .Bind(value => IOMonad.Input($"The Value is:{value}"))
 //    .Output(Console.WriteLine);
 
-{
-    var input = Console.ReadLine();
-    if (double.TryParse(input, out double result))
-    {
-        result = Math.Sqrt(result);
-        result = Math.Round(result, 2);
-        Console.WriteLine($"The result is {result}");
+//{
+//    var input = Console.ReadLine();
+//    if (double.TryParse(input, out double result))
+//    {
+//        result = Math.Sqrt(result);
+//        result = Math.Round(result, 2);
+//        Console.WriteLine($"The result is {result}");
 
-    }
-    else
-        Console.WriteLine("The input value could not be parsed.");
-}
+//    }
+//    else
+//        Console.WriteLine("The input value could not be parsed.");
+//}
 
-{
-    var input = Console.ReadLine();
-    try
-    {
-        var result = double.Parse(input!);
-        result = Math.Sqrt(result);
-        result = Math.Round(result, 2);
-        Console.WriteLine($"The result is {result}");
-    }
-    catch
-    {
-        Console.WriteLine("The input value could not be parsed.");
-    }
-}
+//{
+//    var input = Console.ReadLine();
+//    try
+//    {
+//        var result = double.Parse(input!);
+//        result = Math.Sqrt(result);
+//        result = Math.Round(result, 2);
+//        Console.WriteLine($"The result is {result}");
+//    }
+//    catch
+//    {
+//        Console.WriteLine("The input value could not be parsed.");
+//    }
+//}
 
 //try
 //{
@@ -108,33 +108,11 @@ Console.WriteLine(
 
 Bool<double> TryParseString(string? value)
 {
-    if (value is null)
-        return Bool<double>.Failure();
+    if (double.TryParse(value, out double result))
+        return BoolT.Success(result);
 
-    try
-    {
-        return Bool<double>.Success(double.Parse(value));
-    }
-    catch (Exception ex)
-    {
-        return Bool<double>.Failure(ex);
-    }
+        return Bool<double>.Failure($"Failed to parse {value}");
 }
-
-//if (value is null)
-//    Console.WriteLine("Value is Null.");
-//else
-//{
-//    try
-//    {
-//        var output = double.Parse(value!);
-//        Console.WriteLine($"Value is {output}.");
-//    }
-//    catch (Exception ex)
-//    {
-//        Console.WriteLine($"Value was not a number. Error: {ex.Message}.");
-//    }
-//}
 
 //Result<string> To2Decimals(double value)
 //    => Result<string>.Create(Math.Round(value, 2).ToString());
@@ -185,7 +163,7 @@ public static class Extensions
     extension(string? value)
     {
         public Bool<string> ToBoolT()
-            => BoolT.Input(value);
+            => BoolT.Read(value);
     }
 }
 
@@ -194,6 +172,6 @@ public static class ConsoleHelper
     public static Bool<string> ReadLine()
     {
         string? input = Console.ReadLine();
-        return BoolT.Input(input);
+        return BoolT.Read(input);
     }
 }

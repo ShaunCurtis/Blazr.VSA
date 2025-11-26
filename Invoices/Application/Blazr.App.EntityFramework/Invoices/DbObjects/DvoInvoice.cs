@@ -25,5 +25,5 @@ public sealed record DvoInvoice
     };
 
     public static Bool<DmoInvoice> MapToBool(DvoInvoice item)
-        => Bool<DmoInvoice>.Input(Map(item));
+        => Bool<DmoInvoice>.Read(Map(item));
 }

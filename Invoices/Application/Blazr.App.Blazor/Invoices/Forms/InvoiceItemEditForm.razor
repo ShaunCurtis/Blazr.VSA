@@ -88,8 +88,8 @@
             : EditState.Clean;
 
         var result = this.EntityMutor.InvoiceEntity.GetInvoiceItem(this.Uid);
-        var record = result.Output(ex => DmoInvoiceItem.CreateNew( this.EntityMutor.InvoiceEntity.InvoiceRecord.Id));
-        this.EditMutor = InvoiceItemRecordMutor.Create(record);
+        var record = result.Write(ex => DmoInvoiceItem.CreateNew( this.EntityMutor.InvoiceEntity.InvoiceRecord.Id));
+        this.EditMutor = InvoiceItemRecordMutor.Read(record);
         this.EditContext = new EditContext(EditMutor);
 
         this.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
@@ -104,20 +104,20 @@
         if (!confirmed)
             return;
 
-        var action = DeleteInvoiceItemAction.Create(EditMutor.ToRecord());
+        var action = DeleteInvoiceItemAction.Create(EditMutor.Mutate());
 
         this.LastResult = EntityMutor.Dispatch(action.Dispatcher)
-        .Output(OnExit);
+        .Write(OnExit);
     }
 
     private void OnSave()
     {
         this.LastResult = (this.State.Index switch
         { 
-            EditState.StateNewIndex =>  EntityMutor.Dispatch(AddInvoiceItemAction.Create(EditMutor.ToRecord()).Dispatcher),
-            _ => EntityMutor.Dispatch(UpdateInvoiceItemAction.Create(EditMutor.ToRecord()).Dispatcher)
+            EditState.StateNewIndex =>  EntityMutor.Dispatch(AddInvoiceItemAction.Create(EditMutor.Mutate()).Dispatcher),
+            _ => EntityMutor.Dispatch(UpdateInvoiceItemAction.Create(EditMutor.Mutate()).Dispatcher)
         })
-        .Output(OnExit);
+        .Write(OnExit);
     }
 
     private void ResetRecord()

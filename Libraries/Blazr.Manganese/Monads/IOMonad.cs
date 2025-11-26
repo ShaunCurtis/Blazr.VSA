@@ -36,7 +36,7 @@ public static class IOMonad
         public Bool<T> ToBoolT()
         //=> Bool.Input(ioMonad.Value);
         {
-            var x = BoolT.Input(ioMonad.Value);
+            var x = BoolT.Read(ioMonad.Value);
             return x;
         }
     }

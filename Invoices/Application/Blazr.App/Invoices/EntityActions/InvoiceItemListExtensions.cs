@@ -22,7 +22,7 @@ public static class InvoiceItemListExtensions
     }
 
     public static Bool<DmoInvoiceItem> GetInvoiceItem(this InvoiceMutor mutor, DmoInvoiceItem item)
-        => Bool<DmoInvoiceItem>.Input( 
+        => Bool<DmoInvoiceItem>.Read( 
             value: mutor.CurrentEntity.InvoiceItems.SingleOrDefault(_item => _item.Id == item.Id), 
             errorMessage: "The record does not exist in the Invoice Items");
 
@@ -37,12 +37,12 @@ public static class InvoiceItemListExtensions
             : Bool<DmoInvoiceItem>.Success(item);
 
     public static Bool<DmoInvoiceItem> GetInvoiceItem(this InvoiceEntity entity, DmoInvoiceItem item)
-        => Bool<DmoInvoiceItem>.Input(
+        => Bool<DmoInvoiceItem>.Read(
             value: entity.InvoiceItems.SingleOrDefault(_item => _item.Id == item.Id),
             errorMessage: "The record does not exist in the Invoice Items");
 
     public static Bool<DmoInvoiceItem> GetInvoiceItem(this InvoiceEntity entity, InvoiceItemId id)
-        => Bool<DmoInvoiceItem>.Input(
+        => Bool<DmoInvoiceItem>.Read(
             value: entity.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
             errorMessage: "The record does not exist in the Invoice Items");
 

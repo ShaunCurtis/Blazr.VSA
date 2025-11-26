@@ -4,6 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Cadmium.Core;
+using Blazr.Cadmium.Extensions;
 using Blazr.Diode;
 using Blazr.Uranium;
 using Microsoft.AspNetCore.Components;
@@ -46,7 +47,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
 
         var result = await this.UIConnector.RecordRequestAsync(this.Uid);
 
-        var record = result.Output(ex => default!);
+        var record = result.Write(ex => default!);
 
         this.EditMutor = (TRecordMutor)this.UIConnector.GetRecordMutor(record);
         this.EditContext = new EditContext(EditMutor);
@@ -57,20 +58,30 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     }
 
     protected virtual async Task OnSave()
-        => LastResult = await this.UIConnector.RecordCommandAsync(StateRecord<TRecord>.Create(this.EditMutor.ToRecord(), this.State.AsDirty))
+    {
+        var stateRecord = this.EditMutor.ToStateRecord();
+
+        this.LastResult = await this.UIConnector.RecordCommandAsync(stateRecord)
             .ToBoolAsync()
-            .OutputAsync(this.OnExit);
+            .WriteAsync(this.OnExit);
+    }
 
     protected virtual async Task OnDelete()
     {
-        bool confirmed = await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?");
-        if (!confirmed)
+        if ((await ConfirmAsync()).Failed)
             return;
 
-        this.LastResult = await this.UIConnector.RecordCommandAsync(StateRecord<TRecord>.Create(this.EditMutor.ToRecord(), EditState.Deleted))
+        var stateRecord = StateRecord<TRecord>.Create(this.EditMutor.Mutate(), EditState.Deleted);
+
+        this.LastResult = await this.UIConnector.RecordCommandAsync(stateRecord)
             .ToBoolAsync()
-            .OutputAsync(this.OnExit);
+            .WriteAsync(this.OnExit);
     }
+
+    protected async Task<Bool> ConfirmAsync()
+        => await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?")
+            ? Bool.Success()
+            : Bool.Failure();
 
     protected virtual void OnExit()
         => ModalDialog?.Close(new ModalResult());

@@ -71,7 +71,7 @@
     [Parameter] public EventCallback<bool> Cancelled { get; set; }
     private string _formTitle => $"Create A New Invoice";
 
-    private InvoiceRecordMutor EditMutor { get; set; } = InvoiceRecordMutor.CreateNewEntity();
+    private InvoiceRecordMutor EditMutor { get; set; } = InvoiceRecordMutor.Create();
     protected EditContext EditContext { get; set; } = default!;
 
     private EditFormButtonsOptions _editFormButtonsOptions = new();
@@ -89,10 +89,10 @@
 
         var result = await this.FKProvider.GetCustomerFKAsync();
 
-        LastResult = result.ToBoolT();
+        LastResult = result.ToBool();
 
         _customerList = result
-            .Output(Enumerable.Empty<FkoCustomer>())
+            .Write(Enumerable.Empty<FkoCustomer>())
             .ToList();
 
         _loading = false;
@@ -125,7 +125,7 @@
         if (!this.EditContext.Validate())
             return Task.CompletedTask;
 
-        var action = new UpdateInvoiceAction(EditMutor.ToRecord());
+        var action = new UpdateInvoiceAction(EditMutor.Mutate());
         var result = this.EntityMutor.Dispatch(action.Dispatcher);
 
         OnExit(false);

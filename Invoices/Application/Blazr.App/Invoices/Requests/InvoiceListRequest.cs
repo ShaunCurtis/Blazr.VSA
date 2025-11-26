@@ -12,7 +12,7 @@ public record InvoiceListRequest
     : BaseListRequest, IRequest<Bool<ListItemsProvider<DmoInvoice>>>
 {
     public static Bool<InvoiceListRequest> Create(GridState<DmoInvoice> state)
-        => Bool<InvoiceListRequest>.Input(new InvoiceListRequest()
+        => Bool<InvoiceListRequest>.Read(new InvoiceListRequest()
         {
             PageSize = state.PageSize,
             StartIndex = state.StartIndex,

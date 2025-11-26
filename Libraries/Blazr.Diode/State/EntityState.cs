@@ -34,11 +34,11 @@ public sealed class EntityState<T>
 
     public Bool Update(T record, Guid transactionId)
         => this.SaveState(transactionId)
-            .Map(() => UpdateState(record));
+            .Bind(() => UpdateState(record));
 
     public Bool MarkAsDeleted(Guid transactionId)
         => this.SaveState(transactionId)
-            .Map(DeleteState);
+            .Bind(DeleteState);
 
     public Bool MarkAsPersisted()
             => this.PersistedState();

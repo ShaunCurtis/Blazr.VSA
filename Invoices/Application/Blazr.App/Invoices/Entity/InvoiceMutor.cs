@@ -16,7 +16,7 @@ public sealed record InvoiceMutor
 
     public InvoiceId Id => BaseEntity.InvoiceRecord.Id;
 
-    public Bool<InvoiceMutor> ToResult => Bool<InvoiceMutor>.Input(this);
+    public Bool<InvoiceMutor> ToResult => Bool<InvoiceMutor>.Read(this);
 
     public bool IsDirty => this.CurrentEntity.IsDirty(BaseEntity);
 

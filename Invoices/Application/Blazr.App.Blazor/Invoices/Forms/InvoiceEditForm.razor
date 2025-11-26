@@ -71,7 +71,7 @@
 
     private string _formTitle => $"Edit The Invoice";
 
-    private InvoiceRecordMutor EditMutor { get; set; } = InvoiceRecordMutor.CreateNewEntity();
+    private InvoiceRecordMutor EditMutor { get; set; } = InvoiceRecordMutor.Create();
     protected EditContext EditContext { get; set; } = default!;
 
     private EditFormButtonsOptions _editFormButtonsOptions = new();
@@ -86,11 +86,11 @@
         ArgumentNullException.ThrowIfNull(EntityMutor);
         ArgumentNullException.ThrowIfNull(this.ModalDialog);
 
-        this.EditMutor = InvoiceRecordMutor.Create(this.EntityMutor.InvoiceEntity.InvoiceRecord);
+        this.EditMutor = InvoiceRecordMutor.Read(this.EntityMutor.InvoiceEntity.InvoiceRecord);
         this.EditContext = new(EditMutor);
 
         _customerList = (await this.FKProvider.GetCustomerFKAsync())
-            .Output(Enumerable.Empty<FkoCustomer>())
+            .Write(Enumerable.Empty<FkoCustomer>())
             .ToList();
 
         _loading = false;
@@ -119,7 +119,7 @@
         if (!this.EditContext.Validate())
             return Task.CompletedTask;
 
-        var action = new UpdateInvoiceAction(EditMutor.ToRecord());
+        var action = new UpdateInvoiceAction(EditMutor.Mutate());
 
         var result = this.EntityMutor.Dispatch(action.Dispatcher);
 

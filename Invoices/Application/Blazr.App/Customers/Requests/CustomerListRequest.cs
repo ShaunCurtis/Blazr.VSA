@@ -13,7 +13,7 @@ public record CustomerListRequest
     : BaseListRequest, IRequest<Bool<ListItemsProvider<DmoCustomer>>>
 {
     public static Bool<CustomerListRequest> Create(GridState<DmoCustomer> state)
-        => Bool<CustomerListRequest>.Input(new CustomerListRequest()
+        => Bool<CustomerListRequest>.Read(new CustomerListRequest()
         {
             PageSize = state.PageSize,
             StartIndex = state.StartIndex,

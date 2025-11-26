@@ -12,22 +12,6 @@ public static class BoolMonad
             ? function()
             : Bool.Failure(boolMonad.Exception!);
 
-    public static Bool Map(this Bool boolMonad, Action function)
-    {
-        if (boolMonad.Failed)
-            return Bool.Failure(boolMonad.Exception);
-
-        try
-        {
-            function.Invoke();
-            return Bool.Success();
-        }
-        catch (Exception ex)
-        {
-            return Bool.Failure(ex);
-        }
-    }
-
     public static T Match<T>(this Bool boolMonad, Func<T> Succeeded, Func<Exception, T> Failed)
         => boolMonad.Succeeded
         ? Succeeded.Invoke()

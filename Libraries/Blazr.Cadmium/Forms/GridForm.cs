@@ -46,8 +46,8 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
             ? this.GetGridState()
             : this.ResetGridState();
 
-        this.GridState = result.Output(exception => new GridState<TRecord>());
-        this.LastResult = result.ToBoolT();
+        this.GridState = result.Write(exception => new GridState<TRecord>());
+        this.LastResult = result.ToBool();
 
         _messageBus.Subscribe<TKey>(OnRecordChanged);
 
@@ -86,8 +86,8 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
             .CreateAsResult(gridRequest)
             .Bind(this.SetGridState)
             .BindAsync(UIConnector.GetItemsAsync)
-            .OutputAsync((result) => this.LastResult = result)
-            .OutputAsync(ExceptionOutput: ex => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+            .WriteAsync((result) => this.LastResult = result)
+            .WriteAsync(ExceptionOutput: ex => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 
     protected virtual async Task OnEditAsync(TKey id)
     {

@@ -12,7 +12,6 @@ public interface IRecordMutor<TRecord>
     public bool IsDirty { get; }
     public bool IsNew { get; }
 
-    public TRecord ToRecord();
-    public Bool<TRecord> ToBoolT();
+    public TRecord Mutate();
     public void Reset();
 }
