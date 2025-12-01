@@ -1,9 +1,11 @@
 # Commands
 
-A command is defined as:
+
+
+A command can be defined as:
 
 ```csharp
-Result CommandAsync(CommandRequest command);
+public async Task<Bool<TRecord>> ExecuteCommandAsync<TRecord>(CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
 ```
 
 Commands have one of three actions: 
@@ -12,165 +14,173 @@ Commands have one of three actions:
 2. Delete - delete the record from the data store.
 3. Add - Add the record to the data store.
  
-Command functionality is defined in a `CommandState` readonly struct.  using an `enum` is problematic when you cross domain boundaries and API interfaces.  Search "c# why you shouldn't use emums" for more information on the topic.
+Command functionality is defined in an `EditState` readonly struct.  using an `enum` is problematic when you cross domain boundaries and API interfaces.  Search "c# why you shouldn't use emums" for more information on the topic.
 
 ```csharp
-public readonly record struct CommandState
+public readonly record struct EditState
 {
+    public const int StateCleanIndex = 0;
+    public const int StateNewIndex = 1;
+    public const int StateDirtyIndex = 2;
+    public const int StateDeletedIndex = -1;
+
     public int Index { get; private init; } = 0;
     public string Value { get; private init; } = "None";
 
-    public CommandState() { }
+    public EditState() { }
 
-    private CommandState(int index, string value)
+    private EditState(int index, string value)
     {
         Index = index;
         Value = value;
     }
+
+    public EditState AsDirty => this.Index == StateCleanIndex ? EditState.Dirty : this; 
 
     public override string ToString()
     {
         return this.Value;
     }
 
-    public CommandState AsDirty
-        => this.Index == 0 ? CommandState.Update : this;
+    public static EditState Clean = new EditState(StateCleanIndex, "Clean");
+    public static EditState New = new EditState(StateNewIndex, "New");
+    public static EditState Dirty = new EditState(StateDirtyIndex, "Dirty");
+    public static EditState Deleted = new EditState(StateDeletedIndex, "Deleted");
 
-    public static CommandState None = new CommandState(0, "None");
-    public static CommandState Add = new CommandState(1, "Add");
-    public static CommandState Update = new CommandState(2, "Update");
-    public static CommandState Delete = new CommandState(-1, "Delete");
-
-    public static CommandState GetState(int index)
+    public static EditState GetState(int index)
         => (index) switch
         {
-            1 => CommandState.Add,
-            2 => CommandState.Update,
-            -1 => CommandState.Delete,
-            _ => CommandState.None,
+            StateNewIndex => EditState.New,
+            StateDirtyIndex => EditState.Dirty,
+            StateDeletedIndex => EditState.Deleted,
+            _ => EditState.Clean,
         };
 }
 ```
 
-## The CQS Request
-
-We define a generic command request object:
-
-```
-public readonly record struct CommandRequest<TRecord>(TRecord Item, CommandState State );
-```
-
-## The Mediator Request
-
-The Mediator request is record specific: here's the Customer Record Request.
+## Customer Command Pipeline
+.
+The `CustomerUIConnector` defines the method called from the UI
 
 ```csharp
-public readonly record struct CustomerCommandRequest(DmoCustomer Item, CommandState State) : IRequest<Result<CustomerId>>;
+public Func<StateRecord<DmoCustomer>, Task<Bool<CustomerId>>> RecordCommandAsync
+    => record => _mediator.DispatchAsync(new CustomerCommandRequest(record));
 ```
+
+## The CQS Request
+
+```csharp
+public readonly record struct CustomerCommandRequest(
+        StateRecord<DmoCustomer> Item)
+    : IRequest<Bool<CustomerId>>
+{
+    public static CustomerCommandRequest Create(DmoCustomer item, EditState state)
+        => new CustomerCommandRequest(new(item, state));
+
+    public static CustomerCommandRequest Create(DmoCustomer item, EditState state, Guid transactionId)
+        => new CustomerCommandRequest(new(item, state, transactionId));
+}
 
 ## The Mediator Handler
 
-The handler is where the work is done.  The handler is a `IRequestHandler` that takes in the request and returns a `Result<CustomerId>`.  The handler is responsible for getting the data from the database and returning it in the requested format.  In this case, it uses the registered generic `ICommandBroker` to get the data.
+The handler is where the work is done.  The handler is a `IRequestHandler` that takes in the request and returns a `Bool<CustomerId>`.  The handler is responsible for getting the data from the database and returning it in the requested format.  In this case, it uses the registered generic `ICommandBroker` to get the data.
 
 ```csharp
-public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandRequest, Result<CustomerId>>
+public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandRequest, Bool<CustomerId>>
 {
-    private ICommandBroker _broker;
-    private IMessageBus _messageBus;
+    private readonly IMessageBus _messageBus;
+    private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public CustomerCommandHandler(ICommandBroker broker, IMessageBus messageBus)
+    public CustomerCommandHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus)
     {
+        _factory = factory;
         _messageBus = messageBus;
-        _broker = broker;
     }
 
-    public async Task<Result<CustomerId>> Handle(CustomerCommandRequest request, CancellationToken cancellationToken)
+    public async Task<Bool<CustomerId>> HandleAsync(CustomerCommandRequest request, CancellationToken cancellationToken)
     {
-        var result = await _broker.ExecuteAsync<DboCustomer>(new CommandRequest<DboCustomer>(
-            Item: DboCustomerMap.Map(request.Item),
-            State: request.State
-        ), cancellationToken);
+        using var dbContext = _factory.CreateDbContext();
 
-        if (!result.HasSucceeded(out DboCustomer? record))
-            return result.ConvertFail<CustomerId>();
+        // Get the record result
+        var result = await dbContext
+            .ExecuteCommandAsync<DboCustomer>(new CommandRequest<DboCustomer>(
+                    Item: DboCustomer.Map(request.Item.Record),
+                    State: request.Item.State
+                ),
+                cancellationToken);
 
-        _messageBus.Publish<DmoCustomer>(DboCustomerMap.Map(record));
-
-        return Result<CustomerId>.Success(new CustomerId(record.CustomerID));
+        //If the result is successful, we publish the DmoCustomer to the message bus
+        // and return the Id - this may have been generated by the database
+        return result.Bind<DboCustomer, CustomerId>(record =>
+            {
+                var id = new CustomerId(record.CustomerID);
+                _messageBus.Publish<DmoCustomer>(id);
+                return BoolT.Read(id);
+            }
+        );
     }
 }
 ```
 
+Note that the Handler publishes a message to the MessageBus against the `DmoCustomer` type with the affected Id to broadcast the change. 
+
 ### The CQS Broker
 
-The CQS broker implements the `ICommandBroker`.  The broker is responsible for executing the command on the data store.  The broker is a generic class that takes a `DbContext` type as a parameter.
+The handler calls `ExecuteCommandAsync` against the `DbContext`
+
+```csharp
+public static async Task<Bool<TRecord>> ExecuteCommandAsync<TRecord>(this DbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+    where TRecord : class
+        => await CQSEFBroker<DbContext>.ExecuteCommandAsync(dbContext, request, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+```
+
+Which then executes the `CQSEFBroker` method `ExecuteCommandAsync`. 
 
 Note: `TRecord` needs to implement `ICommandEntity`.  This is a marker interface that indicates the record can be updated, added or deleted.
 
 ```csharp
-public sealed class CommandServerBroker<TDbContext>
-    : ICommandBroker
-    where TDbContext : DbContext
+public static async Task<Bool<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+    where TRecord : class
 {
-    private readonly IDbContextFactory<TDbContext> _factory;
+    if ((request.Item is not ICommandEntity))
+        return Bool<TRecord>.Failure($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly.");
 
-    public CommandServerBroker(IDbContextFactory<TDbContext> factory)
+    var stateRecord = request.Item;
+    var result = 0;
+    switch (request.State.Index)
     {
-        _factory = factory;
-    }
-
-    public async ValueTask<Result<TRecord>> ExecuteAsync<TRecord>(CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
-        where TRecord : class
-    {
-        using var dbContext = _factory.CreateDbContext();
-
-        if ((request.Item is not ICommandEntity))
-            return Result<TRecord>.Fail(new CommandException($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly."));
-
-        var stateRecord = request.Item;
-
-        // First check if it's new.
-        if (request.State == CommandState.Add)
-        {
+        case EditState.StateNewIndex:
             dbContext.Add<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             return result == 1
-                ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail( new CommandException("Error adding Record"));
-        }
+                ? Bool<TRecord>.Success(request.Item)
+                : Bool<TRecord>.Failure("Error adding Record");
 
-        // Check if we should delete it
-        if (request.State == CommandState.Delete)
-        {
+        case EditState.StateDeletedIndex:
             dbContext.Remove<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            
-            return result == 1
-                ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail(new CommandException( "Error deleting Record"));
-        }
+            result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        // Finally it changed
-        if (request.State == CommandState.Update)
-        {
+            return result == 1
+                ? Bool<TRecord>.Success(request.Item)
+                : Bool<TRecord>.Failure("Error deleting Record");
+
+        case EditState.StateDirtyIndex:
             dbContext.Update<TRecord>(request.Item);
-            var result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             return result == 1
-                ? Result<TRecord>.Success(request.Item)
-                : Result<TRecord>.Fail(new CommandException("Error saving Record"));
-        }
+                ? Bool<TRecord>.Success(request.Item)
+                : Bool<TRecord>.Failure("Error saving Record");
 
-        return Result<TRecord>.Fail(new CommandException("Nothing executed.  Unrecognised State."));
+        default:
+            return Bool<TRecord>.Failure("Nothing executed.  Unrecognised State.");
     }
 }
 ```
 
 ## The Result
 
-All commands only return status information.  It's bad practice to  return a `null` without explaining why!
+`ExecuteCommandAsync` returns a `Bool<TRecord>`, the record that the handler updated.  *EF* will have replaced any database generated Ids in the record.
 
-The CQS command returns a `Result<TRecord>`.  Where the data store generates the Id, it's imperitive to return the new Id.  In Entity Framework, *Add* updates the Id in the provided record.  As the handler is generic, we don't know the Id type, so we return the full record.  The record specific caller can extract the correct typed Id.  In our case, where the Id is generated by the client, so the record is returned as submitted.
-
-The Mediator record specific handler converts the `Result<TRecord>`. Thw `CustomerCommandHandler` returns a `Result<CustomerId>`.
+The Handler returns `Task<Bool<CustomerId>>`. 

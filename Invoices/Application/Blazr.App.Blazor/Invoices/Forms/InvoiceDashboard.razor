@@ -49,7 +49,7 @@
 
         </div>
     </div>
-    <div hidden="@(!_showAddInvoiceForm)" class="mt-3">
+    <div hidden="@_hideAddInvoiceForm" class="mt-3">
         <InvoiceAddForm Cancelled="this.OnNewInvoiceClosed" />
     </div>
 
@@ -76,6 +76,7 @@
     private bool _showAddInvoiceForm = false;
     private IModalDialog _modalDialog = default!;
 
+    private bool _hideAddInvoiceForm => !_showAddInvoiceForm;
     private bool _isDirty => this.Mutor.IsDirty;
 
     private bool _isClean => !this.Mutor.IsDirty;
@@ -148,8 +149,8 @@
         => await this.Mutor.SaveAsync();
 
     private async Task SaveAndExitAsync()
-        => await this.Mutor.SaveAsync()
-            .WriteAsync(Exit);
+        => (await this.Mutor.SaveAsync())
+            .Write(Exit);
 
     private void Exit()
         => this.NavManager.NavigateTo($"/invoices");

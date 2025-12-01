@@ -7,18 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Brokers\**" />
     <Compile Remove="Requests\**" />
-    <EmbeddedResource Remove="Brokers\**" />
     <EmbeddedResource Remove="Requests\**" />
-    <None Remove="Brokers\**" />
     <None Remove="Requests\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="Brokers\ICommandBroker.cs" />
-    <Compile Include="Brokers\IListRequestBroker.cs" />
-    <Compile Include="Brokers\IRecordRequestBroker.cs" />
     <Compile Include="Requests\CommandRequest.cs" />
     <Compile Include="Requests\ICommandEntity.cs" />
     <Compile Include="Requests\ListQueryRequest.cs" />

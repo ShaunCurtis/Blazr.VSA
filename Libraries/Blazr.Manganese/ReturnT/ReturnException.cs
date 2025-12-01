@@ -5,8 +5,11 @@
 /// ============================================================
 namespace Blazr.Manganese;
 
-public static class IEnumerableFunctionalExtensions
+public class ReturnException : Exception
 {
-    public static Bool<IEnumerable<T>> ToBoolMonad<T>(this IEnumerable<T> value)
-        => BoolT.Success(value);
+    public ReturnException() : base("The Bool operation failed.") { }
+    public ReturnException(string message) : base(message) { }
+
+    public static ReturnException Create(string message)
+        => new (message);
 }

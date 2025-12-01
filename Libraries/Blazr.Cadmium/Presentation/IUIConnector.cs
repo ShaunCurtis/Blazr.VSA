@@ -3,11 +3,12 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Blazr.Cadmium.Core;
 using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode;
 using Microsoft.AspNetCore.Components.QuickGrid;
 
-namespace Blazr.Cadmium.Core;
+namespace Blazr.Cadmium.Presentation;
 
 public interface IUIConnector<TRecord, TKey>
     where TRecord : class, new()
@@ -19,19 +20,11 @@ public interface IUIConnector<TRecord, TKey>
     public Type? ViewForm { get; }
     public string Url { get; }
 
-    public Task<Bool<GridItemsProviderResult<TRecord>>> GetItemsAsync(GridState<TRecord> state);
+    public Task<Return<GridItemsProviderResult<TRecord>>> GetItemsAsync(GridState<TRecord> state);
 
-    public Func<TKey, Task<Bool<TRecord>>> RecordRequestAsync { get; }
+    public Func<TKey, Task<Return<TRecord>>> RecordRequestAsync { get; }
 
-    public Func<StateRecord<TRecord>, Task<Bool<TKey>>> RecordCommandAsync { get; }
-
-    public Func<GridState<TRecord>, Task<Bool<ListItemsProvider<TRecord>>>> GridItemsRequestAsync { get; }
+    public Func<StateRecord<TRecord>, Task<Return<TKey>>> RecordCommandAsync { get; }
 
     public IRecordMutor<TRecord> GetRecordMutor(TRecord record);
-
-    public IRecordMutor<TRecord> GetNewRecordMutor();
-
-    public Bool<TKey> GetKey(object? obj);
-
-    public TRecord NewRecord { get; }
 }

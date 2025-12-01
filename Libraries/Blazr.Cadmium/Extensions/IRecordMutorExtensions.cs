@@ -24,8 +24,8 @@ public static class IRecordMutorExtensions
             return StateRecord<TRecord>.Create(@this.Mutate(), state);
         }
 
-        public Bool<TRecord> ToBoolT()
-            => BoolT.Read(@this.Mutate());
+        public Return<TRecord> ToBoolT()
+            => ReturnT.Read(@this.Mutate());
     }
 }
 

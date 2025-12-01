@@ -8,14 +8,14 @@ namespace Blazr.App.EntityFramework;
 /// <summary>
 /// Mediator Handler for executing list requests against a Customer Entity in a Entity Framework Context
 /// </summary>
-public sealed class InvoiceListHandler : IRequestHandler<InvoiceListRequest, Bool<ListItemsProvider<DmoInvoice>>>
+public sealed class InvoiceListHandler : IRequestHandler<InvoiceListRequest, Return<ListItemsProvider<DmoInvoice>>>
 {
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
     public InvoiceListHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory)
         => _factory = factory;
 
-    public async Task<Bool<ListItemsProvider<DmoInvoice>>> HandleAsync(InvoiceListRequest request, CancellationToken cancellationToken)
+    public async Task<Return<ListItemsProvider<DmoInvoice>>> HandleAsync(InvoiceListRequest request, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 
@@ -31,7 +31,7 @@ public sealed class InvoiceListHandler : IRequestHandler<InvoiceListRequest, Boo
 
         return await dbContext.GetItemsAsync<DvoInvoice>(query)
            .BindAsync((provider) =>
-                Bool<ListItemsProvider<DmoInvoice>>
+                Return<ListItemsProvider<DmoInvoice>>
                     .Read(new ListItemsProvider<DmoInvoice>(
                         Items: provider.Items.Select(item => DvoInvoice.Map(item)),
                         TotalCount: provider.TotalCount))

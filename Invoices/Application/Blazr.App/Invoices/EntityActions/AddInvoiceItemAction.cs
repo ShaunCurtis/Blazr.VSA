@@ -12,14 +12,14 @@ public record AddInvoiceItemAction
     public AddInvoiceItemAction(DmoInvoiceItem invoiceItem)
         => _invoiceItem = invoiceItem;
 
-    public Bool<InvoiceEntity> Dispatcher(InvoiceEntity entity)
+    public Return<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity
         .CheckInvoiceItemDoesNotExist(_invoiceItem)
             .Map(invoiceItem => entity.InvoiceItems
                     .ToList()
                     .AddItem(invoiceItem)
             )
-            .Bind(entity.CreateWithRulesValidation);
+            .Bind(entity.MutateWithEntityRulesApplied);
 
     public static AddInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => (new AddInvoiceItemAction(invoiceItem));

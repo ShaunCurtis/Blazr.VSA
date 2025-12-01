@@ -7,7 +7,7 @@ using Blazr.App.EntityFramework;
 
 namespace Blazr.App.Infrastructure;
 
-public record CustomerFKHandler : IRequestHandler<CustomerFKRequest, Bool<IEnumerable<FkoCustomer>>>
+public record CustomerFKHandler : IRequestHandler<CustomerFKRequest, Return<IEnumerable<FkoCustomer>>>
 {
     private IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
@@ -16,14 +16,14 @@ public record CustomerFKHandler : IRequestHandler<CustomerFKRequest, Bool<IEnume
         _factory = dbContextFactory;
     }
 
-    public async Task<Bool<IEnumerable<FkoCustomer>>> HandleAsync(CustomerFKRequest request, CancellationToken cancellationToken)
+    public async Task<Return<IEnumerable<FkoCustomer>>> HandleAsync(CustomerFKRequest request, CancellationToken cancellationToken)
     {
         using var dbContext = await _factory.CreateDbContextAsync();
 
         return await dbContext
             .GetItemsAsync<FkCustomer>(ListQueryRequest<FkCustomer>
                 .Create(cancellationToken))
-            .BindAsync(provider => BoolT
+            .BindAsync(provider => ReturnT
                 .Read(provider.Items.Select(item => item.Map)));
     }
 }

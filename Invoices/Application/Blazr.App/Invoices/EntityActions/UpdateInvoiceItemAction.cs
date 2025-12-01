@@ -12,7 +12,7 @@ public record UpdateInvoiceItemAction
     public UpdateInvoiceItemAction(DmoInvoiceItem invoiceItem)
         => _invoiceItem = invoiceItem;
 
-    public Bool<InvoiceMutor> Dispatch(InvoiceMutor mutor)
+    public Return<InvoiceMutor> Dispatch(InvoiceMutor mutor)
         => mutor
             .GetInvoiceItem(_invoiceItem)
             .Map(invoiceItem => mutor.CurrentEntity.InvoiceItems
@@ -21,14 +21,14 @@ public record UpdateInvoiceItemAction
                 .AddItem(_invoiceItem))
             .Bind(mutor.Mutate);
 
-    public Bool<InvoiceEntity> Dispatcher(InvoiceEntity entity)
+    public Return<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity
                 .GetInvoiceItem(_invoiceItem)
                 .Map(invoiceItem => entity.InvoiceItems
                     .ToList()
                     .RemoveItem(invoiceItem)
                     .AddItem(_invoiceItem))
-                .Bind(entity.CreateWithRulesValidation);
+                .Bind(entity.MutateWithEntityRulesApplied);
 
     public static UpdateInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => (new UpdateInvoiceItemAction(invoiceItem));

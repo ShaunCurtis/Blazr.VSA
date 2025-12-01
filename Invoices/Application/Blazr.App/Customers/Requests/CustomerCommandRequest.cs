@@ -9,7 +9,7 @@ namespace Blazr.App.Core;
 
 public readonly record struct CustomerCommandRequest(
         StateRecord<DmoCustomer> Item)
-    : IRequest<Bool<CustomerId>>
+    : IRequest<Return<CustomerId>>
 {
     public static CustomerCommandRequest Create(DmoCustomer item, EditState state)
         => new CustomerCommandRequest(new(item, state));

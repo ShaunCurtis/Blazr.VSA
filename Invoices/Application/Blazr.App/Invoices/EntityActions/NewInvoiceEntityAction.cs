@@ -12,7 +12,7 @@ public record NewInvoiceEntityAction
     public NewInvoiceEntityAction(DmoInvoice invoice)
         => _invoice = invoice;
 
-    public Bool<InvoiceEntity> Dispatcher()
+    public Return<InvoiceEntity> Dispatcher()
         => InvoiceEntity.CreateNewEntity(_invoice).ToBoolT();
 
     public static UpdateInvoiceAction Create(DmoInvoice invoice)

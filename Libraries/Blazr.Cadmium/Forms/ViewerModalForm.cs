@@ -3,7 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.Cadmium.Core;
+using Blazr.Cadmium.Presentation;
 using Blazr.Diode;
 using Blazr.Gallium;
 using Blazr.Uranium;
@@ -29,7 +29,7 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
     protected string FormTitle => $"{this.UIConnector.SingleDisplayName} Viewer";
 
     protected TRecord Item { get; set; } = new TRecord();
-    protected Bool LastResult { get; set; } = Bool.Success();
+    protected Return LastResult { get; set; } = Return.Success();
 
     protected async override Task OnInitializedAsync()
     {
@@ -44,12 +44,12 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
 
     private async Task Load()
     {
-        var result = await BoolT.Success(Uid)
+        var result = await ReturnT.Success(Uid)
              .BindAsync(UIConnector.RecordRequestAsync);
 
-        this.LastResult = result.ToBool();
+        this.LastResult = result.ToReturn();
 
-        this.Item = result.Write(exception => new TRecord());
+        this.Item = result.Write(new TRecord());
     }
 
     protected virtual async void OnRecordChanged(object? sender)

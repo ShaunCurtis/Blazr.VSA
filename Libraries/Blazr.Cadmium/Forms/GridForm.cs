@@ -32,7 +32,7 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
     protected QuickGrid<TRecord> quickGrid = default!;
     protected PaginationState Pagination = new PaginationState { ItemsPerPage = 10 };
     protected GridState<TRecord> GridState = new();
-    protected Bool LastResult = Bool.Success();
+    protected Return LastResult = Return.Success();
 
     protected string formTitle => this.FormTitle ?? $"List of {this.UIConnector?.PluralDisplayName ?? "Items"}";
     protected readonly string TableCss = "table table-sm table-striped table-hover border-bottom no-margin hide-blank-rows";
@@ -46,8 +46,8 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
             ? this.GetGridState()
             : this.ResetGridState();
 
-        this.GridState = result.Write(exception => new GridState<TRecord>());
-        this.LastResult = result.ToBool();
+        this.GridState = result.Write(new GridState<TRecord>());
+        this.LastResult = result.ToReturn();
 
         _messageBus.Subscribe<TKey>(OnRecordChanged);
 
@@ -65,13 +65,13 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
         ArgumentNullException.ThrowIfNull(this.quickGrid);
     }
 
-    protected Bool<GridState<TRecord>> GetGridState()
+    protected Return<GridState<TRecord>> GetGridState()
         => _gridStateStore.GetState<GridState<TRecord>>(GridContextId);
 
-    protected Bool<GridState<TRecord>> SetGridState(UpdateGridRequest<TRecord> request)
+    protected Return<GridState<TRecord>> SetGridState(UpdateGridRequest<TRecord> request)
         => _gridStateStore.Dispatch(request.ToGridState(this.GridContextId));
 
-    protected Bool<GridState<TRecord>> ResetGridState()
+    protected Return<GridState<TRecord>> ResetGridState()
         => _gridStateStore.Dispatch(new GridState<TRecord>
         {
             Key = this.GridContextId,
@@ -82,12 +82,17 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
         });
 
     protected async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
-        => await UpdateGridRequest<TRecord>
+    {
+        var result = await UpdateGridRequest<TRecord>
             .CreateAsResult(gridRequest)
             .Bind(this.SetGridState)
-            .BindAsync(UIConnector.GetItemsAsync)
-            .WriteAsync((result) => this.LastResult = result)
-            .WriteAsync(ExceptionOutput: ex => GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+            .BindAsync(UIConnector.GetItemsAsync);
+
+        LastResult = result.ToReturn();
+
+        return result.Write(GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+
+    }
 
     protected virtual async Task OnEditAsync(TKey id)
     {

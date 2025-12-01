@@ -27,8 +27,8 @@ public record StateRecord<T>
     public bool IsDirty
         => this.State != EditState.Clean;
 
-    public Bool<StateRecord<T>> ToBoolT
-        => BoolT.Success(this);
+    public Return<StateRecord<T>> ToBoolT
+        => ReturnT.Success(this);
 
     public static StateRecord<T> Create(T record, EditState state, Guid? transactionId = null)
         => new(record, state, transactionId ?? Guid.CreateVersion7());

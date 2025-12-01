@@ -7,13 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Blazr.Manganese;
 
-/// <summary>
-///  Object implementing a functional approach to result management
-/// All constructors are private
-/// Create instances through the provided static methods
-/// </summary>
-
-public record Bool
+public record Return
 {
     [MemberNotNullWhen(false, nameof(Exception))]
     public bool Failed { get; private init; }
@@ -21,21 +15,26 @@ public record Bool
     public Exception? Exception { get; private init; }
 
     public bool Succeeded => !this.Failed;
+    public bool HasException => Exception is not null;
     public string Message => this.Exception?.Message ?? "There is no message to display!";
 
-    private Bool(Exception? exception)
+    private Return(Exception? exception)
         => Exception = exception
-            ?? new BoolException("An error occurred. No specific exception provided.");
+            ?? new ReturnException("An error occurred. No specific exception provided.");
 
-    private Bool() { }
+    private Return() { }
 
-    public static Bool Success() => new();
+    public static Return Read(object? value) => value is null ? Failure() : Success();
 
-    public static Bool Failure() => new() { Failed = true };
+    public static Return Read<T>(Func<T?> input) => Read(input.Invoke());
+
+    public static Return Success() => new();
+
+    public static Return Failure() => new() { Failed = true };
     
-    public static Bool Failure(Exception? exception) => exception is null 
+    public static Return Failure(Exception? exception) => exception is null 
         ? new() { Failed = true }
         : new(exception);
     
-    public static Bool Failure(string message) => new(new BoolException(message));
+    public static Return Failure(string message) => new(new ReturnException(message));
 }

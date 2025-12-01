@@ -8,16 +8,14 @@ namespace Blazr.App.EntityFramework;
 /// <summary>
 /// Mediator Handler for executing record requests to get a Customer Entity in an Entity Framework Context
 /// </summary>
-public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordRequest, Bool<DmoCustomer>>
+public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordRequest, Return<DmoCustomer>>
 {
     private IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
     public CustomerRecordHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> dbContextFactory)
-    {
-        _factory = dbContextFactory;
-    }
+        => _factory = dbContextFactory;
 
-    public async Task<Bool<DmoCustomer>> HandleAsync(CustomerRecordRequest request, CancellationToken cancellationToken)
+    public async Task<Return<DmoCustomer>> HandleAsync(CustomerRecordRequest request, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 

@@ -5,11 +5,11 @@
 /// ============================================================
 namespace Blazr.Manganese;
 
-public class BoolException : Exception
+public class ReturnException : Exception
 {
-    public BoolException() : base("The Bool operation failed.") { }
-    public BoolException(string message) : base(message) { }
+    public ReturnException() : base("The Bool operation failed.") { }
+    public ReturnException(string message) : base(message) { }
 
-    public static BoolException Create(string message)
+    public static ReturnException Create(string message)
         => new (message);
 }

@@ -14,7 +14,7 @@ public sealed class InvoiceEntityMutor
 
     public InvoiceEntity BaseEntity { get; private set; }
     public InvoiceEntity InvoiceEntity { get; private set; }
-    public Bool LastResult { get; private set; } = Bool.Success();
+    public Return LastResult { get; private set; } = Return.Success();
 
     public bool IsDirty => !this.InvoiceEntity.Equals(BaseEntity);
     public bool IsNew { get; private set; } = true;
@@ -33,11 +33,11 @@ public sealed class InvoiceEntityMutor
         this.InvoiceEntity = this.BaseEntity;
     }
 
-    public Bool Dispatch(Func<InvoiceEntity, Bool<InvoiceEntity>> dispatcher)
+    public Return Dispatch(Func<InvoiceEntity, Return<InvoiceEntity>> dispatcher)
     {
         var result = dispatcher.Invoke(InvoiceEntity);
 
-        LastResult = result.ToBool();
+        LastResult = result.ToReturn();
         InvoiceEntity = result.Write(this.InvoiceEntity);
 
         _messageBus.Publish<InvoiceEntity>(this.InvoiceEntity.InvoiceRecord.Id);
@@ -45,49 +45,49 @@ public sealed class InvoiceEntityMutor
         return this.LastResult;
     }
 
-    public Bool Mutate(DmoInvoice invoice)
+    public Return Mutate(DmoInvoice invoice)
     {
         var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, this.InvoiceEntity.InvoiceItems);
-        LastResult = result.ToBool();
+        LastResult = result.ToReturn();
 
         this.InvoiceEntity = result.Write(this.InvoiceEntity);
 
         return this.LastResult;
     }
 
-    public Bool Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
+    public Return Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
     {
         var result = InvoiceEntity.CreateWithEntityRulesApplied(this.InvoiceEntity.InvoiceRecord, invoiceItems);
-        LastResult = result.ToBool();
+        LastResult = result.ToReturn();
 
         this.InvoiceEntity = result.Write(this.InvoiceEntity);
 
         return this.LastResult;
     }
 
-    public Bool Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
+    public Return Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
     {
         var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, invoiceItems);
-        LastResult = result.ToBool();
+        LastResult = result.ToReturn();
 
         this.InvoiceEntity = result.Write(this.InvoiceEntity);
 
         return this.LastResult;
     }
 
-    public async Task<Bool> LoadAsync(InvoiceId id)
+    public async Task<Return> LoadAsync(InvoiceId id)
     {
         var result = await _mediator.DispatchAsync(new InvoiceRecordRequest(id));
 
-        this.InvoiceEntity = result.Write(InvoiceEntity.CreateNewEntity);
+        this.InvoiceEntity = result.Write(InvoiceEntity.CreateNewEntity());
         this.BaseEntity = this.InvoiceEntity;
-        this.LastResult = result.ToBool();
+        this.LastResult = result.ToReturn();
         this.IsNew = !this.LastResult.Write();
 
         return this.LastResult;
     }
 
-    public async Task<Bool> SaveAsync()
+    public async Task<Return> SaveAsync()
     {
         var result = await _mediator.DispatchAsync(new InvoiceCommandRequest(this.InvoiceEntity, EditState.Dirty, Guid.NewGuid()));
 
@@ -96,10 +96,10 @@ public sealed class InvoiceEntityMutor
         return this.LastResult;
     }
 
-    public Bool Reset()
+    public Return Reset()
     {
         this.InvoiceEntity = this.BaseEntity;
-        this.LastResult = Bool.Success();
+        this.LastResult = Return.Success();
         return this.LastResult;
     }
 }

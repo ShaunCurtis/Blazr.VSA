@@ -4,10 +4,9 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
-using Blazr.App.Core;
 using Blazr.App.Presentation;
 using Blazr.App.UI;
-using Blazr.Cadmium.Core;
+using Blazr.Cadmium.Presentation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.App;

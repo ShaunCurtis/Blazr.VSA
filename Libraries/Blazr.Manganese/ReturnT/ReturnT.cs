@@ -9,12 +9,12 @@ namespace Blazr.Manganese;
 
 public sealed record Return<T>
 {
-    public Exception? Exception { get; private init; }
-    public T? Value { get; private init; }
-
     [MemberNotNullWhen(true, nameof(Value))]
     [MemberNotNullWhen(false, nameof(Exception))]
     public bool HasValue { get; private init; }
+
+    public Exception? Exception { get; private init; }
+    public T? Value { get; private init; }
 
     public bool HasException => Exception is not null;
 
@@ -24,11 +24,9 @@ public sealed record Return<T>
         HasValue = true;
     }
     
-    private Return(Exception? exception)
-        => Exception = exception;
+    private Return(Exception? exception) => Exception = exception;
 
-    private Return()
-        => this.HasValue = false;
+    private Return() => this.HasValue = false;
 
     public static Return<T> Read(T? value)
         => value is null
@@ -40,31 +38,20 @@ public sealed record Return<T>
             ? new(new ReturnException(errorMessage))
             : new(value);
 
-    public static Return<T> Read(object? value = null  )
-        => new();
+    public static Return<T> Read(object? value = null  ) => new();
 
-    public static Return<T> Read(Func<T?> input)
-        => Read(input.Invoke());
+    public static Return<T> Read(Func<T?> input) => Read(input.Invoke());
 
     public static Return<T> Success(T value) => new(value);
-
     public static Return<T> Failure() => new();
-
     public static Return<T> Failure(Exception exception) => new(exception);
-
     public static Return<T> Failure(string message) => new(new ReturnException(message));
 }
 
-public static class BoolT
+public static class ReturnT
 {
     public static Return<T> Success<T>(T value) => Return<T>.Success(value);
-
-    public static Return<T> Read<T>(T? value)
-    => Return<T>.Read(value);
-
-    public static Return<T> Read<T>(T? value, string errorMessage)
-        => Return<T>.Read(value);
-
-    public static Return<T> Read<T>(Func<T?> input)
-        => Read(input.Invoke());
+    public static Return<T> Read<T>(T? value) => Return<T>.Read(value);
+    public static Return<T> Read<T>(T? value, string errorMessage) => Return<T>.Read(value);
+    public static Return<T> Read<T>(Func<T?> input) => Read(input.Invoke());
 }

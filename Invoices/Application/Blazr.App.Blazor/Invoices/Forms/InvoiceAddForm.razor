@@ -80,7 +80,7 @@
     private bool _isDirty;
     private bool _isClean => !_isDirty;
     private bool _loading = true;
-    private Bool LastResult = Bool.Success();
+    private Return LastResult = Return.Success();
 
     protected async override Task OnInitializedAsync()
     {
@@ -89,7 +89,7 @@
 
         var result = await this.FKProvider.GetCustomerFKAsync();
 
-        LastResult = result.ToBool();
+        LastResult = result.ToReturn();
 
         _customerList = result
             .Write(Enumerable.Empty<FkoCustomer>())

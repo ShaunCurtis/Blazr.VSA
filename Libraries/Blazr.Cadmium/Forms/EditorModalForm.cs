@@ -5,7 +5,9 @@
 /// ============================================================
 using Blazr.Cadmium.Core;
 using Blazr.Cadmium.Extensions;
+using Blazr.Cadmium.Presentation;
 using Blazr.Diode;
+using Blazr.Manganese;
 using Blazr.Uranium;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -27,7 +29,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     [Parameter] public bool LockNavigation { get; set; } = true;
 
     protected EditState State { get; set; } = EditState.Clean;
-    protected Bool LastResult { get; set; } = Bool.Success();
+    protected Return LastResult { get; set; } = Return.Success();
     protected TRecordMutor EditMutor { get; set; } = default!;
     protected EditContext EditContext { get; set; } = default!;
 
@@ -47,7 +49,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
 
         var result = await this.UIConnector.RecordRequestAsync(this.Uid);
 
-        var record = result.Write(ex => default!);
+        var record = result.Write(default!);
 
         this.EditMutor = (TRecordMutor)this.UIConnector.GetRecordMutor(record);
         this.EditContext = new EditContext(EditMutor);
@@ -61,9 +63,10 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     {
         var stateRecord = this.EditMutor.ToStateRecord();
 
-        this.LastResult = await this.UIConnector.RecordCommandAsync(stateRecord)
-            .ToBoolAsync()
-            .WriteAsync(this.OnExit);
+        this.LastResult = (await this.UIConnector.RecordCommandAsync(stateRecord))
+            .ToReturn();
+
+        this.OnExit();
     }
 
     protected virtual async Task OnDelete()
@@ -73,15 +76,16 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
 
         var stateRecord = StateRecord<TRecord>.Create(this.EditMutor.Mutate(), EditState.Deleted);
 
-        this.LastResult = await this.UIConnector.RecordCommandAsync(stateRecord)
-            .ToBoolAsync()
-            .WriteAsync(this.OnExit);
+        this.LastResult = (await this.UIConnector.RecordCommandAsync(stateRecord))
+            .ToReturn();
+
+        this.OnExit();
     }
 
-    protected async Task<Bool> ConfirmAsync()
+    protected async Task<Return> ConfirmAsync()
         => await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?")
-            ? Bool.Success()
-            : Bool.Failure();
+            ? Return.Success()
+            : Return.Failure();
 
     protected virtual void OnExit()
         => ModalDialog?.Close(new ModalResult());

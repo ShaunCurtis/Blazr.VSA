@@ -4,7 +4,6 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
-using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Blazr.Cadmium.Core;
@@ -12,7 +11,7 @@ namespace Blazr.Cadmium.Core;
 /// <summary>
 /// FieldFormatting provides a set of extension methods to format fields for display
 /// </summary>
-public static class FieldFormatting
+public static class FieldFormattingExtensions
 {
     public static string AsGlobalDateFormat(this DateTime Date)
     {
@@ -39,11 +38,6 @@ public static class FieldFormatting
         return string.Format("£{0}", value.ToString("#0.00"));
     }
 
-    public static string AsWeight(this decimal value)
-    {
-        return value.ToString("#0.000", CultureInfo.CurrentCulture);
-    }
-
     public static string AsYesNo(this bool value)
     {
         return value ? "Yes" : "No";
@@ -68,11 +62,5 @@ public static class FieldFormatting
     public static string TextToHtmlNewLines(this string text)
     {
         return text.Replace(System.Environment.NewLine, "<br />");
-    }
-
-    public static string ToDisplayId(this Guid value)
-    {
-        // There are 4 hyphens in ToString!
-        return value.ToString().Substring(28, 8).ToUpper();
     }
 }

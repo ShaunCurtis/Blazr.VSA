@@ -8,7 +8,7 @@ namespace Blazr.App.EntityFramework;
 /// <summary>
 /// Mediator Handler for executing commands against a Customer Entity in an Entity Framework Context
 /// </summary>
-public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandRequest, Bool<CustomerId>>
+public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandRequest, Return<CustomerId>>
 {
     private readonly IMessageBus _messageBus;
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
@@ -19,7 +19,7 @@ public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandReq
         _messageBus = messageBus;
     }
 
-    public async Task<Bool<CustomerId>> HandleAsync(CustomerCommandRequest request, CancellationToken cancellationToken)
+    public async Task<Return<CustomerId>> HandleAsync(CustomerCommandRequest request, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 
@@ -37,7 +37,7 @@ public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandReq
             {
                 var id = new CustomerId(record.CustomerID);
                 _messageBus.Publish<DmoCustomer>(id);
-                return BoolT.Read(id);
+                return ReturnT.Read(id);
             }
         );
     }

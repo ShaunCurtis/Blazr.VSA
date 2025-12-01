@@ -5,11 +5,11 @@
 /// ============================================================
 namespace Blazr.Manganese;
 
-public static class BoolTMonadExtensions
+public static class ReturnTMonadExtensions
 {
-    extension<T>(Bool<T> boolMonad)
+    extension<T>(Return<T> boolMonad)
     {
-        public Bool<T> Write(Action<T>? hasValue = null, Action<Exception>? hasException = null)
+        public Return<T> Write(Action<T>? hasValue = null, Action<Exception>? hasException = null)
         {
             if (boolMonad.HasValue)
                 hasValue?.Invoke(boolMonad.Value!);
@@ -39,16 +39,16 @@ public static class BoolTMonadExtensions
                 ? boolMonad.Value!
                 : defaultValue;
 
-        public Bool<T> Write(Action<Bool> Action)
+        public Return<T> Write(Action<Bool> Action)
         {
             Action.Invoke(boolMonad.ToBool());
             return boolMonad;
         }
 
-        public Bool<TOut> ToBoolT<TOut>(TOut? value)
+        public Return<TOut> ToBoolT<TOut>(TOut? value)
             => boolMonad.HasException
-                ? Bool<TOut>.Failure(boolMonad.Exception!)
-                : Bool<TOut>.Read(value);
+                ? Return<TOut>.Failure(boolMonad.Exception!)
+                : Return<TOut>.Read(value);
 
         public Bool ToBool()
             => boolMonad.Exception is null

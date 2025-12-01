@@ -3,11 +3,10 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+namespace Blazr.Manganese;
 
-namespace Blazr.Cadmium.Core;
-
-public abstract record LookupItem
+public static class IEnumerableFunctionalExtensions
 {
-    public Guid Id { get; init; }
-    public string Name { get; init; } = "[NOT SET]";
+    public static Return<IEnumerable<T>> ToBool<T>(this IEnumerable<T> value)
+        => ReturnT.Success(value);
 }

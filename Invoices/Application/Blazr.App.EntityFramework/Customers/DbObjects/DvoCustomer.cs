@@ -19,6 +19,6 @@ public sealed record DvoCustomer
             Name = new (item.CustomerName ?? string.Empty)
         };
 
-    public static Bool<DmoCustomer> MapToBool(DvoCustomer item)
-        => Bool<DmoCustomer>.Read(Map(item));
+    public static Return<DmoCustomer> MapToBool(DvoCustomer item)
+        => Return<DmoCustomer>.Read(Map(item));
 }

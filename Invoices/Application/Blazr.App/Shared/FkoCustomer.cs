@@ -12,4 +12,4 @@ public record FkoCustomer(CustomerId Id, Title Name)
     public static FkoCustomer Default = new(CustomerId.Default, Title.Default);
 }
 
-public readonly record struct CustomerFKRequest() : IRequest<Bool<IEnumerable<FkoCustomer>>>;
+public readonly record struct CustomerFKRequest() : IRequest<Return<IEnumerable<FkoCustomer>>>;
