@@ -24,7 +24,7 @@ public interface IUIConnector<TRecord, TKey>
 
     public Func<TKey, Task<Return<TRecord>>> RecordRequestAsync { get; }
 
-    public Func<StateRecord<TRecord>, Task<Return<TKey>>> RecordCommandAsync { get; }
+    public Func<TRecord, EditState, Task<Return<TKey>>> RecordCommandAsync { get; }
 
     public IRecordMutor<TRecord> GetRecordMutor(TRecord record);
 }

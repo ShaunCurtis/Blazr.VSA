@@ -119,7 +119,7 @@
         if (!this.EditContext.Validate())
             return Task.CompletedTask;
 
-        var action = new UpdateInvoiceAction(EditMutor.Mutate());
+        var action = new UpdateInvoiceAction(EditMutor.Record);
 
         var result = this.EntityMutor.Dispatch(action.Dispatcher);
 

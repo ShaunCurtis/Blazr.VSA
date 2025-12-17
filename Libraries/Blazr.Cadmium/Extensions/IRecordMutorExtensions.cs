@@ -21,11 +21,11 @@ public static class IRecordMutorExtensions
                     ? EditState.Dirty
                     : EditState.Clean;
 
-            return StateRecord<TRecord>.Create(@this.Mutate(), state);
+            return StateRecord<TRecord>.Create(@this.Record, state);
         }
 
         public Return<TRecord> ToBoolT()
-            => ReturnT.Read(@this.Mutate());
+            => ReturnT.Read(@this.Record);
     }
 }
 

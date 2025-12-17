@@ -28,7 +28,7 @@ public class InvoiceUIConnector
     public Func<InvoiceId, Task<Return<DmoInvoice>>> RecordRequestAsync
         => throw new NotImplementedException();
 
-    public Func<StateRecord<DmoInvoice>, Task<Return<InvoiceId>>> RecordCommandAsync
+    public Func<DmoInvoice, EditState, Task<Return<InvoiceId>>> RecordCommandAsync
         => throw new NotImplementedException();
 
     public Task<Return<GridItemsProviderResult<DmoInvoice>>> GetItemsAsync(GridState<DmoInvoice> state)

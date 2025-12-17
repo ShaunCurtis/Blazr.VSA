@@ -69,5 +69,17 @@ public static class ReturnTExtensions
             => @this.Exception is null
                 ? Return.Success()
                 : Return.Failure(@this.Exception);
+
+        public Return<T> WriteReturn(Action<Return> returnOut)
+        {
+            if (@this.HasValue)
+            {
+                returnOut.Invoke(Return.Success());
+                return @this;
+            }
+
+            returnOut.Invoke(Return.Failure(@this.Exception));
+            return @this;
+        }
     }
 }

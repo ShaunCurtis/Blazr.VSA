@@ -5,23 +5,11 @@
 /// ============================================================
 namespace Blazr.App.UI;
 
-public sealed class InvoiceRecordMutor : IRecordMutor<DmoInvoice>
+public sealed class InvoiceRecordMutor : RecordMutor<DmoInvoice>, IRecordMutor<DmoInvoice>
 {
-    public DmoInvoice BaseRecord { get; private init; }
-
     [TrackState] public DateOnly Date { get; set; }
     [TrackState] public Guid CustomerId { get; set; }
     public FkoCustomer Customer { get; set; } = FkoCustomer.Default;
-
-    public bool IsDirty => !this.Mutate().Equals(BaseRecord);
-
-    public bool IsNew { get; private init; }
-
-    public EditState State => this.IsNew
-        ? EditState.New
-        : IsDirty
-            ? EditState.Dirty
-            : EditState.Clean;
 
     private InvoiceRecordMutor(DmoInvoice record)
     {
@@ -36,7 +24,7 @@ public sealed class InvoiceRecordMutor : IRecordMutor<DmoInvoice>
         this.Customer = this.BaseRecord.Customer;
     }
 
-    public DmoInvoice Mutate() => this.BaseRecord with
+    public override DmoInvoice Record => this.BaseRecord with
     {
         Date = new Date(this.Date),
          Customer = this.Customer

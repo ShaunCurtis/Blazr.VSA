@@ -8,12 +8,12 @@ using Blazr.Diode.Mediator;
 namespace Blazr.App.Core;
 
 public readonly record struct CustomerCommandRequest(
-        StateRecord<DmoCustomer> Item)
+    DmoCustomer Item, EditState State)
     : IRequest<Return<CustomerId>>
 {
     public static CustomerCommandRequest Create(DmoCustomer item, EditState state)
-        => new CustomerCommandRequest(new(item, state));
+        => new CustomerCommandRequest(item, state);
 
-    public static CustomerCommandRequest Create(DmoCustomer item, EditState state, Guid transactionId)
-        => new CustomerCommandRequest(new(item, state, transactionId));
+    public static CustomerCommandRequest Create(CustomerRecordMutor mutor)
+        => new CustomerCommandRequest(mutor.Record, mutor.State);
 }

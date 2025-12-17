@@ -62,6 +62,29 @@ public static partial class ReturnAsyncExtensions
                 .ToReturn();
     }
 
+    extension<T>(Task<Return<T>> @this)
+    {
+        public async Task<Return<T>> WriteReturnAsync(Action<Return> returnOut)
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
+                .WriteReturn(returnOut);
+
+        public async Task<T> WriteAsync(T defaultValue)
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
+                .Write(defaultValue);
+
+        public async Task WriteAsync(Action<T> writer)
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
+                .Write(writer);
+
+        public async Task WriteAsync(Action<T>? hasValue = null, Action? hasNoValue = null, Action<Exception>? hasException = null)
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
+                .Write(hasValue, hasNoValue, hasException);
+
+        public async Task<Return> ToReturnAsync()
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
+                .ToReturn();
+    }
+
     private static Return<T> CheckForTaskException<T>(Task<T> @this)
         => @this.IsCompletedSuccessfully
             ? ReturnT.Read(@this.Result)

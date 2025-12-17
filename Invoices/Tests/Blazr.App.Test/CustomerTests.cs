@@ -78,13 +78,13 @@ public partial class CustomerTests
         
         Assert.False(customerResult.HasException);
 
-        var mutor = CustomerRecordMutor.Read(customerResult.Value!);
+        var mutor = CustomerRecordMutor.Load(customerResult.Value!);
 
         mutor.Name = $"{mutor.Name} - Update";
 
-        var expectedRecord = mutor.Mutate();
+        var expectedRecord = mutor.Record;
 
-        var customerUpdateResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(mutor.Mutate(), mutor.State ));
+        var customerUpdateResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(mutor.Record, mutor.State ));
 
         customerResult = await mediator.DispatchAsync(new CustomerRecordRequest(controlId));
 

@@ -104,7 +104,7 @@
         if (!confirmed)
             return;
 
-        var action = DeleteInvoiceItemAction.Create(EditMutor.Mutate());
+        var action = DeleteInvoiceItemAction.Create(EditMutor.Record);
 
         this.LastResult = EntityMutor.Dispatch(action.Dispatcher);
 
@@ -115,8 +115,8 @@
     {
         this.LastResult = (this.State.Index switch
         {
-            EditState.StateNewIndex => EntityMutor.Dispatch(AddInvoiceItemAction.Create(EditMutor.Mutate()).Dispatcher),
-            _ => EntityMutor.Dispatch(UpdateInvoiceItemAction.Create(EditMutor.Mutate()).Dispatcher)
+            EditState.StateNewIndex => EntityMutor.Dispatch(AddInvoiceItemAction.Create(EditMutor.Record).Dispatcher),
+            _ => EntityMutor.Dispatch(UpdateInvoiceItemAction.Create(EditMutor.Record).Dispatcher)
         });
 
         this.OnExit();

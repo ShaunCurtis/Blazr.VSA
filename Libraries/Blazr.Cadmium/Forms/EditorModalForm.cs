@@ -61,9 +61,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
 
     protected virtual async Task OnSave()
     {
-        var stateRecord = this.EditMutor.ToStateRecord();
-
-        this.LastResult = (await this.UIConnector.RecordCommandAsync(stateRecord))
+        this.LastResult = (await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, this.EditMutor.State))
             .ToReturn();
 
         this.OnExit();
@@ -74,9 +72,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
         if ((await ConfirmAsync()).Failed)
             return;
 
-        var stateRecord = StateRecord<TRecord>.Create(this.EditMutor.Mutate(), EditState.Deleted);
-
-        this.LastResult = (await this.UIConnector.RecordCommandAsync(stateRecord))
+        this.LastResult = (await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, EditState.Deleted))
             .ToReturn();
 
         this.OnExit();

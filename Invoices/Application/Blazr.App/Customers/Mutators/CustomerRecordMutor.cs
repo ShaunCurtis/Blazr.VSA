@@ -5,21 +5,9 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public sealed class CustomerRecordMutor : IRecordMutor<DmoCustomer>
+public sealed class CustomerRecordMutor : RecordMutor<DmoCustomer>, IRecordMutor<DmoCustomer>
 {
-    public DmoCustomer BaseRecord { get; private init; }
-
     [TrackState] public string? Name { get; set; }
-
-    public bool IsDirty => !this.Mutate().Equals(BaseRecord);
-
-    public bool IsNew { get; private init; }
-
-    public EditState State => this.IsNew
-        ? EditState.New
-        : IsDirty
-            ? EditState.Dirty
-            : EditState.Clean;
 
     private CustomerRecordMutor(DmoCustomer record)
     {
@@ -32,7 +20,7 @@ public sealed class CustomerRecordMutor : IRecordMutor<DmoCustomer>
         this.Name = this.BaseRecord.Name.Value;
     }
 
-    public DmoCustomer Mutate() => this.BaseRecord with
+    public override DmoCustomer Record => this.BaseRecord with
     {
         Name = new(this.Name ?? "No Name Set")
     };
@@ -40,7 +28,7 @@ public sealed class CustomerRecordMutor : IRecordMutor<DmoCustomer>
     public void Reset()
         => this.SetFields();
 
-    public static CustomerRecordMutor Read(DmoCustomer record)
+    public static CustomerRecordMutor Load(DmoCustomer record)
         => new CustomerRecordMutor(record);
 
     public static CustomerRecordMutor Create()

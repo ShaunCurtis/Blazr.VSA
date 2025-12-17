@@ -82,17 +82,12 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
         });
 
     protected async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
-    {
-        var result = await UpdateGridRequest<TRecord>
-            .CreateAsResult(gridRequest)
+        => await gridRequest
+            .ToUpdateGridRequest().ToReturnT()
             .Bind(this.SetGridState)
-            .BindAsync(UIConnector.GetItemsAsync);
-
-        LastResult = result.ToReturn();
-
-        return result.Write(GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
-
-    }
+            .BindAsync(UIConnector.GetItemsAsync)
+            .WriteReturnAsync(ret => this.LastResult = ret)
+            .WriteAsync(defaultValue: GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 
     protected virtual async Task OnEditAsync(TKey id)
     {
@@ -101,7 +96,7 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
         var options = new ModalOptions() { ModalDialogType = this.UIConnector.EditForm };
         options.ControlParameters.Add("Uid", id);
 
-        await modalDialog.ShowAsync( options);
+        await modalDialog.ShowAsync(options);
     }
 
     protected virtual async Task OnViewAsync(TKey id)

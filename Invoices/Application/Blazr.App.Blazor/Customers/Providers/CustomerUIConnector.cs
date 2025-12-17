@@ -30,8 +30,8 @@ public class CustomerUIConnector
     public Func<CustomerId, Task<Return<DmoCustomer>>> RecordRequestAsync
         => id => id.IsDefault ? NewRecordRequestAsync(id) : ExistingRecordRequestAsync(id);
 
-    public Func<StateRecord<DmoCustomer>, Task<Return<CustomerId>>> RecordCommandAsync
-        => record => _mediator.DispatchAsync(new CustomerCommandRequest(record));
+    public Func<DmoCustomer, EditState, Task<Return<CustomerId>>> RecordCommandAsync
+        => (record, state) => _mediator.DispatchAsync(new CustomerCommandRequest(record, state));
 
     public Task<Return<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
         => CustomerListRequest.Create(state)
@@ -42,7 +42,7 @@ public class CustomerUIConnector
                 , itemsProvider.TotalCount));
 
     public IRecordMutor<DmoCustomer> GetRecordMutor(DmoCustomer customer)
-        => CustomerRecordMutor.Read(customer);
+        => CustomerRecordMutor.Load(customer);
 
     private Func<CustomerId, Task<Return<DmoCustomer>>> ExistingRecordRequestAsync
         => id => _mediator.DispatchAsync(new CustomerRecordRequest(id));

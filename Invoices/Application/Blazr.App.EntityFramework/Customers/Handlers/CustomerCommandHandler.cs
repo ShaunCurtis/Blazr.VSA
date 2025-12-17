@@ -26,8 +26,8 @@ public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandReq
         // Get the record result
         var result = await dbContext
             .ExecuteCommandAsync<DboCustomer>(new CommandRequest<DboCustomer>(
-                    Item: DboCustomer.Map(request.Item.Record),
-                    State: request.Item.State
+                    Item: DboCustomer.Map(request.Item),
+                    State: request.State
                 ),
                 cancellationToken);
 

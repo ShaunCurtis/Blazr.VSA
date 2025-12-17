@@ -5,22 +5,11 @@
 /// ============================================================
 namespace Blazr.App.UI;
 
-public sealed class InvoiceItemRecordMutor : IRecordMutor<DmoInvoiceItem>
+public sealed class InvoiceItemRecordMutor : RecordMutor<DmoInvoiceItem> ,IRecordMutor<DmoInvoiceItem>
 {
-    public DmoInvoiceItem BaseRecord { get; private init; }
 
     [TrackState] public string Description { get; set; } = string.Empty;
     [TrackState] public decimal Amount { get; set; }
-
-    public bool IsDirty => !this.Mutate().Equals(BaseRecord);
-
-    public bool IsNew { get; private init; }
-
-    public EditState State => this.IsNew
-        ? EditState.New
-        : IsDirty
-            ? EditState.Dirty
-            : EditState.Clean;
 
     private InvoiceItemRecordMutor(DmoInvoiceItem record)
     {
@@ -34,7 +23,7 @@ public sealed class InvoiceItemRecordMutor : IRecordMutor<DmoInvoiceItem>
         this.Amount = this.BaseRecord.Amount.Value;
     }
 
-    public DmoInvoiceItem Mutate() => this.BaseRecord with
+    public override DmoInvoiceItem Record => this.BaseRecord with
     {
         Description = new(this.Description),
         Amount = new(this.Amount)
