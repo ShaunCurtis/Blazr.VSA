@@ -11,7 +11,7 @@ namespace Blazr.App.Core;
 public record InvoiceListRequest
     : BaseListRequest, IRequest<Return<ListItemsProvider<DmoInvoice>>>
 {
-    public static Return<InvoiceListRequest> Create(GridState<DmoInvoice> state)
+    public static Return<InvoiceListRequest> FromGridState(GridState<DmoInvoice> state)
         => Return<InvoiceListRequest>.Read(new InvoiceListRequest()
         {
             PageSize = state.PageSize,
@@ -20,3 +20,4 @@ public record InvoiceListRequest
             SortDescending = state.SortDescending
         });
 }
+

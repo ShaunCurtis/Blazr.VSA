@@ -17,9 +17,9 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
 {
     private readonly IMessageBus _messageBus;
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
-    private readonly IRequestHandler<InvoiceRecordRequest, Return<InvoiceEntity>> _recordRequestHandler;
+    private readonly IRequestHandler<InvoiceEntityRequest, Return<InvoiceEntity>> _recordRequestHandler;
 
-    public InvoiceCommandHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus, IRequestHandler<InvoiceRecordRequest, Return<InvoiceEntity>> requestHandler)
+    public InvoiceCommandHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus, IRequestHandler<InvoiceEntityRequest, Return<InvoiceEntity>> requestHandler)
     {
         _factory = factory;
         _messageBus = messageBus;
@@ -30,7 +30,7 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
     {
         using var dbContext = await _factory.CreateDbContextAsync(cancellationToken);
 
-        var recordResult = await _recordRequestHandler.HandleAsync(new InvoiceRecordRequest(request.Item.InvoiceRecord.Id), cancellationToken);
+        var recordResult = await _recordRequestHandler.HandleAsync(new InvoiceEntityRequest(request.Item.InvoiceRecord.Id), cancellationToken);
 
         if (recordResult.HasValue)
         {

@@ -32,12 +32,10 @@ public class InvoiceUIConnector
         => throw new NotImplementedException();
 
     public Task<Return<GridItemsProviderResult<DmoInvoice>>> GetItemsAsync(GridState<DmoInvoice> state)
-        => InvoiceListRequest.Create(state)
+        => state.ToReturnT
+            .Bind(InvoiceListRequest.FromGridState)
             .BindAsync((request) => _mediator.DispatchAsync(request))
-            .MapAsync((itemsProvider) => GridItemsProviderResult
-                    .From<DmoInvoice>(itemsProvider.Items
-                    .ToList(),
-                itemsProvider.TotalCount));
+            .MapAsync(itemsProvider => itemsProvider.ToGridItemsProviderResult());
 
     public IRecordMutor<DmoInvoice> GetRecordMutor(DmoInvoice record)
         => throw new NotImplementedException();

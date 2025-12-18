@@ -2,7 +2,7 @@
 
 @inject NavigationManager NavManager
 @inject IToastService ToastService
-@inject InvoiceEntityMutor Mutor
+@inject InvoiceEntityMutorFactory MutorFactory
 @inject IMessageBus MessageBus
 
 @implements IDisposable
@@ -78,28 +78,26 @@
 
     private bool _hideAddInvoiceForm => !_showAddInvoiceForm;
     private bool _isDirty => this.Mutor.IsDirty;
-
     private bool _isClean => !this.Mutor.IsDirty;
-
     private bool _isNew => this.Mutor.IsNew;
-
     private string _message => _isError ? this.Mutor.LastResult.Exception?.Message ?? "Unspecified Error" : "Invoice changes are not currently saved to the data store!";
 
-    public override Task SetParametersAsync(ParameterView parameters)
+    private InvoiceEntityMutor Mutor = default!;
+
+    public override async Task SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
 
-        return base.SetParametersAsync(parameters);
+        this.Mutor = await MutorFactory.CreateInvoiceEntityMutorAsync(this.InvoiceId);
+
+        await base.SetParametersAsync(parameters);
     }
 
     protected async override Task OnInitializedAsync()
     {
         _showAddInvoiceForm = this.InvoiceId.IsDefault;
-        await this.Mutor.LoadAsync(this.InvoiceId);
         _loading = false;
         this.MessageBus.Subscribe<InvoiceEntity>(OnContextStateChanged);
-
-        await Task.Delay(100);
     }
 
     private Task OnLocationChanging(LocationChangingContext context)

@@ -39,20 +39,7 @@ public record GridState<TRecord> : IGridState<TRecord>, IScopedState
             SortField = sortField
         };
     }
+    public Return<GridState<TRecord>> ToReturnT
+        => Return<GridState<TRecord>>.Read(this);
+
 }
-
-public static class GridStateExtensions
-{
-    public static Return<GridState<TRecord>> ToBoolT<TRecord>(this GridState<TRecord> state)
-    where TRecord : class
-        => Return<GridState<TRecord>>.Read(state);
-
-    public static async Task<Return<ListItemsProvider<TRecord>>> ExecuteFunctionOnException<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Task<Return<ListItemsProvider<TRecord>>>> mapper)
-        where TRecord : class
-        => await mapper(state);
-
-    public static Return<ListItemsProvider<TRecord>> ExecuteFunction<TRecord>(this GridState<TRecord> state, Func<GridState<TRecord>, Return<ListItemsProvider<TRecord>>> mapper)
-    where TRecord : class
-        => mapper(state);
-}
-

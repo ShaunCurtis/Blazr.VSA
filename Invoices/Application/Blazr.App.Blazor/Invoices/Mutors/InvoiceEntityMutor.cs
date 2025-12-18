@@ -4,9 +4,35 @@
 /// ============================================================
 using Blazr.Diode.Mediator;
 using Blazr.Gallium;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.App.UI;
 
+/// <summary>
+/// Service to create InvoiceEntity Mutors 
+/// Register as Singleton or Scoped Service
+/// </summary>
+public sealed class InvoiceEntityMutorFactory
+{
+    private IServiceProvider _serviceProvider;
+
+    public InvoiceEntityMutorFactory(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    public async Task<InvoiceEntityMutor> CreateInvoiceEntityMutorAsync(InvoiceId id)
+    {
+        var mutor = ActivatorUtilities.CreateInstance<InvoiceEntityMutor>(_serviceProvider, new object[] { id });
+        await mutor.LoadTask;
+        return mutor;
+    }
+}
+
+/// <summary>
+/// This is the Mutor for an Invoice Entity
+/// To create an instance use the CreateInvoiceEntityMutorAsync method on the InvoiceEntityMutorFactory DI Service
+/// </summary>
 public sealed class InvoiceEntityMutor
 {
     private readonly IMediatorBroker _mediator;
@@ -18,6 +44,7 @@ public sealed class InvoiceEntityMutor
 
     public bool IsDirty => !this.InvoiceEntity.Equals(BaseEntity);
     public bool IsNew { get; private set; } = true;
+    public Task LoadTask = Task.CompletedTask;
 
     public EditState State => this.IsNew
         ? EditState.New
@@ -25,12 +52,13 @@ public sealed class InvoiceEntityMutor
             ? EditState.Dirty
             : EditState.Clean;
 
-    public InvoiceEntityMutor(IMediatorBroker mediator, IMessageBus messageBus)
+    public InvoiceEntityMutor(IMediatorBroker mediator, IMessageBus messageBus, InvoiceId id)
     {
         _mediator = mediator;
         _messageBus = messageBus;
         this.BaseEntity = InvoiceEntity.CreateNewEntity();
         this.InvoiceEntity = this.BaseEntity;
+        this.LoadTask  = this.LoadAsync(id);
     }
 
     public Return Dispatch(Func<InvoiceEntity, Return<InvoiceEntity>> dispatcher)
@@ -45,46 +73,14 @@ public sealed class InvoiceEntityMutor
         return this.LastResult;
     }
 
-    public Return Mutate(DmoInvoice invoice)
+    private async Task LoadAsync(InvoiceId id)
     {
-        var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, this.InvoiceEntity.InvoiceItems);
-        LastResult = result.ToReturn();
-
-        this.InvoiceEntity = result.Write(this.InvoiceEntity);
-
-        return this.LastResult;
-    }
-
-    public Return Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
-    {
-        var result = InvoiceEntity.CreateWithEntityRulesApplied(this.InvoiceEntity.InvoiceRecord, invoiceItems);
-        LastResult = result.ToReturn();
-
-        this.InvoiceEntity = result.Write(this.InvoiceEntity);
-
-        return this.LastResult;
-    }
-
-    public Return Mutate(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems)
-    {
-        var result = InvoiceEntity.CreateWithEntityRulesApplied(invoice, invoiceItems);
-        LastResult = result.ToReturn();
-
-        this.InvoiceEntity = result.Write(this.InvoiceEntity);
-
-        return this.LastResult;
-    }
-
-    public async Task<Return> LoadAsync(InvoiceId id)
-    {
-        var result = await _mediator.DispatchAsync(new InvoiceRecordRequest(id));
+        var result = await _mediator.DispatchAsync(new InvoiceEntityRequest(id));
 
         this.InvoiceEntity = result.Write(InvoiceEntity.CreateNewEntity());
         this.BaseEntity = this.InvoiceEntity;
         this.LastResult = result.ToReturn();
         this.IsNew = !this.LastResult.Write();
-
-        return this.LastResult;
     }
 
     public async Task<Return> SaveAsync()

@@ -60,28 +60,11 @@ public partial class InvoiceTests
         var controlId = new InvoiceId(_testDataProvider.Invoices.Skip(Random.Shared.Next(3)).First().InvoiceID);
 
         // Get the Invoice Entity
-        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(controlId));
+        var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(controlId));
 
         Assert.False(entityResult.HasException);
 
         return entityResult.Value!;
-    }
-
-    private async Task<InvoiceMutor> GetASampleMutorAsync(IMediatorBroker mediator)
-    {
-
-        // Get a test item and it's Id from the Test Provider
-        var controlId = new InvoiceId(_testDataProvider.Invoices.Skip(Random.Shared.Next(3)).First().InvoiceID);
-
-        // Get the Invoice Entity
-        var entityResult = await mediator.DispatchAsync(new InvoiceRecordRequest(controlId));
-
-        Assert.False(entityResult.HasException);
-
-        // Create the Invoice Mutor
-        var mutor = InvoiceMutor.Create(entityResult.Value!);
-
-        return mutor;
     }
 
     private DmoInvoice AsDmoInvoice(DboInvoice invoice)

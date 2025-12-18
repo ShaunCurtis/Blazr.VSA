@@ -16,6 +16,6 @@ public static class InvoiceServices
     public static void AddInvoiceServices(this IServiceCollection services)
     {
         services.AddScoped<IUIConnector<DmoInvoice, InvoiceId>, InvoiceUIConnector>();
-        services.AddTransient<InvoiceEntityMutor>();
+        services.AddTransient<InvoiceEntityMutorFactory>();
     }
 }

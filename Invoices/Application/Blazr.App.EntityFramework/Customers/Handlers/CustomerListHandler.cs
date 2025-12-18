@@ -29,8 +29,7 @@ public sealed class CustomerListHandler : IRequestHandler<CustomerListRequest, R
                     SortExpression = this.GetSorter(request.SortColumn),
                     FilterExpression = this.GetFilter(request),
                     Cancellation = cancellationToken
-                }
-            )
+                })
            .BindAsync((provider) =>
                 Return<ListItemsProvider<DmoCustomer>>
                     .Read(new ListItemsProvider<DmoCustomer>(

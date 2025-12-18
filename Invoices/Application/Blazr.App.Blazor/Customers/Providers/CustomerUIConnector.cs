@@ -7,6 +7,7 @@ using Blazr.App.UI;
 using Blazr.Cadmium.Presentation;
 using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode.Mediator;
+using Blazr.Manganese;
 using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace Blazr.App.Presentation;
@@ -28,18 +29,18 @@ public class CustomerUIConnector
     }
 
     public Func<CustomerId, Task<Return<DmoCustomer>>> RecordRequestAsync
-        => id => id.IsDefault ? NewRecordRequestAsync(id) : ExistingRecordRequestAsync(id);
+        => id => id.IsDefault 
+            ? NewRecordRequestAsync(id) 
+            : ExistingRecordRequestAsync(id);
 
     public Func<DmoCustomer, EditState, Task<Return<CustomerId>>> RecordCommandAsync
         => (record, state) => _mediator.DispatchAsync(new CustomerCommandRequest(record, state));
 
     public Task<Return<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
-        => CustomerListRequest.Create(state)
-            .BindAsync((request) => _mediator.DispatchAsync(request))
-            .MapAsync((itemsProvider) => GridItemsProviderResult
-                    .From<DmoCustomer>(itemsProvider.Items
-                    .ToList()
-                , itemsProvider.TotalCount));
+        => state.ToReturnT
+            .Bind(CustomerListRequest.FromGridState)
+            .BindAsync(request => _mediator.DispatchAsync(request))
+            .MapAsync(itemsProvider => itemsProvider.ToGridItemsProviderResult());
 
     public IRecordMutor<DmoCustomer> GetRecordMutor(DmoCustomer customer)
         => CustomerRecordMutor.Load(customer);
