@@ -1,2 +1,0 @@
-'WeatherForecastEntityProvider' does not implement interface member 
-'IEntityProvider<DmoWeatherForecast, WeatherForecastId>.GetItemsAsync(GridState<DmoWeatherForecast>)'. 'WeatherForecastEntityProvider.GetItemsAsync(GridState<DmoWeatherForecast>)' cannot implement 'IEntityProvider<DmoWeatherForecast, WeatherForecastId>.GetItemsAsync(GridState<DmoWeatherForecast>)' because it does not have the matching return type of 'Task<Result<GridItemsProviderResult<DmoWeatherForecast>>>'.

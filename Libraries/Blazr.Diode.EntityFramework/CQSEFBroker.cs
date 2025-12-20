@@ -10,7 +10,7 @@ namespace Blazr.Diode.Infrastructure.EntityFramework;
 /// against an EF `TDbContext`
 /// </summary>
 /// <typeparam name="TDbContext"></typeparam>
-public static class CQSEFBroker<TDbContext>
+internal static class CQSEFBroker<TDbContext>
     where TDbContext : DbContext
 {
     public static async Task<Return<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())

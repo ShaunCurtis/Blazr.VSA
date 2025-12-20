@@ -26,9 +26,10 @@ public abstract class RecordMutor<TRecord>
     public bool IsNew { get; protected set; }
     public virtual TRecord Record { get; } = default!;
 
-    public EditState State => this.IsNew
-        ? EditState.New
-        : this.IsDirty
-            ? EditState.Dirty
-            : EditState.Clean;
+    public EditState State => (this.IsNew, this.IsDirty) switch
+    {
+        (true, _) => EditState.New,
+        (false, false) => EditState.Clean,
+        (false, true) => EditState.Dirty,
+    };
 }

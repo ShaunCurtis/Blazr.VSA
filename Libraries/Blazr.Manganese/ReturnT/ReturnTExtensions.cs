@@ -52,12 +52,36 @@ public static class ReturnTExtensions
             }
         }
 
+        public Return<T> Notify(Action<T>? hasValue = null, Action? hasNoValue = null, Action<Exception>? hasException = null)
+        {
+            switch (@this.HasValue, @this.HasException)
+            {
+                case (true, _) when hasValue is not null:
+                    hasValue.Invoke(@this.Value!);
+                    break;
+                case (false, false) when hasNoValue is not null:
+                    hasNoValue.Invoke();
+                    break;
+                case (false, true) when hasException is not null:
+                    hasException.Invoke(@this.Exception!);
+                    break;
+            }
+            return @this;
+        }
+
         public TOut Write<TOut>(Func<T, TOut> hasValue, Func<TOut> hasNoValue, Func<Exception, TOut> hasException)
             => (@this.HasValue, @this.HasException) switch
             {
                 (true, _) => hasValue.Invoke(@this.Value!),
                 (false, false) => hasNoValue.Invoke(),
                 (false, true) => hasException.Invoke(@this.Exception!)
+            };
+
+        public TOut Write<TOut>(Func<T, TOut> hasValue, Func<TOut> hasNoValue)
+            => @this.HasValue switch
+            {
+                true => hasValue.Invoke(@this.Value!),
+                false => hasNoValue.Invoke(),
             };
 
         public T Write(T defaultValue)

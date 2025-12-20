@@ -20,6 +20,17 @@ public static partial class ReturnAsyncExtensions
                 : await function();
     }
 
+    extension(Task<Return> @this)
+    {
+        public async Task<Return> WriteReturnAsync(Action<Return> returnOut)
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
+                .WriteReturn(returnOut);
+
+        public async Task<Return> NotifyAsync(Action? success = null, Action? failure = null, Action<Exception>? exception = null)
+            => (await @this.ContinueWith(CheckForTaskException))
+                .Notify(success, failure, exception);
+    }
+
     extension<T, TOut>(Task<Return> @this)
     {
         public async Task WriteAsync()

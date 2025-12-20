@@ -80,9 +80,17 @@ public static partial class ReturnAsyncExtensions
             => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
                 .Write(hasValue, hasNoValue, hasException);
 
+        public async Task WriteAsync(Action<T> success, Action? failure = null)
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
+                .Write(success, failure, null);
+
         public async Task<Return> ToReturnAsync()
             => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
                 .ToReturn();
+
+        public async Task<Return<T>> NotifyAsync(Action<T>? hasValue = null, Action? hasNoValue = null, Action<Exception>? hasException = null)
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
+                .Notify(hasValue, hasNoValue, hasException);
     }
 
     private static Return<T> CheckForTaskException<T>(Task<T> @this)

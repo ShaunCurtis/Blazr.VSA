@@ -19,6 +19,23 @@ public static partial class ReturnExtensions
                 ? Succeeded.Invoke()
                 : Failed.Invoke(@this.Exception!);
 
+        public Return Notify(Action? success = null, Action? failure = null, Action<Exception>? exception = null)
+        {
+            switch (@this.Failed, @this.HasException)
+            {
+                case (false, _) when success is not null:
+                    success.Invoke();
+                    break;
+                case (true, true) when failure is not null:
+                    failure.Invoke();
+                    break;
+                case (true, true) when exception is not null:
+                    exception.Invoke(@this.Exception!);
+                    break;
+            }
+            return @this;
+        }
+
         public void Write(Action? success = null, Action? failure = null, Action<Exception>? exception = null)
         {
             switch (@this.Failed, @this.HasException)
@@ -43,9 +60,14 @@ public static partial class ReturnExtensions
                 (true, true) => hasException.Invoke(@this.Exception!)
             };
 
+        public bool Write()
+                => @this.Succeeded;
 
-    public bool Write()
-            => @this.Succeeded;
+        public Return WriteReturn(Action<Return> returnOut)
+        {
+            returnOut.Invoke(@this);
+            return @this;
+        }
     }
 }
 
