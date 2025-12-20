@@ -63,7 +63,7 @@ public static partial class ReturnExtensions
         public bool Write()
                 => @this.Succeeded;
 
-        public Return WriteReturn(Action<Return> returnOut)
+        public Return SetReturn(Action<Return> returnOut)
         {
             returnOut.Invoke(@this);
             return @this;

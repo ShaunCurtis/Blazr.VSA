@@ -39,9 +39,11 @@ public sealed class InvoiceItemRecordMutor : RecordMutor<DmoInvoiceItem> ,IRecor
             (false, true) => UpdateInvoiceItemAction.Create(this.Record).Dispatcher(entity),
         };
 
-    public static InvoiceItemRecordMutor Read(DmoInvoiceItem record)
+    public override bool IsNew => BaseRecord.Id.IsNew;
+
+    public static InvoiceItemRecordMutor Load(DmoInvoiceItem record)
         => new InvoiceItemRecordMutor(record);
 
-    public static InvoiceItemRecordMutor Create(InvoiceId invoiceId)
-        => new InvoiceItemRecordMutor(DmoInvoiceItem.CreateNew(invoiceId)) { IsNew = true };
+    public static InvoiceItemRecordMutor NewMutor(InvoiceId invoiceId)
+        => new InvoiceItemRecordMutor(DmoInvoiceItem.CreateNew(invoiceId));
 }

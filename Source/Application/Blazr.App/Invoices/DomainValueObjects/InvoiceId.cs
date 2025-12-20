@@ -8,7 +8,8 @@ namespace Blazr.App.Core;
 public readonly record struct InvoiceId(Guid Value) : IEntityId
 {
     public bool IsDefault => this == Default;
-    public static InvoiceId Create => new(Guid.CreateVersion7());
+    public bool IsNew { get; private init; }
+    public static InvoiceId NewId => new(Guid.CreateVersion7()) { IsNew = true };
     public static InvoiceId Default => new(Guid.Empty);
 
     public override string ToString()

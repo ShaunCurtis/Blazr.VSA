@@ -66,14 +66,14 @@ public sealed class InvoiceEntityMutor
 
     public Return Dispatch(Func<InvoiceEntity, Return<InvoiceEntity>> dispatcher)
         => dispatcher.Invoke(InvoiceEntity)
-            .WriteReturn(ret => LastResult = ret)
+            .SetReturn(ret => LastResult = ret)
             .Notify(hasValue: value => this.InvoiceEntity = value)
             .Notify(hasValue: value => _messageBus.Publish<InvoiceEntity>(value.InvoiceRecord.Id))
             .ToReturn();
 
     private async Task LoadAsync(InvoiceId id)
         => await _mediator.DispatchAsync(new InvoiceEntityRequest(id))
-            .WriteReturnAsync(ret => this.LastResult = ret)
+            .SetReturnAsync(ret => this.LastResult = ret)
             .WriteAsync( 
                 success: value => { 
                     this.BaseEntity = value;
@@ -87,13 +87,13 @@ public sealed class InvoiceEntityMutor
 
     public async Task<Return> SaveAsync()
         => await _mediator.DispatchAsync(new InvoiceCommandRequest(this.InvoiceEntity, EditState.Dirty, Guid.NewGuid()))
-            .WriteReturnAsync(ret => this.LastResult = ret);
+            .SetReturnAsync(ret => this.LastResult = ret);
 
     public InvoiceItemRecordMutor GetInvoiceItemRecordMutor(InvoiceItemId id)
         => this.InvoiceEntity.GetInvoiceItem(id)
             .Write(
-                hasValue: value => InvoiceItemRecordMutor.Read(value),
-                hasNoValue: () => InvoiceItemRecordMutor.Create(this.InvoiceEntity.InvoiceRecord.Id));
+                hasValue: value => InvoiceItemRecordMutor.Load(value),
+                hasNoValue: () => InvoiceItemRecordMutor.NewMutor(this.InvoiceEntity.InvoiceRecord.Id));
 
     public Return Reset()
     {

@@ -64,9 +64,9 @@ public static partial class ReturnAsyncExtensions
 
     extension<T>(Task<Return<T>> @this)
     {
-        public async Task<Return<T>> WriteReturnAsync(Action<Return> returnOut)
+        public async Task<Return<T>> SetReturnAsync(Action<Return> returnOut)
             => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
-                .WriteReturn(returnOut);
+                .SetReturn(returnOut);
 
         public async Task<T> WriteAsync(T defaultValue)
             => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))

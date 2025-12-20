@@ -35,6 +35,7 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
     protected Return LastResult = Return.Success();
 
     protected string formTitle => this.FormTitle ?? $"List of {this.UIConnector?.PluralDisplayName ?? "Items"}";
+
     protected readonly string TableCss = "table table-sm table-striped table-hover border-bottom no-margin hide-blank-rows";
     protected readonly string GridCss = "grid";
 
@@ -65,6 +66,8 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
         ArgumentNullException.ThrowIfNull(this.quickGrid);
     }
 
+    private void SetLastResult(Return result) => this.LastResult = result;
+
     protected Return<GridState<TRecord>> GetGridState()
         => _gridStateStore.GetState<GridState<TRecord>>(GridContextId);
 
@@ -86,7 +89,7 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
             .ToUpdateGridRequest().ToReturnT()
             .Bind(this.SetGridState)
             .BindAsync(UIConnector.GetItemsAsync)
-            .WriteReturnAsync(ret => this.LastResult = ret)
+            .SetReturnAsync(this.SetLastResult)
             .WriteAsync(defaultValue: GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
 
     protected virtual async Task OnEditAsync(TKey id)
@@ -135,4 +138,4 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
     {
         _messageBus.UnSubscribe<TKey>(OnRecordChanged);
     }
-}
+}   

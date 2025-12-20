@@ -77,7 +77,7 @@ public partial class InvoiceTests
         var Id = entity.InvoiceRecord.Id;
 
         var entityMutor = await mutorFactory.GetInvoiceEntityMutorAsync(entity.InvoiceRecord.Id);
-        var invoiceMutor = InvoiceRecordMutor.Read(entityMutor.InvoiceEntity.InvoiceRecord);
+        var invoiceMutor = InvoiceRecordMutor.Load(entityMutor.InvoiceEntity.InvoiceRecord);
 
         // Update the Mutor
         invoiceMutor.Date = DateOnly.FromDateTime(DateTime.Now.AddDays(-5));
@@ -255,7 +255,7 @@ public partial class InvoiceTests
         var entityMutor = await mutorFactory.GetInvoiceEntityMutorAsync(entity.InvoiceRecord.Id);
 
         // Get the Item Mutor
-        var itemMutor = InvoiceItemRecordMutor.Read(entityMutor.InvoiceEntity.InvoiceItems.First());
+        var itemMutor = InvoiceItemRecordMutor.Load(entityMutor.InvoiceEntity.InvoiceItems.First());
 
         // Simulate editing the Amount field in the UI
         itemMutor.Amount = 59;

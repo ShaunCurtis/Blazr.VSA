@@ -11,5 +11,6 @@ namespace Blazr.Diode;
 public interface IEntityId
 {
     public bool IsDefault { get; }
+    public bool IsNew { get; }
 }
 

@@ -25,12 +25,14 @@ public sealed class CustomerRecordMutor : RecordMutor<DmoCustomer>, IRecordMutor
         Name = new(this.Name ?? "No Name Set")
     };
 
+    public override bool IsNew => BaseRecord.Id.IsNew;
+
     public void Reset()
         => this.SetFields();
 
     public static CustomerRecordMutor Load(DmoCustomer record)
         => new CustomerRecordMutor(record);
 
-    public static CustomerRecordMutor Create()
-        => new CustomerRecordMutor(DmoCustomer.CreateNew()) { IsNew = true };
+    public static CustomerRecordMutor NewMutor()
+        => new CustomerRecordMutor(DmoCustomer.NewCustomer());
 }

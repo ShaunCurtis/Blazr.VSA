@@ -44,13 +44,12 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
 
     private async Task Load()
     {
-        var result = await ReturnT.Success(Uid)
-             .BindAsync(UIConnector.RecordRequestAsync);
-
-        this.LastResult = result.ToReturn();
-
-        this.Item = result.Write(new TRecord());
+        this.Item = await UIConnector.RecordRequestAsync(Uid)
+             .SetReturnAsync(this.SetLastResult)
+             .WriteAsync(defaultValue: new TRecord());
     }
+
+    private void SetLastResult(Return result) => this.LastResult = result;
 
     protected virtual async void OnRecordChanged(object? sender)
     {

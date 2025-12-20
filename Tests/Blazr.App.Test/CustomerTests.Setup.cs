@@ -40,6 +40,7 @@ public partial class CustomerTests
         services.AddScoped<ScopedStateProvider>();
 
         services.AddAppEFServices();
+        services.AddAppBlazorServerServices();
         services.AddLogging(builder => builder.AddDebug());
 
         var provider = services.BuildServiceProvider();

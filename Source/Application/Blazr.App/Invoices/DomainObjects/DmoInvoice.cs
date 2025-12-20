@@ -8,5 +8,5 @@ public sealed record DmoInvoice
     public Date Date { get; init; }
 
     public static DmoInvoice CreateNew()
-        => new() { Id = InvoiceId.Create, Date = new(DateTime.Now) };
+        => new() { Id = InvoiceId.NewId, Date = new(DateTime.Now) };
 }

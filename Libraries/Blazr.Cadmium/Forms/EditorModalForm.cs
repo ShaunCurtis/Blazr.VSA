@@ -43,15 +43,15 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     {
         ArgumentNullException.ThrowIfNull(Uid);
         
-        this.State = this.Uid.IsDefault
+        this.State = this.Uid.IsNew
             ? EditState.New
             : EditState.Clean;
 
-        var result = await this.UIConnector.RecordRequestAsync(this.Uid);
+        this.EditMutor = await this.UIConnector.RecordRequestAsync(this.Uid)
+            .SetReturnAsync(this.SetLastResult)
+            .MapAsync(record => (TRecordMutor)this.UIConnector.GetRecordMutor(record))
+            .WriteAsync(defaultValue: default!);
 
-        var record = result.Write(default!);
-
-        this.EditMutor = (TRecordMutor)this.UIConnector.GetRecordMutor(record);
         this.EditContext = new EditContext(EditMutor);
 
         Loaded = true;
@@ -59,10 +59,12 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
         this.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
     }
 
+    private void SetLastResult(Return result) => this.LastResult = result;
+
     protected virtual async Task OnSave()
     {
-        this.LastResult = (await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, this.EditMutor.State))
-            .ToReturn();
+        this.LastResult = await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, this.EditMutor.State)
+            .ToReturnAsync();
 
         this.OnExit();
     }
@@ -72,8 +74,8 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
         if ((await ConfirmAsync()).Failed)
             return;
 
-        this.LastResult = (await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, EditState.Deleted))
-            .ToReturn();
+        this.LastResult = await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, EditState.Deleted)
+            .ToReturnAsync();
 
         this.OnExit();
     }

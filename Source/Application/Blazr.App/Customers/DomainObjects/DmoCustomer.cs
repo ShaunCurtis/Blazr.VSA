@@ -10,6 +10,6 @@ public sealed record DmoCustomer : ICommandEntity
     public CustomerId Id { get; init; }
     public Title Name { get; init; }
 
-    public static DmoCustomer CreateNew()
-        => new DmoCustomer() { Id = CustomerId.Create() };
+    public static DmoCustomer NewCustomer()
+        => new DmoCustomer() { Id = CustomerId.NewId() };
 }

@@ -23,7 +23,7 @@ public abstract class RecordMutor<TRecord>
 {
     public TRecord BaseRecord { get; protected set; } = default!;
     public bool IsDirty => !this.Record.Equals(BaseRecord);
-    public bool IsNew { get; protected set; }
+    public virtual bool IsNew { get; }
     public virtual TRecord Record { get; } = default!;
 
     public EditState State => (this.IsNew, this.IsDirty) switch

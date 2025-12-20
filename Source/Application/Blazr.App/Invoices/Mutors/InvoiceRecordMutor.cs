@@ -33,6 +33,8 @@ public sealed class InvoiceRecordMutor : RecordMutor<DmoInvoice>, IRecordMutor<D
     public void Reset()
         => this.SetFields();
 
+    public override bool IsNew => BaseRecord.Id.IsNew;
+
     public Func<InvoiceEntity, Return<InvoiceEntity>> Dispatcher =>
         entity => (this.IsNew, this.IsDirty) switch
         {
@@ -40,9 +42,9 @@ public sealed class InvoiceRecordMutor : RecordMutor<DmoInvoice>, IRecordMutor<D
             _ => ReturnT.Read(entity),
         };
 
-    public static InvoiceRecordMutor Read(DmoInvoice record)
+    public static InvoiceRecordMutor Load(DmoInvoice record)
         => new InvoiceRecordMutor(record);
 
-    public static InvoiceRecordMutor Create()
-        => new InvoiceRecordMutor(DmoInvoice.CreateNew()) { IsNew = true };
+    public static InvoiceRecordMutor NewMutor()
+        => new InvoiceRecordMutor(DmoInvoice.CreateNew());
 }

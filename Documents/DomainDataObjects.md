@@ -1,81 +1,49 @@
 # Domain Data Objects
 
-Before delving into functional programming, you need to understand some fundimental differences from the data objects you've probably familair with in OOP.
+The domain data objects (DMOs) are the core data objects used in a functional programming style application.  Before delving into functional programming, you need to understand some fundimental differences from the data objects you've probably familair with in OOP.
 
 ## Immutability
 
-If you already use immutable objects in OOP, you can gloss over this section.  The chances are thougfh you aren't.
+If you already use immutable objects in OOP, you can gloss over this section.  The chances are though, you aren't.
 
-Consider the `WeatherForecast` record used in the DotNet templates.
+Consider the `Invoice` record used in the DotNet templates.
 
 ```csharp
-public class WeatherForecast
+public class DmoInvoice
 {
-    public DateOnly Date { get; set; }
-    public int TemperatureC { get; set; }
-    public string? Summary { get; set; }
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public Guid Id { get; set; }
+    public Guid Customer { get; set; }
+    public Decimal TotalAmount { get; set; }
+    public DateTime Date { get; set; }
 }
 ```
 
-This is mutable.  There are two major problems with this behaviour:
+This is mutable.  There are some major problems with this behaviour:
 
-1. Anyone can change it: it's open to buggy behaviour.
-2. You have to write a custom comparitor to chack if two records are equal.
+1. Anyone can change it: It's full of side effects.
+1. You have to write a custom comparitor to chack if two records are equal.
+1. It's full of primitive types that don't represent real world things.
 
-### Step 1 
-
-is to turn it into a record:
+### The new DmoInvoice 
 
 ```csharp
-public record WeatherForecast
+public sealed record DmoInvoice
 {
-    public DateOnly Date { get; init; }
-    public int TemperatureC { get; init; }
-    public string? Summary { get; init; }
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public InvoiceId Id { get; init; } = InvoiceId.Default;
+    public FkoCustomer Customer { get; init; } =  FkoCustomer.Default;
+    public Money TotalAmount { get; init; } = Money.Default;
+    public Date Date { get; init; }
+
+    public static DmoInvoice CreateNew()
+        => new() { Id = InvoiceId.Create, Date = new(DateTime.Now) };
 }
 ```
 
-## Value Objects and Identity
-
-`WeatherForecast` is currently a value object.
-
-Consider this code.
-
-```csharp
-var date = DateOnly.FromDateTime(DateTime.Now);
-
-var record1 = new WeatherForecast { Date = date, TemperatureC = 2, Summary = "Cold" };
-var record2 = new WeatherForecast { Date = date, TemperatureC = 2, Summary = "Cold" };
-
-Console.WriteLine(record1.Equals(record2));
-```
-
-If `WeatherForecast` is a `class` the result is `false` because we have two objects with different references.
-
-On the other hand, if `WeatherForecast` is a `record` the result is `true` because the two objects contain identical data.
-
-They are both fundimentally still reference objects.  The difference is in compilation.  The compiler builds a different set of comparitors for a `record`.
-
-The `WeatherForecast` needs an identity.  Here we use a Guid.
-
-```csharp
-public record WeatherForecast
-{
-    public Guid Id {get; init;}
-    public DateOnly Date { get; init; }
-    public int TemperatureC { get; init; }
-    public string? Summary { get; init; }
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
-```
+It's immutable and sealed: there's no valid reason to inherit from this object.  Everything is now a value object that represents a real world thing.
 
 ## Primitive Obsession
 
-Is `MyColdestDay.TemperatureC = -10000000` a valid temperature?  To protect against such assignments we have to write defensive validation code whenever we generate a `WeatherForecast`.  This illustrates the problem in using primitive types to represent real world things.
-
-The solution to this problem is to create a value object that represents temperature and only contains a valid entry.
+Is `MyColdestDay.TemperatureC = -10000000` a valid temperature?  To protect against such assignments, we write defensive validation code whenever we generate a `WeatherForecast`.  The solution to this problem is to create a value object that represents temperature and only contains a valid entry.
 
 Here's one implementation that throws an exception if the decimal is out of range.  
 
@@ -134,7 +102,30 @@ public readonly record struct Temperature
 }
 ```
 
-Date and Id are simiarly value objects.
+In `DmoInvoice` everything is a value object.
+
+#### InvoiceId
+
+This is still based on a `Guid` but it represents a real world thing: an invoice identifier.  You can't accidentally assign a `Guid` to an `InvoiceId`, or search for an invoive with a customer Id.  You'll also notice custom methods for creating new Ids, checking for default values and string output.
+
+```csharp
+public readonly record struct InvoiceId(Guid Value) : IEntityId
+{
+    public bool IsDefault => this == Default;
+    public static InvoiceId Create => new(Guid.CreateVersion7());
+    public static InvoiceId Default => new(Guid.Empty);
+
+    public override string ToString()
+        => this.IsDefault ? "Default" : Value.ToString();
+
+    public string ToString(bool shortform)
+        => this.IsDefault ? "Default" : Value.ToString().Substring(28);
+}
+```
+
+#### Date
+
+Follows a similar pattern:
 
 ```csharp
 public readonly record struct Date
@@ -169,17 +160,51 @@ public readonly record struct Date
         => this.IsValid ? this.Value.ToString("dd-MMM-yy")  : "Not Valid";
 }
 ```
+### Money
+
+As does money whih also adds 
 
 ```csharp
-public readonly record struct WeatherForecastId(Guid Value) : IEntityId
+public readonly record struct Money
 {
-    public bool IsDefault => this == Default;
-    public static WeatherForecastId Default => new(Guid.Empty);
+    public decimal Value { get; private init; }
+    public bool HasValue { get; private init; }
+
+    public bool IsZero => Value != 0;
+
+    public static Money Default => new(0);
+
+    public Money(decimal value)
+    {
+        if (value >= 0)
+        {
+            Value = value;
+            HasValue = true;
+            return;
+        }
+        Value = 0;
+        HasValue = false;
+    }
 
     public override string ToString()
     {
-        return Value.ToString();
+        if (this.HasValue)
+            return Value.ToString("C", CultureInfo.CreateSpecificCulture("en-GB"));
+
+        return "Not Set";
     }
+
+    public static Money operator +(Money one, Money two)
+        => new Money(one.Value + two.Value);
+
+    public static Money operator -(Money one, Money two)
+        => new Money(one.Value - two.Value);
+
+    public static Money operator *(Money one, Money two)
+        => new Money(one.Value * two.Value);
+
+    public static Money operator /(Money one, Money two)
+        => new Money(Decimal.Round(one.Value / two.Value, 2, MidpointRounding.AwayFromZero));
 }
 ```
 

@@ -94,7 +94,7 @@ public static class ReturnTExtensions
                 ? Return.Success()
                 : Return.Failure(@this.Exception);
 
-        public Return<T> WriteReturn(Action<Return> returnOut)
+        public Return<T> SetReturn(Action<Return> returnOut)
         {
             if (@this.HasValue)
             {
