@@ -7,7 +7,6 @@ using Blazr.Cadmium.Core;
 using Blazr.Cadmium.Extensions;
 using Blazr.Cadmium.Presentation;
 using Blazr.Diode;
-using Blazr.Manganese;
 using Blazr.Uranium;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -28,24 +27,24 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     [Parameter, EditorRequired] public TKey Uid { get; set; } = default!;
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    protected EditState State { get; set; } = EditState.Clean;
     protected Return LastResult { get; set; } = Return.Success();
     protected TRecordMutor EditMutor { get; set; } = default!;
     protected EditContext EditContext { get; set; } = default!;
 
     protected EditFormButtonsOptions editFormButtonsOptions = new();
-    protected bool IsNewRecord => this.State == EditState.New;
+    protected bool IsNewRecord => this.Uid.IsNew;
     protected string FormTitle => $"{this.UIConnector.SingleDisplayName} Editor";
     protected bool Loading => !this.Loaded;
     protected bool Loaded;
 
-    protected async override Task OnInitializedAsync()
-    {
-        ArgumentNullException.ThrowIfNull(Uid);
-        
-        this.State = this.Uid.IsNew
+    protected EditState State => this.Uid.IsNew
             ? EditState.New
             : EditState.Clean;
+
+    protected async override Task OnInitializedAsync()
+    {
+        // Check we have a Uid.  If not then we can't proceed so throw an exception
+        ArgumentNullException.ThrowIfNull(Uid);
 
         this.EditMutor = await this.UIConnector.RecordRequestAsync(this.Uid)
             .SetReturnAsync(this.SetLastResult)
@@ -63,8 +62,8 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
 
     protected virtual async Task OnSave()
     {
-        this.LastResult = await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, this.EditMutor.State)
-            .ToReturnAsync();
+        await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, this.EditMutor.State)
+            .SetReturnAsync(this.SetLastResult);
 
         this.OnExit();
     }
@@ -74,8 +73,8 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
         if ((await ConfirmAsync()).Failed)
             return;
 
-        this.LastResult = await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, EditState.Deleted)
-            .ToReturnAsync();
+        await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, EditState.Deleted)
+            .SetReturnAsync(this.SetLastResult);
 
         this.OnExit();
     }
@@ -93,8 +92,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
 
     protected virtual Task OnReset()
     {
-        //TODO - don't we need to reset the mutor???
-        // Create a new EditContext - will reset and rebuild the whole Edit Form and validate
+        this.EditMutor.Reset();
         this.EditContext = new EditContext(EditMutor);
         this.EditContext.Validate();
 

@@ -41,15 +41,15 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
 
     protected async override Task OnInitializedAsync()
     {
+        // Set the paginator page size
         this.Pagination.ItemsPerPage = this.PageSize;
 
-        var result = this.ResetGridContext
-            ? this.GetGridState()
-            : this.ResetGridState();
+        // Get the current grid state from the store if one exists
+        this.LastResult = this.GetGridState
+            .Notify(state => this.GridState = state)
+            .ToReturn();
 
-        this.GridState = result.Write(new GridState<TRecord>());
-        this.LastResult = result.ToReturn();
-
+        // Subscribe to record change messages so we can refresh the grid if a record is changed
         _messageBus.Subscribe<TKey>(OnRecordChanged);
 
         // Set the current page index in the pager.
@@ -61,18 +61,21 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
         // We can't trust previous waits to have yielded.
         await Task.Yield();
 
-        // Check the modalDialog and quickGrid components exist in the form
+        // We have rendered at this poinr so we can
+        // check the modalDialog and quickGrid components exist in the form
         ArgumentNullException.ThrowIfNull(this.modalDialog);
         ArgumentNullException.ThrowIfNull(this.quickGrid);
     }
 
     private void SetLastResult(Return result) => this.LastResult = result;
 
-    protected Return<GridState<TRecord>> GetGridState()
-        => _gridStateStore.GetState<GridState<TRecord>>(GridContextId);
-
     protected Return<GridState<TRecord>> SetGridState(UpdateGridRequest<TRecord> request)
         => _gridStateStore.Dispatch(request.ToGridState(this.GridContextId));
+
+    protected Return<GridState<TRecord>> GetGridState
+        => this.ResetGridContext
+            ? _gridStateStore.GetState<GridState<TRecord>>(GridContextId)
+            : this.ResetGridState();
 
     protected Return<GridState<TRecord>> ResetGridState()
         => _gridStateStore.Dispatch(new GridState<TRecord>
@@ -86,7 +89,8 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
 
     protected async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
         => await gridRequest
-            .ToUpdateGridRequest().ToReturnT()
+            .ToUpdateGridRequest()
+            .ToReturnT()
             .Bind(this.SetGridState)
             .BindAsync(UIConnector.GetItemsAsync)
             .SetReturnAsync(this.SetLastResult)
