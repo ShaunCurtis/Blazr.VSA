@@ -68,6 +68,7 @@
     <NavigationLock OnBeforeInternalNavigation="this.OnLocationChanging" ConfirmExternalNavigation="_isDirty" />
 
 </CascadingValue>
+
 @code {
     [Parameter] public InvoiceId InvoiceId { get; set; } = InvoiceId.Default;
 
@@ -84,17 +85,10 @@
 
     private InvoiceEntityMutor Mutor = default!;
 
-    public override async Task SetParametersAsync(ParameterView parameters)
-    {
-        parameters.SetParameterProperties(this);
-
-        this.Mutor = await MutorFactory.GetInvoiceEntityMutorAsync(this.InvoiceId);
-
-        await base.SetParametersAsync(parameters);
-    }
-
     protected async override Task OnInitializedAsync()
     {
+        this.Mutor = await MutorFactory.GetInvoiceEntityMutorAsync(this.InvoiceId);
+
         _showAddInvoiceForm = this.InvoiceId.IsDefault;
         _loading = false;
         this.MessageBus.Subscribe<InvoiceEntity>(OnContextStateChanged);
@@ -147,8 +141,8 @@
         => await this.Mutor.SaveAsync();
 
     private async Task SaveAndExitAsync()
-        => (await this.Mutor.SaveAsync())
-            .Write(Exit);
+        => await this.Mutor.SaveAsync()
+            .NotifyAsync(Exit);
 
     private void Exit()
         => this.NavManager.NavigateTo($"/invoices");

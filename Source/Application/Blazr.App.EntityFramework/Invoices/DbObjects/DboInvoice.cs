@@ -22,5 +22,4 @@ public sealed record DboInvoice
         TotalAmount = item.TotalAmount.Value,
         Date = item.Date.ToDateTime
     };
-
 }

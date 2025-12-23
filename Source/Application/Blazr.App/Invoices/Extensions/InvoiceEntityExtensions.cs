@@ -16,18 +16,18 @@ internal static class InvoiceEntityExtensions
         internal Return<InvoiceEntity> AddInvoiceItem(DmoInvoiceItem item)
             => @this.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
                   ? Return<InvoiceEntity>.Failure("The record already exists in the Invoice Items")
-                  : @this.MutateWithEntityRulesApplied(@this.InvoiceItems.Add(item));
+                  : @this.Mutate(@this.InvoiceItems.Add(item));
 
         internal Return<InvoiceEntity> DeleteInvoiceItem(DmoInvoiceItem record)
             => @this.GetInvoiceItem(record)
-                .Bind(item => @this.MutateWithEntityRulesApplied(@this.InvoiceItems.Remove(item)));
+                .Bind(item => @this.Mutate(@this.InvoiceItems.Remove(item)));
 
         internal Return<InvoiceEntity> ReplaceInvoiceItem(DmoInvoiceItem record)
             => @this.GetInvoiceItem(record)
-                .Bind(item => @this.MutateWithEntityRulesApplied(@this.InvoiceItems.Replace(item, record)));
+                .Bind(item => @this.Mutate(@this.InvoiceItems.Replace(item, record)));
 
         internal Return<InvoiceEntity> ReplaceInvoice(DmoInvoice record)
-            => @this.MutateWithEntityRulesApplied(record);
+            => @this.Mutate(record);
 
         internal Return<DmoInvoiceItem> GetInvoiceItem(InvoiceItemId id)
             => Return<DmoInvoiceItem>.Read(
@@ -37,10 +37,12 @@ internal static class InvoiceEntityExtensions
         private Return<DmoInvoiceItem> GetInvoiceItem(DmoInvoiceItem item)
             => @this.GetInvoiceItem(item.Id);
 
-        private Return<InvoiceEntity> MutateWithEntityRulesApplied(DmoInvoice invoice) 
-            => InvoiceEntityFactory.ApplyEntityRules(InvoiceEntity.Read(invoice, @this.InvoiceItems)).ToReturnT;
+        private Return<InvoiceEntity> Mutate(DmoInvoice invoice)
+            => InvoiceEntityFactory.Load(invoice, @this.InvoiceItems)
+                .Map(InvoiceEntityFactory.ApplyEntityRules);
 
-        private Return<InvoiceEntity> MutateWithEntityRulesApplied(IEnumerable<DmoInvoiceItem> invoiceItems) 
-            => InvoiceEntityFactory.ApplyEntityRules(InvoiceEntity.Read(@this.InvoiceRecord, invoiceItems)).ToReturnT;
+        private Return<InvoiceEntity> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
+            => InvoiceEntityFactory.Load(@this.InvoiceRecord, invoiceItems)
+                .Map(InvoiceEntityFactory.ApplyEntityRules);
     }
 }

@@ -13,7 +13,7 @@
     </div>
 </div>
 
-@if(Loading)
+@if (Loading)
 {
     <div>Loading...</div>
     return;
@@ -37,6 +37,7 @@
         <div class="row">
 
             <BlazrTextControl class="form-control mb-2"
+                              UpdateOnInput
                               ColumnCss="col-12 col-md-8 col-xl-4 mb-2"
                               Label="Name"
                               @bind-Value="this.EditMutor.Name" />

@@ -106,7 +106,13 @@ In `DmoInvoice` everything is a value object.
 
 #### InvoiceId
 
-This is still based on a `Guid` but it represents a real world thing: an invoice identifier.  You can't accidentally assign a `Guid` to an `InvoiceId`, or search for an invoive with a customer Id.  You'll also notice custom methods for creating new Ids, checking for default values and string output.
+This is still based on a `Guid` but it represents a real world thing: an invoice identifier.  You can't accidentally assign a `Guid` to an `InvoiceId`, or search for an invoice with a customer Id.  You'll also notice custom methods for creating new Ids, checking for default values and string output.
+
+The id can be in one of three states:
+
+1. Default: `InvoiceId.Default` which is a guid of all zeros.
+1. New: `InvoiceId.Create` which generates a new v7 guid.
+1. Existing: An existing guid value, almost certainly pulled from a data pipeline.
 
 ```csharp
 public readonly record struct InvoiceId(Guid Value) : IEntityId
@@ -162,7 +168,7 @@ public readonly record struct Date
 ```
 ### Money
 
-As does money whih also adds 
+As does money whih also adds the basic arithmetic operators.
 
 ```csharp
 public readonly record struct Money
@@ -210,20 +216,54 @@ public readonly record struct Money
 
 Some notes on these objects:
 
-1. All of these objects are `readonly record struct`.  They are value types with value sematics.
-2. They are all immutable, like `int` and `bool`.
-3. 
+1. All are `readonly record struct`.  They are value types with value sematics.
+2. They're all immutable, like `int` and `bool`.
 
-## Our new Domain Weather Forecast
+## Integrating with the Data Pipeline
 
-The final domain object looks like this. `Summary` is still a string because that's what it is.  Note the record is `sealed`: there's no valid reason to inherit from this object.
+First, the *Core* application layer has no dependencies on any data pipeline technology.  No Entity Framework attributes, no Dapper annotations, nothing.
+
+In the demo, we convert from the EF Core entity to the DMO in the repository layer - *Blazr.App.Infrastructure*.
+
+First the data store to Domain object.  *Dvo* is a *Data View Object*.  Note it brngs in the relavant foreign key data.  `Map` builds a `DmoInvoice` object from the *Dvo*. 
 
 ```csharp
-public sealed record DmoWeatherForecast : ICommandEntity
+public sealed record DvoInvoice
 {
-    public WeatherForecastId Id { get; init; } = new(Guid.Empty);
-    public Date Date { get; init; }
-    public Temperature Temperature { get; init; }
-    public string Summary { get; init; } = "Not Defined";
+    [Key] public Guid InvoiceID { get; init; }
+    public Guid CustomerID { get; init; }
+    public string CustomerName { get; init; } = string.Empty;
+    public decimal TotalAmount { get; init; }
+    public DateTime Date { get; init; }
+
+    public static DmoInvoice Map(DvoInvoice item)
+    => new()
+    {
+        Id = new(item.InvoiceID),
+        Customer = new(new(item.CustomerID), new(item.CustomerName)),
+        TotalAmount = new(item.TotalAmount),
+        Date = new(item.Date)
+    };
+}
+```
+
+Next the Domain to Data Store object *Dbo* is a *Database Object*.
+
+```csharp
+public sealed record DboInvoice 
+{
+    [Key] public Guid InvoiceID { get; init; }
+    public Guid CustomerID { get; init; }
+    public decimal TotalAmount { get; init; }
+    public DateTime Date { get; init; }
+
+    public static DboInvoice Map(DmoInvoice item)
+    => new()
+    {
+        InvoiceID = item.Id.Value,
+        CustomerID = item.Customer.Id.Value,
+        TotalAmount = item.TotalAmount.Value,
+        Date = item.Date.ToDateTime
+    };
 }
 ```

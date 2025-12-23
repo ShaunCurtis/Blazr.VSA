@@ -25,7 +25,7 @@ public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceEntityRequest,
 
         var invoiceResult = await dbContext
             .GetRecordAsync<DvoInvoice>(new RecordQueryRequest<DvoInvoice>(item => item.InvoiceID == request.Id.Value))
-            .BindAsync(DvoInvoice.MapToBool);
+            .BindAsync(DvoInvoice.MapToReturn);
 
         if (invoiceResult.HasException)
             return Return<InvoiceEntity>.Failure(invoiceResult.Exception!);

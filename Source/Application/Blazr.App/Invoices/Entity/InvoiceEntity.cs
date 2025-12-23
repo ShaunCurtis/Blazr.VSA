@@ -18,6 +18,6 @@ public sealed record InvoiceEntity
         this.InvoiceItems = invoiceInvoiceItems.ToImmutableList();
     }
 
-    internal static InvoiceEntity Read(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) 
+    internal static InvoiceEntity Load(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) 
         => new InvoiceEntity(invoice, invoiceItems);
 }

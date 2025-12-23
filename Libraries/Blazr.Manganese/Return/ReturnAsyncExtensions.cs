@@ -27,22 +27,22 @@ public static partial class ReturnAsyncExtensions
                 .SetReturn(returnOut);
 
         public async Task<Return> NotifyAsync(Action? success = null, Action? failure = null, Action<Exception>? exception = null)
-            => (await @this.ContinueWith(CheckForTaskException))
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
                 .Notify(success, failure, exception);
     }
 
     extension<T, TOut>(Task<Return> @this)
     {
         public async Task WriteAsync()
-            => (await @this.ContinueWith(CheckForTaskException))
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
                 .Write();
 
         public async Task WriteAsync(Action? success = null, Action? failure = null, Action<Exception>? exception = null)
-            => (await @this.ContinueWith(CheckForTaskException))
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
                 .Write(success, failure, exception);
 
         public async Task<TOut> WriteAsync(Func<TOut> hasValue, Func<TOut> hasNoValue, Func<Exception, TOut> hasException)
-            => (await @this.ContinueWith(CheckForTaskException))
+            => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
                 .Write(hasValue, hasNoValue, hasException);
     }
 

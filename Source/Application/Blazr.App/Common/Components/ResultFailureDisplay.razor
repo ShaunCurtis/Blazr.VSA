@@ -1,0 +1,14 @@
+﻿@if (LastReturn.Failed)
+{
+    <div class="row">
+
+        <div class="col-12 col-lg-6 mb-2">
+            <div class="alert alert-danger">@LastReturn.Message</div>
+        </div>
+
+    </div>
+}
+
+@code {
+    [Parameter] public Return LastReturn { get; set; } = Return.Success();
+}

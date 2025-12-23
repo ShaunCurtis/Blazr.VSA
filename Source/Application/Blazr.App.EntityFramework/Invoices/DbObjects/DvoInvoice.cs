@@ -24,6 +24,6 @@ public sealed record DvoInvoice
         Date = new(item.Date)
     };
 
-    public static Return<DmoInvoice> MapToBool(DvoInvoice item)
+    public static Return<DmoInvoice> MapToReturn(DvoInvoice item)
         => Return<DmoInvoice>.Read(Map(item));
 }

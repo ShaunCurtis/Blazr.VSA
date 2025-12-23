@@ -74,8 +74,8 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
 
     protected Return<GridState<TRecord>> GetGridState
         => this.ResetGridContext
-            ? _gridStateStore.GetState<GridState<TRecord>>(GridContextId)
-            : this.ResetGridState();
+            ? this.ResetGridState()
+            : _gridStateStore.GetState<GridState<TRecord>>(GridContextId);
 
     protected Return<GridState<TRecord>> ResetGridState()
         => _gridStateStore.Dispatch(new GridState<TRecord>

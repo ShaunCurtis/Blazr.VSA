@@ -37,13 +37,15 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
         ArgumentNullException.ThrowIfNull(Uid);
         ArgumentNullException.ThrowIfNull(ModalDialog);
 
-        await this.Load();
+        await this.LoadAsync();
 
         _messageBus.Subscribe<TKey>(OnRecordChanged);
     }
 
-    private async Task Load()
+    private async Task LoadAsync()
     {
+        // Load the record
+        // if it can't be found, create a new blank record
         this.Item = await UIConnector.RecordRequestAsync(Uid)
              .SetReturnAsync(this.SetLastResult)
              .WriteAsync(defaultValue: new TRecord());
@@ -53,10 +55,12 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
 
     protected virtual async void OnRecordChanged(object? sender)
     {
+        // Check to see if the changed record is the one we are viewing
+        // if so, reload it
         if (sender is TKey key && this.Uid.Equals(key))
         {
-            await this.Load();
-            this.StateHasChanged();
+            await this.LoadAsync();
+            await this.InvokeAsync(this.StateHasChanged);
         }
     }
 
