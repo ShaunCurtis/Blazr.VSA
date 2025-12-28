@@ -10,11 +10,11 @@ namespace Blazr.App.EntityFramework;
 /// <summary>
 /// Mediator Handler for executing record requests to get a Customer Entity in an Entity Framework Context
 /// </summary>
-public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceEntityRequest, Return<InvoiceEntity>>
+public sealed class InvoiceEntityHandler : IRequestHandler<InvoiceEntityRequest, Return<InvoiceEntity>>
 {
     private IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
 
-    public InvoiceRecordHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> dbContextFactory)
+    public InvoiceEntityHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> dbContextFactory)
     {
         _factory = dbContextFactory;
     }
@@ -40,6 +40,7 @@ public sealed class InvoiceRecordHandler : IRequestHandler<InvoiceEntityRequest,
         if (invoiceItemsResult.HasException)
             return Return<InvoiceEntity>.Failure(invoiceItemsResult.Exception!);
 
-        return InvoiceEntityFactory.TryLoad(invoiceResult.Value!, invoiceItemsResult.Value!);
+        // loads the entity even if it doesn't pass the entity rues.  The Mutor should take care of any updates required.
+        return InvoiceEntityFactory.Load(invoiceResult.Value!, invoiceItemsResult.Value!);
     }
 }

@@ -27,7 +27,7 @@ public sealed class InvoiceRecordMutor : RecordMutor<DmoInvoice>, IRecordMutor<D
     public override DmoInvoice Record => this.BaseRecord with
     {
         Date = new Date(this.Date),
-         Customer = this.Customer
+        Customer = this.Customer
     };
 
     public void Reset()

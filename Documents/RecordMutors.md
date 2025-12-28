@@ -1,6 +1,10 @@
-# Mutors
+# Record Mutors
 
-**Mutor** is a word I invented to describe a group of patterns for implementing the mutaton of immutable objects.
+> **Mutor** is my word to describe a set of patterns for implementing the mutaton of immutable objects.
+
+Record Mutors are classes that provide a read/write *view* over an immutable record.  Thw mutor maintains the editable fields as mutable properties, and provides methods to load from and save to the immutable record.  It maintains a copy of the original record and thus provides state information such as `IsDirty` and `IsNew`.  A copy of the current record is obtained from the `Record` property.  Mutors can only be created though two *static* methods: `Load` and `Create`.  Mutors are typically used as the `model` for an edit form.
+
+The mutors in the solution use the `[TrackState]` custom attribute to tell the `EditStateTracker` in the Blazor `EditForm` to track the individual property state..
 
 ## The Record Mutor
 
@@ -14,9 +18,32 @@ public sealed record DmoCustomer
 }
 ```
 
-To edit this record in the UI, we need access to read/write fields representing the editable data: in this case just `Name`.
+The UI needs access to read/write fields representing the editable data in the record: in this case just `Name`.
 
-This is where we use the *Mutor* pattern.  Here's the *Mutor* for the Customer UI editor:
+This is where we use the *Mutor* pattern.  
+
+
+First an abstract base class:
+
+```csharp
+public abstract class RecordMutor<TRecord>
+    where TRecord : class
+{
+    public TRecord BaseRecord { get; protected set; } = default!;
+    public bool IsDirty => !this.Record.Equals(BaseRecord);
+    public bool IsNew { get; protected set; }
+    public virtual TRecord Record { get; } = default!;
+
+    public EditState State => (this.IsNew, this.IsDirty) switch
+    {
+        (true, _) => EditState.New,
+        (false, false) => EditState.Clean,
+        (false, true) => EditState.Dirty,
+    };
+}
+```
+
+And the Customer record UI mutor:
 
 ```csharp
 public sealed class CustomerRecordMutor : RecordMutor<DmoCustomer>, IRecordMutor<DmoCustomer>
@@ -50,37 +77,17 @@ public sealed class CustomerRecordMutor : RecordMutor<DmoCustomer>, IRecordMutor
 }
 ```
 
-And the base abstract class `RecordMutor`
-
-```csharp
-public abstract class RecordMutor<TRecord>
-    where TRecord : class
-{
-    public TRecord BaseRecord { get; protected set; } = default!;
-    public bool IsDirty => !this.Record.Equals(BaseRecord);
-    public bool IsNew { get; protected set; }
-    public virtual TRecord Record { get; } = default!;
-
-    public EditState State => (this.IsNew, this.IsDirty) switch
-    {
-        (true, _) => EditState.New,
-        (false, false) => EditState.Clean,
-        (false, true) => EditState.Dirty,
-    };
-}
-```
-
 It's locked down.
 
 1. A `CustomerRecordMutor`can only be initialised through the static `Load` and `Create` methods.
 1. The only editable field is `Name`.
 1. The only method that changes the internal state is `Reset`.
 1. The current state is available through `IsDirty`.
-1. The *edited record* (to save) is available through `Record`.
+1. The *mutated record* (to save) is available through `Record`.
 
 How do you use it?
 
-In Blazor the `CustomerRecordMutor` instance is the `model` for the `EditContext`.  On `Save`, submit the record from `AsRecord` to the data pipeline.
+In Blazor the `CustomerRecordMutor` instance is the `model` for the `EditContext`.  On `Save`, submit the record from the `Record` property into the data pipeline.
 
 ## Emulating the Process
 

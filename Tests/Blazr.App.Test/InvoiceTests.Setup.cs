@@ -68,6 +68,19 @@ public partial class InvoiceTests
         return entityResult.Value!;
     }
 
+    private async Task<InvoiceEntity> GetASampleDirtyEntityAsync(IMediatorBroker mediator)
+    {
+
+        var controlId = new InvoiceId(_testDataProvider.Invoices.Skip(3).First().InvoiceID);
+
+        // Get the Invoice Entity
+        var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(controlId));
+
+        Assert.False(entityResult.HasException);
+
+        return entityResult.Value!;
+    }
+
     private DmoInvoice AsDmoInvoice(DboInvoice invoice)
     {
         var customer = _testDataProvider.Customers.First(item => item.CustomerID == invoice.CustomerID);

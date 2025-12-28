@@ -21,11 +21,20 @@ public sealed class InvoiceMutorFactory
     private IServiceProvider _serviceProvider;
 
     public InvoiceMutorFactory(IServiceProvider serviceProvider)
-        => _serviceProvider = serviceProvider;
+    {         
+        _serviceProvider = serviceProvider;
+    }
 
     public async Task<InvoiceEntityMutor> GetInvoiceEntityMutorAsync(InvoiceId id)
     {
         var mutor = ActivatorUtilities.CreateInstance<InvoiceEntityMutor>(_serviceProvider, new object[] { id });
+        await mutor.LoadTask;
+        return mutor;
+    }
+
+    public async Task<InvoiceEntityMutor> CreateInvoiceEntityMutorAsync()
+    {
+        var mutor = ActivatorUtilities.CreateInstance<InvoiceEntityMutor>(_serviceProvider, new object[] { InvoiceId.NewId });
         await mutor.LoadTask;
         return mutor;
     }
@@ -43,8 +52,9 @@ public sealed class InvoiceEntityMutor
     public InvoiceEntity BaseEntity { get; private set; }
     public InvoiceEntity InvoiceEntity { get; private set; }
     public Return LastResult { get; private set; } = Return.Success();
-    public bool IsNew { get; private set; } = true;
+    public bool IsNew => this.BaseEntity.InvoiceRecord.Id.IsNew;
     public Task LoadTask { get; private set; } = Task.CompletedTask;
+    public bool IsDirty => !this.InvoiceEntity.Equals(BaseEntity);
 
     public InvoiceEntityMutor(IMediatorBroker mediator, IMessageBus messageBus, InvoiceId id)
     {
@@ -54,8 +64,6 @@ public sealed class InvoiceEntityMutor
         this.InvoiceEntity = this.BaseEntity;
         this.LoadTask = this.LoadAsync(id);
     }
-
-    public bool IsDirty => !this.InvoiceEntity.Equals(BaseEntity);
 
     public EditState State => (this.IsNew, this.IsDirty) switch
     {
@@ -72,21 +80,28 @@ public sealed class InvoiceEntityMutor
             .ToReturn();
 
     private async Task LoadAsync(InvoiceId id)
-        => await _mediator.DispatchAsync(new InvoiceEntityRequest(id))
+    {
+        if (id.IsNew)
+        {
+            this.Set(InvoiceEntityFactory.Create());
+            return;
+        }
+
+        await _mediator.DispatchAsync(new InvoiceEntityRequest(id))
             .SetReturnAsync(ret => this.LastResult = ret)
-            .WriteAsync( 
-                success: value => { 
-                    this.BaseEntity = value;
-                    this.InvoiceEntity = value;
-                },
-                failure: () => { 
-                    this.IsNew = true;
-                    this.InvoiceEntity = InvoiceEntityFactory.Create();
-                }
-            );
+            .NotifyAsync(
+                hasValue: this.Set,
+                hasNoValue: this.SetAsNew
+            )
+            .ToReturnAsync();
+    }
 
     public async Task<Return> SaveAsync()
         => await _mediator.DispatchAsync(new InvoiceCommandRequest(this.InvoiceEntity, EditState.Dirty, Guid.NewGuid()))
+            .SetReturnAsync(ret => this.LastResult = ret);
+
+    public async Task<Return> DeleteAsync()
+        => await _mediator.DispatchAsync(new InvoiceCommandRequest(this.InvoiceEntity, EditState.Deleted, Guid.NewGuid()))
             .SetReturnAsync(ret => this.LastResult = ret);
 
     public InvoiceItemRecordMutor GetInvoiceItemRecordMutor(InvoiceItemId id)
@@ -95,10 +110,29 @@ public sealed class InvoiceEntityMutor
                 hasValue: value => InvoiceItemRecordMutor.Load(value),
                 hasNoValue: () => InvoiceItemRecordMutor.NewMutor(this.InvoiceEntity.InvoiceRecord.Id));
 
+    public InvoiceItemRecordMutor GetNewInvoiceItemRecordMutor()
+        => InvoiceItemRecordMutor.NewMutor(this.BaseEntity.InvoiceRecord.Id);
+
     public Return Reset()
     {
-        this.InvoiceEntity = this.BaseEntity;
-        this.LastResult = Return.Success();
-        return this.LastResult;
+        this.Set(this.BaseEntity);
+        return Return.Success();
+    }
+    
+    private void Set(InvoiceEntity entity)
+    {
+        this.BaseEntity = entity;
+        this.InvoiceEntity = InvoiceEntityFactory.ApplyEntityRules(entity);
+
+        // Checks the entity business rules and applies any changes which changes the state of the mutor
+        this.LastResult = this.IsDirty
+            ? this.LastResult = Return.Failure("The stored total cost does no match the sum of the entities.  The entity must be saved to fix the problem.")
+            : Return.Success();
+    }
+
+    private void SetAsNew()
+    {
+        this.InvoiceEntity = InvoiceEntityFactory.Create();
+        this.BaseEntity = this.InvoiceEntity;
     }
 }

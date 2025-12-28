@@ -15,7 +15,8 @@ public record UpdateInvoiceItemAction
         => _invoiceItem = invoiceItem;
 
     public Return<InvoiceEntity> Dispatcher(InvoiceEntity entity)
-        => entity.ReplaceInvoiceItem(_invoiceItem);
+        => entity.GetInvoiceItem(_invoiceItem)
+            .Bind(item => entity.Mutate(entity.InvoiceItems.Replace(item, _invoiceItem)));
 
     public static UpdateInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => (new UpdateInvoiceItemAction(invoiceItem));

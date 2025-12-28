@@ -123,6 +123,39 @@ public sealed class InvoiceTestDataProvider
             });
         }
 
+        id = Guid.CreateVersion7();
+        customer = new()
+        {
+            CustomerID = id,
+            CustomerName = "Sabena"
+        };
+        _customers.Add(customer);
+
+        {
+            var _id = Guid.CreateVersion7();
+            _invoices.Add(new()
+            {
+                InvoiceID = _id,
+                CustomerID = id,
+                Date = DateTime.Now.AddDays(-1),
+                TotalAmount = 60
+            });
+            _invoiceItems.Add(new()
+            {
+                InvoiceItemID = Guid.CreateVersion7(),
+                InvoiceID = _id,
+                Description = "Airbus A330",
+                Amount = 25
+            });
+            _invoiceItems.Add(new()
+            {
+                InvoiceItemID = Guid.CreateVersion7(),
+                InvoiceID = _id,
+                Description = "Airbus A330",
+                Amount = 25
+            });
+        }
+
         _customers.Add(new() { CustomerID = Guid.CreateVersion7(), CustomerName = "TAP" });
         _customers.Add(new() { CustomerID = Guid.CreateVersion7(), CustomerName = "American Airlines" });
         _customers.Add(new() { CustomerID = Guid.CreateVersion7(), CustomerName = "Quantas" });

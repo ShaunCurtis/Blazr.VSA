@@ -15,7 +15,9 @@ public record AddInvoiceItemAction
         => _invoiceItem = invoiceItem;
 
     public Return<InvoiceEntity> Dispatcher(InvoiceEntity entity)
-        => entity.AddInvoiceItem(_invoiceItem);
+            => entity.InvoiceItems.Any(_item => _invoiceItem.Id.Equals(_item.Id))
+                  ? Return<InvoiceEntity>.Failure("The record already exists in the Invoice Items")
+                  : entity.Mutate(entity.InvoiceItems.Add(_invoiceItem));
 
     public static AddInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
         => (new AddInvoiceItemAction(invoiceItem));

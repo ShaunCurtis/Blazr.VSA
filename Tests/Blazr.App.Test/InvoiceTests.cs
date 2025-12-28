@@ -5,8 +5,10 @@
 /// ============================================================
 
 using Blazr.App.Core;
+using Blazr.App.Core.Invoices;
 using Blazr.Diode.Mediator;
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel.DataAnnotations;
 
 namespace Blazr.Test;
 
@@ -72,14 +74,17 @@ public partial class InvoiceTests
         var mediator = provider.GetRequiredService<IMediatorBroker>()!;
         var mutorFactory = provider.GetRequiredService<InvoiceMutorFactory>()!;
 
-        // Get an Invoice Mutor
+        // Get a sample Invoice Mutor
         var entity = await this.GetASampleEntityAsync(mediator);
         var Id = entity.InvoiceRecord.Id;
 
+        // Get the invoice mutor from the factory
         var entityMutor = await mutorFactory.GetInvoiceEntityMutorAsync(entity.InvoiceRecord.Id);
+        
+        // Create an Invoice Record Mutor
         var invoiceMutor = InvoiceRecordMutor.Load(entityMutor.InvoiceEntity.InvoiceRecord);
 
-        // Update the Mutor
+        // Update the Invoice Record Mutor
         invoiceMutor.Date = DateOnly.FromDateTime(DateTime.Now.AddDays(-5));
 
         // Update the Entity Mutor by dispatching the itemMutor's Dispatcher
@@ -107,137 +112,180 @@ public partial class InvoiceTests
         Assert.Equal(dbEntity.InvoiceRecord.TotalAmount.Value, dbEntity.InvoiceItems.Sum(item => item.Amount.Value));
     }
 
-    //[Fact]
-    //public async Task AddAnInvoice()
-    //{
-    //    // Get a fully stocked DI container
-    //    var provider = GetServiceProvider();
-    //    var mediator = provider.GetRequiredService<IMediatorBroker>()!;
-    //    var mutor = provider.GetRequiredService<InvoiceEntityMutor>()!;
+    [Fact]
+    public async Task AddAnInvoice()
+    {
+        // Get a fully stocked DI container
+        var provider = GetServiceProvider();
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
+        var mutorFactory = provider.GetRequiredService<InvoiceMutorFactory>()!;
 
-    //    // Get an Invoice Mutor
-    //    var entity = await this.GetASampleEntityAsync(mediator);
+        // Get a sample Invoice Mutor and it's customer
+        var testEntity = await this.GetASampleEntityAsync(mediator);
+        var customer = testEntity.InvoiceRecord.Customer;
 
-    //    var Id = mutor.InvoiceEntity.InvoiceRecord.Id;
-    //    // Create a new Invoice
-    //    var newInvoice = entity.InvoiceRecord with
-    //    {
-    //        Customer = entity.InvoiceRecord.Customer,
-    //        Date = new(DateTime.Now.AddDays(-1)),
-    //    };
+        // Get the invoice mutor from the factory
+        var entityMutor =  await mutorFactory.CreateInvoiceEntityMutorAsync();
+        var entityId = entityMutor.InvoiceEntity.InvoiceRecord.Id;
+        // Create an Invoice Record Mutor
+        var invoiceMutor = InvoiceRecordMutor.Load(entityMutor.InvoiceEntity.InvoiceRecord);
 
-    //    var newItems = new List<DmoInvoiceItem>()
-    //    {
-    //        new DmoInvoiceItem
-    //        {
-    //            Id = InvoiceItemId.Create(),
-    //            InvoiceId = Id,
-    //             Description = new("B787"),
-    //              Amount = new(27)
-    //        },
-    //        new DmoInvoiceItem
-    //        {
-    //            Id = InvoiceItemId.Create(),
-    //            InvoiceId = Id,
-    //             Description = new("B707"),
-    //              Amount = new(1)
-    //        },
-    //    };
+        // Update the Invoice Record Mutor
+        invoiceMutor.Date = DateOnly.FromDateTime(DateTime.Now.AddDays(-5));
+        invoiceMutor.Customer = customer;
 
-    //    var entityUpdateResult = mutor.Mutate(newInvoice, newItems);
+        // Update the Entity Mutor by dispatching the itemMutor's Dispatcher
+        var actionResult = entityMutor.Dispatch(invoiceMutor.Dispatcher);
 
-    //    // Update the Data store from the Mutor
-    //    var updateResult = await mediator.DispatchAsync(new InvoiceCommandRequest(mutor.InvoiceEntity, EditState.Dirty, Guid.NewGuid()));
 
-    //    Assert.False(updateResult.Failed);
+        // Create an invoice item mutor in the correct context
+        var invoiceItemMutor = entityMutor.GetNewInvoiceItemRecordMutor();
 
-    //    // Get the current Mutor Entity
-    //    var updatedEntity = mutor.InvoiceEntity;
+        invoiceItemMutor.Description = new("B787");
+        invoiceItemMutor.Amount = new(27);
 
-    //    // Get the Invoice Entity from the Data Store
-    //    var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(Id));
+        // Update the Entity Mutor by dispatching the itemMutor's Dispatcher
+        actionResult = entityMutor.Dispatch(invoiceItemMutor.Dispatcher);
 
-    //    Assert.False(entityResult.HasException);
+        Assert.True(actionResult.Succeeded);
 
-    //    var dbEntity = entityResult.Value!;
+        // Create an invoice item mutor in the correct context
+        invoiceItemMutor = entityMutor.GetNewInvoiceItemRecordMutor();
 
-    //    // Check the stored data is tthe same as the edited entity
-    //    Assert.Equivalent(updatedEntity, dbEntity);
-    //}
+        invoiceItemMutor.Description = new("B707");
+        invoiceItemMutor.Amount = new(2);
 
-    //[Fact]
-    //public async Task DeleteAnInvoice()
-    //{
-    //    // Get a fully stocked DI container
-    //    var provider = GetServiceProvider();
-    //    var mediator = provider.GetRequiredService<IMediatorBroker>()!;
-    //    var mutor = provider.GetRequiredService<InvoiceEntityMutor>()!;
+        // Update the Entity Mutor by dispatching the itemMutor's Dispatcher
+        actionResult = entityMutor.Dispatch(invoiceItemMutor.Dispatcher);
 
-    //    // Get an Invoice Mutor
-    //    var entity = await this.GetASampleEntityAsync(mediator);
-    //    var Id = entity.InvoiceRecord.Id;
+        Assert.True(actionResult.Succeeded);
 
-    //    var mutorResult = await mutor.LoadAsync(entity.InvoiceRecord.Id);
-    //    Assert.False(mutorResult.Failed);
+        // Commit the changes to the data store
+        var commandResult = await entityMutor.SaveAsync();
 
-    //    // Delete from the Data store 
-    //    var deleteResult = await mediator.DispatchAsync(new InvoiceCommandRequest(mutor.InvoiceEntity, EditState.Deleted, Guid.NewGuid()));
+        Assert.True(commandResult.Succeeded);
 
-    //    Assert.False(deleteResult.Failed);
+        // Get the current Mutor Entity
+        var updatedEntity = entityMutor.InvoiceEntity;
 
-    //    // Get the Invoice Entity from the Data Store
-    //    var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(Id));
+        // Get the Invoice Entity from the Data Store
+        var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(entityId));
 
-    //    // Check the invoice doesn't exist
-    //    Assert.True(entityResult.HasException);
-    //}
+        Assert.True(entityResult.HasValue);
 
-    //[Fact]
-    //public async Task DeleteAnInvoiceItem()
-    //{
-    //    // Get a fully stocked DI container
-    //    var provider = GetServiceProvider();
-    //    var mediator = provider.GetRequiredService<IMediatorBroker>()!;
-    //    var mutor = provider.GetRequiredService<InvoiceEntityMutor>()!;
+        var dbEntity = entityResult.Value!;
 
-    //    // Get an Invoice Mutor
-    //    var entity = await this.GetASampleEntityAsync(mediator);
-    //    var Id = entity.InvoiceRecord.Id;
+        // Check the stored data is tthe same as the edited entity
+        Assert.Equivalent(updatedEntity, dbEntity);
+        Assert.Equal(dbEntity.InvoiceRecord.TotalAmount.Value, dbEntity.InvoiceItems.Sum(item => item.Amount.Value));
+    }
 
-    //    var mutorResult = await mutor.LoadAsync(entity.InvoiceRecord.Id);
-    //    Assert.False(mutorResult.Failed);
+    [Fact]
+    public async Task UpdateADirtyInvoice()
+    {
+        // Get a fully stocked DI container
+        var provider = GetServiceProvider();
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
+        var mutorFactory = provider.GetRequiredService<InvoiceMutorFactory>()!;
 
-    //    // Get the item to delete
-    //    var itemToDelete = entity.InvoiceItems.First();
+        // Get a sample Invoice Mutor
+        var entity = await this.GetASampleDirtyEntityAsync(mediator);
+        var Id = entity.InvoiceRecord.Id;
 
-    //    // Update the Mutor
-    //    var action = DeleteInvoiceItemAction.Create(itemToDelete);
-    //    var deleteActionResult = mutor.Dispatch(action.Dispatcher);
+        // Get the invoice mutor from the factory
+        var entityMutor = await mutorFactory.GetInvoiceEntityMutorAsync(entity.InvoiceRecord.Id);
 
-    //    Assert.False(deleteActionResult.Failed);
+        Assert.True(entityMutor.IsDirty);
 
-    //    // Get the current Mutor Entity
-    //    var updatedEntity = mutor.InvoiceEntity;
+        // Commit the changes to the data store
+        var commandResult = await entityMutor.SaveAsync();
 
-    //    // Commit the changes to the data store
-    //    var commandResult = await mediator.DispatchAsync(InvoiceCommandRequest.Create(mutor.InvoiceEntity, mutor.State));
+        Assert.True(commandResult.Succeeded);
 
-    //    Assert.False(commandResult.Failed);
+        // Get the current Mutor Entity
+        var updatedEntity = entityMutor.InvoiceEntity;
 
-    //    // Get the Invoice Entity from the Data Store
-    //    var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(Id));
+        // Get the Invoice Entity from the Data Store
+        var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(Id));
 
-    //    Assert.False(entityResult.HasException);
+        Assert.True(entityResult.HasValue);
 
-    //    var dbEntity = entityResult.Value!;
+        var dbEntity = entityResult.Value!;
 
-    //    // Check the stored data is the same as the edited entity
-    //    Assert.Equivalent(updatedEntity, dbEntity);
+        // Check the stored data is tthe same as the edited entity
+        Assert.Equivalent(updatedEntity, dbEntity);
+        Assert.Equal(dbEntity.InvoiceRecord.TotalAmount.Value, dbEntity.InvoiceItems.Sum(item => item.Amount.Value));
+    }
 
-    //    var rulesCheckResult = InvoiceEntity.CheckEntityRules(dbEntity);
 
-    //    Assert.False(rulesCheckResult.HasException);
-    //}
+    [Fact]
+    public async Task DeleteAnInvoice()
+    {
+        // Get a fully stocked DI container
+        var provider = GetServiceProvider();
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
+        var mutorFactory = provider.GetRequiredService<InvoiceMutorFactory>()!;
+
+        // Get a sample Invoice Mutor
+        var entity = await this.GetASampleDirtyEntityAsync(mediator);
+        var Id = entity.InvoiceRecord.Id;
+
+        // Get the invoice mutor from the factory
+        var entityMutor = await mutorFactory.GetInvoiceEntityMutorAsync(entity.InvoiceRecord.Id);
+
+        Assert.True(entityMutor.IsDirty);
+
+        // Commit the changes to the data store
+        var commandResult = await entityMutor.DeleteAsync();
+
+        Assert.True(commandResult.Failed);
+    }
+
+    [Fact]
+    public async Task DeleteAnInvoiceItem()
+    {
+        // Get a fully stocked DI container
+        var provider = GetServiceProvider();
+        var mediator = provider.GetRequiredService<IMediatorBroker>()!;
+        var mutorFactory = provider.GetRequiredService<InvoiceMutorFactory>()!;
+
+        // Get an Invoice Id
+        var entity = await this.GetASampleEntityAsync(mediator);
+        var Id = entity.InvoiceRecord.Id;
+
+        // Get the Entity Mutor
+        var entityMutor = await mutorFactory.GetInvoiceEntityMutorAsync(entity.InvoiceRecord.Id);
+
+        // Get the Item Mutor
+        var itemToDelete = entityMutor.InvoiceEntity.InvoiceItems.First();
+
+
+        // Create a Delete Item action and dispatch it through the entity mutor.
+        var action = DeleteInvoiceItemAction.Create(itemToDelete);
+        var deleteActionResult = entityMutor.Dispatch(action.Dispatcher);
+
+        Assert.True(deleteActionResult.Succeeded);
+
+        // Get the current Mutor Entity
+        var updatedEntity = entityMutor.InvoiceEntity;
+
+        // Commit the changes to the data store
+        var commandResult = await mediator.DispatchAsync(InvoiceCommandRequest.Create(entityMutor.InvoiceEntity, entityMutor.State));
+
+        Assert.True(commandResult.Succeeded);
+
+        // Get the Invoice Entity from the Data Store
+        var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(Id));
+
+        Assert.False(entityResult.HasException);
+
+        var dbEntity = entityResult.Value!;
+
+        // Check the stored data is the same as the edited entity
+        Assert.Equivalent(updatedEntity, dbEntity);
+
+        Assert.Equal(dbEntity.InvoiceRecord.TotalAmount.Value, dbEntity.InvoiceItems.Sum(item => item.Amount.Value));
+    }
 
     [Fact]
     public async Task UpdateAnInvoiceItem()

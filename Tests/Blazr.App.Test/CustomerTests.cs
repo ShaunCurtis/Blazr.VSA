@@ -102,7 +102,7 @@ public partial class CustomerTests
     }
 
     [Fact]
-    public async Task AddAForecast()
+    public async Task AddACustomer()
     {
         var provider = GetServiceProvider();
         var mediator = provider.GetRequiredService<IMediatorBroker>()!;
@@ -116,13 +116,16 @@ public partial class CustomerTests
         var customerResult = await mediator.DispatchAsync(new CustomerRecordRequest(newCustomer.Id));
 
         // check it matches the test record
+
+        // NewCustomer has the isNew flag set in the record so we need to fix that to make a compare
+        var customer = newCustomer with { Id = new(newCustomer.Id.Value) };
         Assert.False(customerResult.HasException);
-        Assert.Equivalent(newCustomer, customerResult.Value);
+        Assert.Equivalent(customer, customerResult.Value);
     }
 
 
     [Fact]
-    public async Task DeleteForecast()
+    public async Task DeleteACustomer()
     {
         var provider = GetServiceProvider();
         var mediator = provider.GetRequiredService<IMediatorBroker>()!;

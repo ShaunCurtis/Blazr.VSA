@@ -7,42 +7,26 @@ namespace Blazr.App.Core.Invoices;
 
 internal static class InvoiceEntityExtensions
 {
-    extension(InvoiceEntity @this)
+    extension(InvoiceEntity entity)
     {
-        internal Return<InvoiceEntity> ToReturnT => Return<InvoiceEntity>.Read(@this);
+        internal Return<InvoiceEntity> ToReturnT => Return<InvoiceEntity>.Read(entity);
 
-        internal bool IsDirty(InvoiceEntity control) => !@this.Equals(control);
-
-        internal Return<InvoiceEntity> AddInvoiceItem(DmoInvoiceItem item)
-            => @this.InvoiceItems.Any(_item => item.Id.Equals(_item.Id))
-                  ? Return<InvoiceEntity>.Failure("The record already exists in the Invoice Items")
-                  : @this.Mutate(@this.InvoiceItems.Add(item));
-
-        internal Return<InvoiceEntity> DeleteInvoiceItem(DmoInvoiceItem record)
-            => @this.GetInvoiceItem(record)
-                .Bind(item => @this.Mutate(@this.InvoiceItems.Remove(item)));
-
-        internal Return<InvoiceEntity> ReplaceInvoiceItem(DmoInvoiceItem record)
-            => @this.GetInvoiceItem(record)
-                .Bind(item => @this.Mutate(@this.InvoiceItems.Replace(item, record)));
-
-        internal Return<InvoiceEntity> ReplaceInvoice(DmoInvoice record)
-            => @this.Mutate(record);
+        internal bool IsDirty(InvoiceEntity control) => !entity.Equals(control);
 
         internal Return<DmoInvoiceItem> GetInvoiceItem(InvoiceItemId id)
             => Return<DmoInvoiceItem>.Read(
-                value: @this.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
+                value: entity.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
                 errorMessage: "The record does not exist in the Invoice Items");
 
-        private Return<DmoInvoiceItem> GetInvoiceItem(DmoInvoiceItem item)
-            => @this.GetInvoiceItem(item.Id);
+        internal Return<DmoInvoiceItem> GetInvoiceItem(DmoInvoiceItem item)
+            => entity.GetInvoiceItem(item.Id);
 
-        private Return<InvoiceEntity> Mutate(DmoInvoice invoice)
-            => InvoiceEntityFactory.Load(invoice, @this.InvoiceItems)
+        internal Return<InvoiceEntity> Mutate(DmoInvoice invoice)
+            => InvoiceEntityFactory.Load(invoice, entity.InvoiceItems)
                 .Map(InvoiceEntityFactory.ApplyEntityRules);
 
-        private Return<InvoiceEntity> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
-            => InvoiceEntityFactory.Load(@this.InvoiceRecord, invoiceItems)
+        internal Return<InvoiceEntity> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
+            => InvoiceEntityFactory.Load(entity.InvoiceRecord, invoiceItems)
                 .Map(InvoiceEntityFactory.ApplyEntityRules);
     }
 }

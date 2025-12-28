@@ -32,13 +32,23 @@ public static class InvoiceEntityFactory
     /// <returns>A result containing the created invoice entity if all rules are satisfied; otherwise, a result indicating validation
     /// errors.</returns>
     public static Return<InvoiceEntity> Load(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
-        ApplyEntityRules(InvoiceEntity.Load(invoice, invoiceItems)).ToReturnT;
+        InvoiceEntity.Load(invoice, invoiceItems).ToReturnT;
 
+    /// <summary>
+    /// Checks the entity against the rules set.  If it fails it returns a failed ReturnT
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     internal static Return<InvoiceEntity> CheckEntityRules(InvoiceEntity entity)
         => entity.InvoiceItems.Sum(item => item.Amount.Value) == entity.InvoiceRecord.TotalAmount.Value
             ? Return<InvoiceEntity>.Success(entity)
             : Return<InvoiceEntity>.Failure("The Invoice Total Amount is incorrect.");
 
+    /// <summary>
+    /// Applies the entity rules to the supplied entity and updates the entity if necessary.
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     internal static InvoiceEntity ApplyEntityRules(InvoiceEntity entity)
         => InvoiceEntity.Load(
             invoice: entity.InvoiceRecord with { TotalAmount = new(entity.InvoiceItems.Sum(item => item.Amount.Value)) },
