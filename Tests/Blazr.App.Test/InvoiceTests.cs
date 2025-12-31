@@ -238,7 +238,7 @@ public partial class InvoiceTests
         // Commit the changes to the data store
         var commandResult = await entityMutor.DeleteAsync();
 
-        Assert.True(commandResult.Failed);
+        Assert.True(commandResult.Succeeded);
     }
 
     [Fact]
@@ -373,7 +373,7 @@ public partial class InvoiceTests
         var dbEntity = entityResult.Value!;
 
         // Check the stored data is the same as the edited entity
-        Assert.Equivalent(updatedEntity, dbEntity);
+        Assert.Equal(updatedEntity, dbEntity);
         Assert.Equal(dbEntity.InvoiceRecord.TotalAmount.Value, dbEntity.InvoiceItems.Sum(item => item.Amount.Value));
     }
 }

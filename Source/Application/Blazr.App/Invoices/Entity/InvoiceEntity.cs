@@ -20,4 +20,17 @@ public sealed record InvoiceEntity
 
     internal static InvoiceEntity Load(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) 
         => new InvoiceEntity(invoice, invoiceItems);
+
+
+    public bool Equals(InvoiceEntity? other)
+    { 
+        if (other == null) 
+            return false;
+
+        return  this.InvoiceItems.OrderBy(e => e).SequenceEqual(other.InvoiceItems.OrderBy(e => e))
+            &&  this.InvoiceRecord.Equals(other.InvoiceRecord);
+    }
+
+    public override int GetHashCode()
+        => base.GetHashCode();
 }

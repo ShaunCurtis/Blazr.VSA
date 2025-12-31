@@ -17,4 +17,11 @@ public readonly record struct InvoiceId(Guid Value) : IEntityId
 
     public string ToString(bool shortform)
         => this.IsDefault ? "Default" : Value.ToString().Substring(28);
+
+    public bool Equals(InvoiceId other)
+        => this.Value == other.Value;
+
+    public override int GetHashCode()
+        => HashCode.Combine(this.Value);
+
 }

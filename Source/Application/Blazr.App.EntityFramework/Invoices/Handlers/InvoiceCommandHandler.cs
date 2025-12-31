@@ -28,7 +28,7 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceCommandReque
 
     public async Task<Return> HandleAsync(InvoiceCommandRequest request, CancellationToken cancellationToken)
     {
-        using var dbContext = await _factory.CreateDbContextAsync(cancellationToken);
+        //using var dbContext = await _factory.CreateDbContextAsync(cancellationToken);
 
         var recordResult = await _recordRequestHandler.HandleAsync(new InvoiceEntityRequest(request.Item.InvoiceRecord.Id), cancellationToken);
 

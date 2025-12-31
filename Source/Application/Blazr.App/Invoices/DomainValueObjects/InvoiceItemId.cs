@@ -5,12 +5,12 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public readonly record struct InvoiceItemId(Guid Value) : IEntityId
+public readonly record struct InvoiceItemId(Guid Value) : IEntityId, IEquatable<InvoiceItemId>
 {
     public bool IsDefault => this == Default;
     public bool IsNew { get; private init; }
 
-    public static InvoiceItemId NewId() => new(Guid.CreateVersion7()) { IsNew =true };
+    public static InvoiceItemId NewId() => new(Guid.CreateVersion7()) { IsNew = true };
     public static InvoiceItemId Default => new(Guid.Empty);
 
     public override string ToString()
@@ -18,4 +18,11 @@ public readonly record struct InvoiceItemId(Guid Value) : IEntityId
 
     public string ToString(bool shortform)
         => this.IsDefault ? "Default" : Value.ToString().Substring(28);
+
+    public bool Equals(InvoiceItemId other)
+        => this.Value == other.Value;
+
+    public override int GetHashCode()
+        => HashCode.Combine(this.Value);
 }
+

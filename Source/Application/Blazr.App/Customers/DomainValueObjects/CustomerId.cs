@@ -18,4 +18,10 @@ public readonly record struct CustomerId(Guid Value) : IEntityId
 
     public string ToString(bool shortform)
         => this.IsDefault ? "Default" : Value.ToString().Substring(28);
+
+    public bool Equals(CustomerId other)
+        => this.Value == other.Value;
+
+    public override int GetHashCode()
+        => HashCode.Combine(this.Value);
 }
