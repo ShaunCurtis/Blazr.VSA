@@ -45,6 +45,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Objects", "Objects", "{8D78DB90-F6EC-4E91-BBC1-36EBF27BEF90}"
+	ProjectSection(SolutionItems) = preProject
+		Strongly-Typed-Identifierss.md = Strongly-Typed-Identifierss.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.App.Blazor", "Source\Application\Blazr.App.Blazor\Blazr.App.Blazor.csproj", "{8DA86090-AD98-CCB8-98F4-FB38FE6C91AD}"
 EndProject

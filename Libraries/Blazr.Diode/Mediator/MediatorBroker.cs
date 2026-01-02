@@ -14,7 +14,7 @@ public class MediatorBroker : IMediatorBroker
         _serviceProvider = serviceProvider;
     }
     
-    public Task<TResponse> DispatchAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+    public async Task<TResponse> DispatchAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
         // Get the handler tyoe based on the request
         var handlerType = typeof(IRequestHandler<,>).MakeGenericType(request.GetType(), typeof(TResponse));
@@ -24,6 +24,8 @@ public class MediatorBroker : IMediatorBroker
         if (handler == null)
             throw new InvalidOperationException($"Handler for {request.GetType().Name} not found.");
 
-        return handler.HandleAsync((dynamic)request, cancellationToken);
+        var result = await handler.HandleAsync((dynamic)request, cancellationToken);
+
+        return result;
     }
 }

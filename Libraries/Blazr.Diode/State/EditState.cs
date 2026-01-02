@@ -43,6 +43,10 @@ public readonly record struct EditState
     public static EditState Dirty = new EditState(StateDirtyIndex, "Dirty");
     public static EditState Deleted = new EditState(StateDeletedIndex, "Deleted");
 
+    public bool IsDirty => this.Index == EditState.StateDirtyIndex;
+    public bool IsMarkedForDeletion => this.Index == EditState.StateDeletedIndex;
+    public bool IsNew => this.Index == EditState.StateNewIndex;
+
     public static EditState GetState(int index)
         => (index) switch
         {

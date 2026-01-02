@@ -5,6 +5,9 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
+/// <summary>
+/// Customer Core Domain Object
+/// </summary>
 public sealed record DmoCustomer : ICommandEntity
 {
     public CustomerId Id { get; init; }

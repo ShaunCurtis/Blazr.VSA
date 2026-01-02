@@ -18,8 +18,8 @@ internal static class InvoiceEntityExtensions
                 value: entity.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
                 errorMessage: "The record does not exist in the Invoice Items");
 
-        internal Return<DmoInvoiceItem> GetInvoiceItem(DmoInvoiceItem item)
-            => entity.GetInvoiceItem(item.Id);
+        //internal Return<DmoInvoiceItem> GetInvoiceItem(DmoInvoiceItem item)
+        //    => entity.GetInvoiceItem(item.Id);
 
         internal Return<InvoiceEntity> Mutate(DmoInvoice invoice)
             => InvoiceEntityFactory.Load(invoice, entity.InvoiceItems)

@@ -23,6 +23,8 @@ public sealed class InvoiceEntityHandler : IRequestHandler<InvoiceEntityRequest,
     {
         using var dbContext = _factory.CreateDbContext();
 
+        var list = await dbContext.Invoices.ToListAsync();
+
         var invoiceResult = await dbContext
             .GetRecordAsync<DvoInvoice>(new RecordQueryRequest<DvoInvoice>(item => item.InvoiceID == request.Id.Value))
             .BindAsync(DvoInvoice.MapToReturn);

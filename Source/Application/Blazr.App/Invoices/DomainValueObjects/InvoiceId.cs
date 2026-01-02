@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public readonly record struct InvoiceId(Guid Value) : IEntityId
+public readonly record struct InvoiceId(Guid Value) : IEntityId, IEquatable<InvoiceId>
 {
     public bool IsDefault => this == Default;
     public bool IsNew { get; private init; }

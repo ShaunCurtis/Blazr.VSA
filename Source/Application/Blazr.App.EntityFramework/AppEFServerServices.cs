@@ -20,9 +20,7 @@ public static class AppEFServerServices
     
     public static void AddInvoiceTestData(this IServiceProvider provider)
     {
-        var factory = provider.GetService<IDbContextFactory<InMemoryInvoiceTestDbContext>>();
-
-        if (factory is not null)
-            InvoiceTestDataProvider.Instance().LoadDbContext<InMemoryInvoiceTestDbContext>(factory);
+        ReturnT.Read(provider.GetService<IDbContextFactory<InMemoryInvoiceTestDbContext>>())
+            .Write(factory => InvoiceTestDataProvider.Instance().LoadDbContext<InMemoryInvoiceTestDbContext>(factory));
     }
 }

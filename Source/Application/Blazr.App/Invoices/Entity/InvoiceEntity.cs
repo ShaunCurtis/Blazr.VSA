@@ -7,6 +7,9 @@ using System.Collections.Immutable;
 
 namespace Blazr.App.Core;
 
+/// <summary>
+/// Invoice Entity for the InvoiceMutor
+/// </summary>
 public sealed record InvoiceEntity
 {
     public DmoInvoice InvoiceRecord { get; private init; }
@@ -21,15 +24,10 @@ public sealed record InvoiceEntity
     internal static InvoiceEntity Load(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) 
         => new InvoiceEntity(invoice, invoiceItems);
 
-
     public bool Equals(InvoiceEntity? other)
-    { 
-        if (other == null) 
-            return false;
-
-        return  this.InvoiceItems.OrderBy(e => e).SequenceEqual(other.InvoiceItems.OrderBy(e => e))
-            &&  this.InvoiceRecord.Equals(other.InvoiceRecord);
-    }
+        => other is not null 
+            && this.InvoiceItems.OrderBy(e => e.Id.Value).SequenceEqual(other.InvoiceItems.OrderBy(e => e.Id.Value))
+            && this.InvoiceRecord.Equals(other.InvoiceRecord);
 
     public override int GetHashCode()
         => base.GetHashCode();

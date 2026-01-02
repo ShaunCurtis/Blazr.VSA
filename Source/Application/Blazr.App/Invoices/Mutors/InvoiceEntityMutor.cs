@@ -34,7 +34,7 @@ public sealed class InvoiceMutorFactory
 
     public async Task<InvoiceEntityMutor> CreateInvoiceEntityMutorAsync()
     {
-        var mutor = ActivatorUtilities.CreateInstance<InvoiceEntityMutor>(_serviceProvider, new object[] { InvoiceId.NewId });
+        var mutor = ActivatorUtilities.CreateInstance<InvoiceEntityMutor>(_serviceProvider, new object[] { InvoiceId.Default });
         await mutor.LoadTask;
         return mutor;
     }
@@ -81,7 +81,7 @@ public sealed class InvoiceEntityMutor
 
     private async Task LoadAsync(InvoiceId id)
     {
-        if (id.IsNew)
+        if (id.IsDefault || id.IsNew)
         {
             this.Set(InvoiceEntityFactory.Create());
             return;

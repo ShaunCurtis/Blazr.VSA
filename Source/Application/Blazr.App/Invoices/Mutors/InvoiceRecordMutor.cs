@@ -9,7 +9,16 @@ public sealed class InvoiceRecordMutor : RecordMutor<DmoInvoice>, IRecordMutor<D
 {
     [TrackState] public DateOnly Date { get; set; }
     [TrackState] public Guid CustomerId { get; set; }
-    public FkoCustomer Customer { get; set; } = FkoCustomer.Default;
+    public FkoCustomer Customer
+    {
+        get => field ?? FkoCustomer.Default;
+        set
+        {
+            field = value;
+            if (value is not null)
+                this.CustomerId = value.Id.Value;
+        }
+    }
 
     private InvoiceRecordMutor(DmoInvoice record)
     {
@@ -35,12 +44,10 @@ public sealed class InvoiceRecordMutor : RecordMutor<DmoInvoice>, IRecordMutor<D
 
     public override bool IsNew => BaseRecord.Id.IsNew;
 
-    public Func<InvoiceEntity, Return<InvoiceEntity>> Dispatcher =>
-        entity => (this.IsNew, this.IsDirty) switch
-        {
-            (false, true) => UpdateInvoiceAction.Create(this.Record).Dispatcher(entity),
-            _ => ReturnT.Read(entity),
-        };
+    public Func<InvoiceEntity, Return<InvoiceEntity>> Dispatcher
+        => entity => this.IsDirty || this.IsNew
+            ? UpdateInvoiceAction.Create(this.Record).Dispatcher(entity)
+            : ReturnT.Read(entity);
 
     public static InvoiceRecordMutor Load(DmoInvoice record)
         => new InvoiceRecordMutor(record);

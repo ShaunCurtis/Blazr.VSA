@@ -5,7 +5,21 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public readonly record struct CustomerId(Guid Value) : IEntityId
+
+/// <summary>
+/// CustomerId is a Strongly Typed Id
+/// It has three "States":
+///   - New - where it has an Id that it has created.  This signals the data store that saving is an Add operation
+///   - Existing - where the Id was inserted as part of the data pipeline read process.
+///          This signals the data store that saving is an Update operation
+///   - Default - where the id was newed up and has the default Guid Value
+///   
+/// It implements custom ToString methods
+/// 
+/// It implements custom equality checking to compare only the Guids and ignore IsNew.  
+/// </summary>
+/// <param name="Value"></param>
+public readonly record struct CustomerId(Guid Value) : IEntityId, IEquatable<CustomerId>
 {
     public bool IsDefault => this == Default;
     public bool IsNew { get; private init; }
