@@ -7,5 +7,10 @@ using Blazr.Diode.Mediator;
 
 namespace Blazr.App.Core;
 
-public readonly record struct InvoiceEntityRequest(InvoiceId Id) 
-    : IRequest<Return<InvoiceEntity>>;
+public readonly record struct InvoiceEntityRequest(InvoiceId Id)
+    : IRequest<Return<InvoiceEntity>>
+{
+    public static InvoiceEntityRequest Create(InvoiceId id)
+        => new InvoiceEntityRequest(id);
+}
+

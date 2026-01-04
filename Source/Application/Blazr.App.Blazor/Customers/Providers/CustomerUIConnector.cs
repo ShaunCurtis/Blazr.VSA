@@ -49,5 +49,5 @@ public class CustomerUIConnector
         => id => _mediator.DispatchAsync(new CustomerRecordRequest(id));
 
     private Func<CustomerId, Task<Return<DmoCustomer>>> NewRecordRequestAsync
-        => id => Task.FromResult(ReturnT.Read(new DmoCustomer { Id = CustomerId.Default }));
+        => id => Task.FromResult(ReturnT.Read(new DmoCustomer { Id = CustomerId.NewId() }));
 }

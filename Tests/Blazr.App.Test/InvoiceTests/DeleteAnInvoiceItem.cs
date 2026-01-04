@@ -43,7 +43,7 @@ public partial class InvoiceTests
         var updatedEntity = entityMutor.InvoiceEntity;
 
         // Commit the changes to the data store
-        var commandResult = await mediator.DispatchAsync(InvoiceCommandRequest.Create(entityMutor.InvoiceEntity, entityMutor.State));
+        var commandResult = await mediator.DispatchAsync(InvoiceEntityCommandRequest.Create(entityMutor.InvoiceEntity, entityMutor.State));
 
         Assert.True(commandResult.Succeeded);
 

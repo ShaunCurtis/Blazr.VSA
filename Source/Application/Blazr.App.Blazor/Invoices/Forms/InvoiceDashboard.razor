@@ -94,6 +94,61 @@
         this.MessageBus.Subscribe<InvoiceEntity>(OnContextStateChanged);
     }
 
+    /// <summary>
+    /// Edit Button Handler
+    /// </summary>
+    /// <returns></returns>
+    private async Task EditInvoiceAsync()
+    {
+        var options = new ModalOptions() { ModalDialogType = typeof(InvoiceEditForm) };
+
+        var result = await _modalDialog.ShowAsync(options);
+        // wait for the modal to close
+
+        // If we have cancelled new invoice we need to exit back to the invoices page
+        if (result.ResultType != ModalResultType.OK && this.Mutor.State == EditState.New)
+        {
+            this.ToastService.ShowInfo("You exited creating the new invoice.");
+            this.NavManager.NavigateTo($"/invoices");
+        }
+    }
+
+    /// <summary>
+    /// Save button handler
+    /// </summary>
+    /// <returns></returns>
+    private async Task SaveAsync()
+        => await this.Mutor.SaveAsync();
+
+    /// <summary>
+    /// Save and Exit button handler
+    /// </summary>
+    /// <returns></returns>
+    private async Task SaveAndExitAsync()
+        => await this.Mutor.SaveAsync()
+            .NotifyAsync(ExitWithoutSaving);
+
+    /// <summary>
+    /// Standard exit button handler - will abort if dirty
+    /// </summary>
+    /// <returns></returns>
+    private Task ExitAsync()
+    {
+        this.Exit();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Exit without save button handler
+    /// </summary>
+    /// <returns></returns>
+    private Task ExitWithoutSavingAsync()
+    {
+        this.Mutor.Reset();
+        this.Exit();
+        return Task.CompletedTask;
+    }
+
     private Task OnLocationChanging(LocationChangingContext context)
     {
         // Need to check if the invoice is dirty before letting the user exit
@@ -122,43 +177,21 @@
         }
     }
 
-    private async Task EditInvoiceAsync()
-    {
-        var options = new ModalOptions() { ModalDialogType = typeof(InvoiceEditForm) };
+    // These are the internal code methods used by the button handlers
 
-        var result = await _modalDialog.ShowAsync(options);
-        // wait for the modal to close
-
-        // If we have cancelled new invoice we need to exit back to the invoices page
-        if (result.ResultType != ModalResultType.OK && this.Mutor.State == EditState.New)
-        {
-            this.ToastService.ShowInfo("You exited creating the new invoice.");
-            this.NavManager.NavigateTo($"/invoices");
-        }
-    }
-
-    private async Task SaveAsync()
-        => await this.Mutor.SaveAsync();
-
-    private async Task SaveAndExitAsync()
-        => await this.Mutor.SaveAsync()
-            .NotifyAsync(Exit);
-
+    /// <summary>
+    /// Normal exit.  Will be aborted by the Navigation Locker if the composite is dirty
+    /// </summary>
     private void Exit()
         => this.NavManager.NavigateTo($"/invoices");
 
-    private Task ExitAsync()
-    {
-        // Normal exit.  Will be aborted by the Navigation Locker if the composite is dirty
-        this.NavManager.NavigateTo($"/invoices");
-        return Task.CompletedTask;
-    }
-
-    private Task ExitWithoutSavingAsync()
+    /// <summary>
+    /// Will exit regardless by resetting the mutor state
+    /// </summary>
+    private void ExitWithoutSaving()
     {
         this.Mutor.Reset();
         this.Exit();
-        return Task.CompletedTask;
     }
 
     public void Dispose()

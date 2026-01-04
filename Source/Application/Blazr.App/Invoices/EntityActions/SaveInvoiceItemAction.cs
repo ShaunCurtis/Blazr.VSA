@@ -7,18 +7,18 @@ using Blazr.App.Core.Invoices;
 
 namespace Blazr.App.Core;
 
-public record AddInvoiceItemAction
+public record SaveInvoiceItemAction
 {
     private readonly DmoInvoiceItem _invoiceItem;
 
-    public AddInvoiceItemAction(DmoInvoiceItem invoiceItem)
+    public SaveInvoiceItemAction(DmoInvoiceItem invoiceItem)
         => _invoiceItem = invoiceItem;
 
     public Return<InvoiceEntity> Dispatcher(InvoiceEntity entity)
             => entity.InvoiceItems.Any(_item => _invoiceItem.Id.Equals(_item.Id))
-                  ? Return<InvoiceEntity>.Failure("The record already exists in the Invoice Items")
+                  ? entity.Mutate(entity.InvoiceItems.Replace(entity.GetInvoiceItem(_invoiceItem.Id).Value!, _invoiceItem))
                   : entity.Mutate(entity.InvoiceItems.Add(_invoiceItem));
 
-    public static AddInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
-        => (new AddInvoiceItemAction(invoiceItem));
+    public static SaveInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
+        => (new SaveInvoiceItemAction(invoiceItem));
 }

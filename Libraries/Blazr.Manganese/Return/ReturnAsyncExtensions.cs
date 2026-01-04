@@ -22,6 +22,22 @@ public static partial class ReturnAsyncExtensions
 
     extension(Task<Return> @this)
     {
+        public async Task<Return> BindAsync(Func<Task<Return>> function)
+        {
+            var result = await @this;
+            return result.Failed
+                ? Return.Failure(result.Exception)
+                : await function();
+        }
+
+        public async Task<Return> BindAsync(Func<Return> function)
+        {
+            var result = await @this;
+            return result.Failed
+                ? Return.Failure(result.Exception)
+                : function.Invoke();
+        }
+
         public async Task<Return> SetReturnAsync(Action<Return> returnOut)
             => (await @this.ContinueWith(ReturnAsyncHelpers.CheckForTaskException))
                 .SetReturn(returnOut);

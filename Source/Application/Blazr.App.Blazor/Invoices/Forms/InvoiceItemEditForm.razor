@@ -30,6 +30,8 @@
             <div class="row">
 
                 <BlazrTextControl class="form-control mb-2"
+                                  SetFirstFocus
+                                  UpdateOnInput
                                   ColumnCss="col-12 col-xl-8 mb-2"
                                   Label="Name"
                                   @bind-Value="this.EditMutor.Description" />
@@ -38,6 +40,7 @@
             <div class="row">
 
                 <BlazrNumberControl class="form-control mb-2"
+                                    UpdateOnInput
                                     ColumnCss="col-4 col-md-4 col-xl-4 mb-2"
                                     Label="Amount £"
                                     @bind-Value="this.EditMutor.Amount" />
@@ -66,66 +69,49 @@
 @code {
     [CascadingParameter] private InvoiceEntityMutor EntityMutor { get; set; } = default!;
     [CascadingParameter] private IModalDialog? ModalDialog { get; set; }
-    [Parameter, EditorRequired] public InvoiceItemId Uid { get; set; } = default!;
+    [Parameter] public InvoiceItemId Uid { get; set; } = InvoiceItemId.NewId();
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    private EditState State { get; set; } = EditState.Clean;
     private Return LastResult { get; set; } = Return.Success();
     private InvoiceItemRecordMutor EditMutor { get; set; } = default!;
     private EditContext EditContext { get; set; } = default!;
-
     private EditFormButtonsOptions editFormButtonsOptions = new();
-    private bool IsNewRecord => this.State == EditState.New;
-    private string FormTitle => $"Invoice Item Editor";
     private bool _loading = true;
+    private string FormTitle = $"Invoice Item Editor";
 
-    protected async override Task OnInitializedAsync()
+    private bool IsNewRecord => this.Uid.IsNew || this.Uid.IsDefault;
+
+    protected override void OnInitialized()
     {
-        ArgumentNullException.ThrowIfNull(Uid);
-
-        this.State = this.Uid.IsDefault
-            ? EditState.New
-            : EditState.Clean;
-
-        var result = this.EntityMutor.GetInvoiceItemRecordMutor(this.Uid);
-        //var record = result.Write(DmoInvoiceItem.CreateNew(this.EntityMutor.InvoiceEntity.InvoiceRecord.Id));
-        //this.EditMutor = result.Write(defaultValue: InvoiceItemRecordMutor.Create(record);
+        this.EditMutor = this.EntityMutor.GetInvoiceItemRecordMutor(this.Uid);
         this.EditContext = new EditContext(EditMutor);
-
         this.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
 
         _loading = false;
-        await Task.Yield();
     }
 
     private async Task OnDeleteAsync()
     {
-        bool confirmed = await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?");
-        if (!confirmed)
-            return;
-
-        var action = DeleteInvoiceItemAction.Create(EditMutor.Record);
-
-        this.LastResult = EntityMutor.Dispatch(action.Dispatcher);
-
-        this.OnExit();
+        this.LastResult = await this.ConfirmDeleteAsync()
+            .BindAsync(() => EntityMutor.Dispatch(DeleteInvoiceItemAction.Create(EditMutor.Record).Dispatcher))
+            .NotifyAsync(this.OnExit);
     }
+
+    private async Task<Return> ConfirmDeleteAsync()
+        => await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?")
+            ? Return.Success()    
+            : Return.Failure("The user aborted the deletion");
 
     private void OnSave()
     {
-        this.LastResult = (this.State.Index switch
-        {
-            EditState.StateNewIndex => EntityMutor.Dispatch(AddInvoiceItemAction.Create(EditMutor.Record).Dispatcher),
-            _ => EntityMutor.Dispatch(UpdateInvoiceItemAction.Create(EditMutor.Record).Dispatcher)
-        });
-
-        this.OnExit();
+        this.LastResult = EntityMutor.Dispatch(SaveInvoiceItemAction.Create(EditMutor.Record).Dispatcher)
+            .Notify(this.OnExit);
     }
 
     private void ResetRecord()
     {
         this.EditMutor.Reset();
-        this.EditContext = new EditContext(EditMutor);
+        this.EditContext.MarkAsUnmodified();
         this.EditContext.Validate();
     }
 
@@ -136,6 +122,9 @@
         => this.StateHasChanged();
 
     public void Dispose()
-        => this.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
+    {
+        if (this.EditContext is not null)
+            this.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
+    }
 }
 

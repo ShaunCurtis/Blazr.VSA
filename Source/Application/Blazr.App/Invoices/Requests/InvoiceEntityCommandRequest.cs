@@ -7,10 +7,10 @@ using Blazr.Diode.Mediator;
 
 namespace Blazr.App.Core;
 
-public readonly record struct InvoiceCommandRequest(
+public readonly record struct InvoiceEntityCommandRequest(
         InvoiceEntity Item, EditState State, Guid TransactionId)
     : IRequest<Return>
 {
-    public static InvoiceCommandRequest Create(InvoiceEntity entity, EditState state)
-        => new InvoiceCommandRequest(entity, state, Guid.NewGuid());
+    public static InvoiceEntityCommandRequest Create(InvoiceEntity entity, EditState state)
+        => new InvoiceEntityCommandRequest(entity, state, Guid.NewGuid());
 }

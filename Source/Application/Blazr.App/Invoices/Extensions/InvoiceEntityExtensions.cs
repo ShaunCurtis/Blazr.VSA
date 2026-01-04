@@ -5,6 +5,10 @@
 /// ============================================================
 namespace Blazr.App.Core.Invoices;
 
+/// <summary>
+/// Invoice Entity methods used exclusively within the Core Domain
+/// By the Actions
+/// </summary>
 internal static class InvoiceEntityExtensions
 {
     extension(InvoiceEntity entity)
@@ -17,9 +21,6 @@ internal static class InvoiceEntityExtensions
             => Return<DmoInvoiceItem>.Read(
                 value: entity.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
                 errorMessage: "The record does not exist in the Invoice Items");
-
-        //internal Return<DmoInvoiceItem> GetInvoiceItem(DmoInvoiceItem item)
-        //    => entity.GetInvoiceItem(item.Id);
 
         internal Return<InvoiceEntity> Mutate(DmoInvoice invoice)
             => InvoiceEntityFactory.Load(invoice, entity.InvoiceItems)

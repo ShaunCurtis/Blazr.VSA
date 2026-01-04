@@ -4,11 +4,10 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
+using Blazr.App.Core.Invoices;
 using Blazr.Diode.Mediator;
 using Blazr.Gallium;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using Blazr.App.Core.Invoices;
 
 namespace Blazr.App.Core;
 
@@ -21,7 +20,7 @@ public sealed class InvoiceMutorFactory
     private IServiceProvider _serviceProvider;
 
     public InvoiceMutorFactory(IServiceProvider serviceProvider)
-    {         
+    {
         _serviceProvider = serviceProvider;
     }
 
@@ -87,7 +86,7 @@ public sealed class InvoiceEntityMutor
             return;
         }
 
-        await _mediator.DispatchAsync(new InvoiceEntityRequest(id))
+        await _mediator.DispatchAsync(InvoiceEntityRequest.Create(id))
             .SetReturnAsync(ret => this.LastResult = ret)
             .NotifyAsync(
                 hasValue: this.Set,
@@ -97,12 +96,13 @@ public sealed class InvoiceEntityMutor
     }
 
     public async Task<Return> SaveAsync()
-        => await _mediator.DispatchAsync(new InvoiceCommandRequest(this.InvoiceEntity, EditState.Dirty, Guid.NewGuid()))
+        => await _mediator.DispatchAsync(new InvoiceEntityCommandRequest(this.InvoiceEntity, EditState.Dirty, Guid.NewGuid()))
             .SetReturnAsync(ret => this.LastResult = ret);
 
     public async Task<Return> DeleteAsync()
-        => await _mediator.DispatchAsync(new InvoiceCommandRequest(this.InvoiceEntity, EditState.Deleted, Guid.NewGuid()))
-            .SetReturnAsync(ret => this.LastResult = ret);
+        => await _mediator.DispatchAsync(new InvoiceEntityCommandRequest(this.InvoiceEntity, EditState.Deleted, Guid.NewGuid()))
+            .SetReturnAsync(ret => this.LastResult = ret)
+            .MutateStateAsync(() => this.BaseEntity = this.InvoiceEntity);
 
     public InvoiceItemRecordMutor GetInvoiceItemRecordMutor(InvoiceItemId id)
         => this.InvoiceEntity.GetInvoiceItem(id)
@@ -118,7 +118,7 @@ public sealed class InvoiceEntityMutor
         this.Set(this.BaseEntity);
         return Return.Success();
     }
-    
+
     private void Set(InvoiceEntity entity)
     {
         this.BaseEntity = entity;

@@ -7,6 +7,14 @@ namespace Blazr.Manganese;
 
 public static partial class ReturnAsyncExtensions
 {
+    extension<T>(Return<T> @this)
+    {
+        public async Task<Return> BindAsync(Func<T, Task<Return>> function)
+            => @this.HasValue
+                ? await function(@this.Value!).ContinueWith(CheckForTaskException)
+                : Return.Failure(@this.Exception!);
+    }
+
     extension<T, TOut>(Return<T> @this)
     {
         public async Task<Return<TOut>> BindAsync(Func<T, Task<Return<TOut>>> function)

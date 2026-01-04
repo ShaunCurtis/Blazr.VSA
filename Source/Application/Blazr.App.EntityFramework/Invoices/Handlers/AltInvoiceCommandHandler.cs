@@ -16,7 +16,7 @@ namespace Blazr.App.EntityFramework;
 ///  - remove each item from the all items list
 ///  - remove any remaining items in th all items list from the database
 /// </summary>
-public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceCommandRequest, Return>
+public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceEntityCommandRequest, Return>
 {
     private readonly IMessageBus _messageBus;
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
@@ -29,7 +29,7 @@ public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceCommandRe
         _recordRequestHandler = requestHandler;
     }
 
-    public async Task<Return> HandleAsync(InvoiceCommandRequest request, CancellationToken cancellationToken)
+    public async Task<Return> HandleAsync(InvoiceEntityCommandRequest request, CancellationToken cancellationToken)
     {
         if (request.State.IsMarkedForDeletion)
             return await this.DeleteEntityAsync(request.Item.InvoiceRecord.Id, cancellationToken);

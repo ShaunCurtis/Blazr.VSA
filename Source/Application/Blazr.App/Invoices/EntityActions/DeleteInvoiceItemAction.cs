@@ -15,7 +15,7 @@ public record DeleteInvoiceItemAction
         => _invoiceItem = invoiceItem;
 
     public Return<InvoiceEntity> Dispatcher(InvoiceEntity entity)
-            => entity.GetInvoiceItem(_invoiceItem)
+            => entity.GetInvoiceItem(_invoiceItem.Id)
                 .Bind(item => entity.Mutate(entity.InvoiceItems.Remove(item)));
 
     public static DeleteInvoiceItemAction Create(DmoInvoiceItem invoiceItem)
