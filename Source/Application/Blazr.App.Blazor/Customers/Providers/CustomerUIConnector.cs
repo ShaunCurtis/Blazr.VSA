@@ -33,7 +33,7 @@ public class CustomerUIConnector
             ? NewRecordRequestAsync(id) 
             : ExistingRecordRequestAsync(id);
 
-    public Func<DmoCustomer, EditState, Task<Return<CustomerId>>> RecordCommandAsync
+    public Func<DmoCustomer, RecordState, Task<Return<CustomerId>>> RecordCommandAsync
         => (record, state) => _mediator.DispatchAsync(new CustomerCommandRequest(record, state));
 
     public Task<Return<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)

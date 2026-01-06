@@ -21,7 +21,7 @@ public partial class CustomerTests
 
         var newCustomer = DmoCustomer.NewCustomer() with { Name = new("Alaskan") };
 
-        var customerAddResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(newCustomer, EditState.New));
+        var customerAddResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(newCustomer, RecordState.NewState));
 
         Assert.False(customerAddResult.HasException);
 

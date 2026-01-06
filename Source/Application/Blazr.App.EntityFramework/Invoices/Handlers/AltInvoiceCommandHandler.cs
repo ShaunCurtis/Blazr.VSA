@@ -31,7 +31,7 @@ public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceEntityCom
 
     public async Task<Return> HandleAsync(InvoiceEntityCommandRequest request, CancellationToken cancellationToken)
     {
-        if (request.State.IsMarkedForDeletion)
+        if (request.State is RecordState.Deleted)
             return await this.DeleteEntityAsync(request.Item.InvoiceRecord.Id, cancellationToken);
 
         return await this.SaveEntityAsync(request.Item, cancellationToken);

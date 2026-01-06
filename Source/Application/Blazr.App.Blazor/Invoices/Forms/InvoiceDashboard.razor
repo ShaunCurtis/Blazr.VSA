@@ -105,8 +105,8 @@
         var result = await _modalDialog.ShowAsync(options);
         // wait for the modal to close
 
-        // If we have cancelled new invoice we need to exit back to the invoices page
-        if (result.ResultType != ModalResultType.OK && this.Mutor.State == EditState.New)
+        // If we have cancelled the new invoice we need to exit back to the invoices page
+        if (result.ResultType != ModalResultType.OK && this.Mutor.State is RecordState.New)
         {
             this.ToastService.ShowInfo("You exited creating the new invoice.");
             this.NavManager.NavigateTo($"/invoices");

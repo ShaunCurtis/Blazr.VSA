@@ -5,4 +5,4 @@
 /// ============================================================
 namespace Blazr.Diode;
 
-public record CommandRequest<TRecord>(TRecord Item, EditState State );
+public record CommandRequest<TRecord>(TRecord Item, RecordState State );

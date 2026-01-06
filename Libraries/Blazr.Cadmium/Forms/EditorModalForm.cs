@@ -4,7 +4,6 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Blazr.Cadmium.Core;
-using Blazr.Cadmium.Extensions;
 using Blazr.Cadmium.Presentation;
 using Blazr.Diode;
 using Blazr.Uranium;
@@ -37,9 +36,9 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     protected bool Loading => !this.Loaded;
     protected bool Loaded;
 
-    protected EditState State => this.Uid.IsNew
-            ? EditState.New
-            : EditState.Clean;
+    protected RecordState State => this.Uid.IsNew
+            ? RecordState.NewState
+            : RecordState.CleanState;
 
     protected async override Task OnInitializedAsync()
     {
@@ -73,7 +72,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
         if ((await ConfirmAsync()).Failed)
             return;
 
-        await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, EditState.Deleted)
+        await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, RecordState.DeletedState)
             .SetReturnAsync(this.SetLastResult);
 
         this.OnExit();

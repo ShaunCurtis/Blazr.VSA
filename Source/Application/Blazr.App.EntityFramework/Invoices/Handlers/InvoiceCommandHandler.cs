@@ -40,7 +40,7 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceEntityComman
             .BindAsync(this.DeleteEntityAsync);
 
         // Return if it was a delet command - everything is done
-        if (request.State == EditState.Deleted)
+        if (request.State is RecordState.Deleted)
             return Return.Success();
 
         // We're either add or update so we add the record

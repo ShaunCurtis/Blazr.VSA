@@ -13,6 +13,7 @@ namespace Blazr.Diode.Infrastructure.EntityFramework;
 internal static class CQSEFBroker<TDbContext>
     where TDbContext : DbContext
 {
+    //TODO - need to fix the switch statement
     public static async Task<Return<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
         where TRecord : class
     {
@@ -21,9 +22,9 @@ internal static class CQSEFBroker<TDbContext>
 
         var stateRecord = request.Item;
         var result = 0;
-        switch (request.State.Index)
+        switch (request.State)
         {
-            case EditState.StateNewIndex:
+            case RecordState.New:
                 dbContext.Add<TRecord>(request.Item);
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -31,7 +32,7 @@ internal static class CQSEFBroker<TDbContext>
                     ? Return<TRecord>.Success(request.Item)
                     : Return<TRecord>.Failure("Error adding Record");
 
-            case EditState.StateDeletedIndex:
+            case RecordState.Deleted:
                 dbContext.Remove<TRecord>(request.Item);
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -39,7 +40,7 @@ internal static class CQSEFBroker<TDbContext>
                     ? Return<TRecord>.Success(request.Item)
                     : Return<TRecord>.Failure("Error deleting Record");
 
-            case EditState.StateDirtyIndex:
+            case RecordState.Dirty:
                 dbContext.Update<TRecord>(request.Item);
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -47,9 +48,9 @@ internal static class CQSEFBroker<TDbContext>
                     ? Return<TRecord>.Success(request.Item)
                     : Return<TRecord>.Failure("Error saving Record");
 
-            default:
-                return Return<TRecord>.Failure("Nothing executed.  Unrecognised State.");
         }
+
+        return Return<TRecord>.Failure("Nothing executed.  Unrecognised State.");
     }
 
     public static async Task<Return<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)

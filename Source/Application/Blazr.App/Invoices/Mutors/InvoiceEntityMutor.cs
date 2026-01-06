@@ -64,11 +64,11 @@ public sealed class InvoiceEntityMutor
         this.LoadTask = this.LoadAsync(id);
     }
 
-    public EditState State => (this.IsNew, this.IsDirty) switch
+    public RecordState State => (this.IsNew, this.IsDirty) switch
     {
-        (true, _) => EditState.New,
-        (false, false) => EditState.Clean,
-        (false, true) => EditState.Dirty,
+        (true, _) => RecordState.NewState,
+        (false, false) => RecordState.CleanState,
+        (false, true) => RecordState.DirtyState,
     };
 
     public Return Dispatch(Func<InvoiceEntity, Return<InvoiceEntity>> dispatcher)
@@ -96,11 +96,11 @@ public sealed class InvoiceEntityMutor
     }
 
     public async Task<Return> SaveAsync()
-        => await _mediator.DispatchAsync(new InvoiceEntityCommandRequest(this.InvoiceEntity, EditState.Dirty, Guid.NewGuid()))
+        => await _mediator.DispatchAsync(new InvoiceEntityCommandRequest(this.InvoiceEntity, RecordState.DirtyState, Guid.NewGuid()))
             .SetReturnAsync(ret => this.LastResult = ret);
 
     public async Task<Return> DeleteAsync()
-        => await _mediator.DispatchAsync(new InvoiceEntityCommandRequest(this.InvoiceEntity, EditState.Deleted, Guid.NewGuid()))
+        => await _mediator.DispatchAsync(new InvoiceEntityCommandRequest(this.InvoiceEntity, RecordState.DeletedState, Guid.NewGuid()))
             .SetReturnAsync(ret => this.LastResult = ret)
             .MutateStateAsync(() => this.BaseEntity = this.InvoiceEntity);
 

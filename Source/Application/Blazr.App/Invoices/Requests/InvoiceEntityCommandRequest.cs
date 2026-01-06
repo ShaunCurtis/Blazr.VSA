@@ -8,9 +8,9 @@ using Blazr.Diode.Mediator;
 namespace Blazr.App.Core;
 
 public readonly record struct InvoiceEntityCommandRequest(
-        InvoiceEntity Item, EditState State, Guid TransactionId)
+        InvoiceEntity Item, RecordState State, Guid TransactionId)
     : IRequest<Return>
 {
-    public static InvoiceEntityCommandRequest Create(InvoiceEntity entity, EditState state)
+    public static InvoiceEntityCommandRequest Create(InvoiceEntity entity, RecordState state)
         => new InvoiceEntityCommandRequest(entity, state, Guid.NewGuid());
 }

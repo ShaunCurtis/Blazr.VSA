@@ -15,7 +15,7 @@ public interface IRecordMutor<TRecord>
     public bool IsNew { get; }
     public TRecord Record { get; }
     public void Reset();
-    public EditState State { get; }
+    public RecordState State { get; }
 }
 
 public abstract class RecordMutor<TRecord>
@@ -26,10 +26,10 @@ public abstract class RecordMutor<TRecord>
     public virtual bool IsNew { get; }
     public virtual TRecord Record { get; } = default!;
 
-    public EditState State => (this.IsNew, this.IsDirty) switch
+    public RecordState State => (this.IsNew, this.IsDirty) switch
     {
-        (true, _) => EditState.New,
-        (false, false) => EditState.Clean,
-        (false, true) => EditState.Dirty,
+        (true, _) => RecordState.NewState,
+        (false, false) =>RecordState.CleanState,
+        (false, true) => RecordState.DirtyState,
     };
 }

@@ -8,10 +8,10 @@ using Blazr.Diode.Mediator;
 namespace Blazr.App.Core;
 
 public readonly record struct CustomerCommandRequest(
-    DmoCustomer Item, EditState State)
+    DmoCustomer Item, RecordState State)
     : IRequest<Return<CustomerId>>
 {
-    public static CustomerCommandRequest Create(DmoCustomer item, EditState state)
+    public static CustomerCommandRequest Create(DmoCustomer item, RecordState state)
         => new CustomerCommandRequest(item, state);
 
     public static CustomerCommandRequest Create(CustomerRecordMutor mutor)

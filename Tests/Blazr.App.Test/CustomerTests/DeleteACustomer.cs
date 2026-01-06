@@ -25,7 +25,7 @@ public partial class CustomerTests
         var controlRecord = this.AsDmoCustomer(controlItem);
         var controlId = controlRecord.Id;
 
-        var customerAddResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(controlRecord, EditState.Deleted));
+        var customerAddResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(controlRecord, RecordState.DeletedState));
 
         Assert.False(customerAddResult.HasException);
 
