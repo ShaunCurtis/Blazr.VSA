@@ -122,9 +122,7 @@
         => this.StateHasChanged();
 
     public void Dispose()
-    {
-        if (this.EditContext is not null)
-            this.EditContext.OnFieldChanged -= OnEditStateMayHaveChanged;
-    }
+    =>  Null.Read(this.EditContext)
+        .ThenIfNotNull(() => this.EditContext!.OnFieldChanged -= OnEditStateMayHaveChanged);
 }
 
