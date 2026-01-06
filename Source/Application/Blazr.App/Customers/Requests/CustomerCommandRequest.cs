@@ -13,7 +13,4 @@ public readonly record struct CustomerCommandRequest(
 {
     public static CustomerCommandRequest Create(DmoCustomer item, RecordState state)
         => new CustomerCommandRequest(item, state);
-
-    public static CustomerCommandRequest Create(CustomerRecordMutor mutor)
-        => new CustomerCommandRequest(mutor.Record, mutor.State);
 }

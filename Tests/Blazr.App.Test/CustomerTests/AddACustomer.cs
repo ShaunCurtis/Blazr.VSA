@@ -30,7 +30,7 @@ public partial class CustomerTests
         // check it matches the test record
 
         // NewCustomer has the isNew flag set in the record so we need to fix that to make a compare
-        var customer = newCustomer with { Id = new(newCustomer.Id.Value) };
+        var customer = newCustomer with { Id = CustomerId.Load(newCustomer.Id.Value) };
         Assert.False(customerResult.HasException);
         Assert.Equivalent(customer, customerResult.Value);
     }

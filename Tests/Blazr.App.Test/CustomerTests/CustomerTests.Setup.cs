@@ -56,7 +56,7 @@ public partial class CustomerTests
     private DmoCustomer AsDmoCustomer(DboCustomer customer)
         => new DmoCustomer
         {
-            Id = new CustomerId(customer.CustomerID),
+            Id = CustomerId.Load(customer.CustomerID),
             Name = new Title(customer.CustomerName ?? string.Empty)
         };
 

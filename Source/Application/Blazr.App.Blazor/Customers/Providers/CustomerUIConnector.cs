@@ -29,9 +29,9 @@ public class CustomerUIConnector
     }
 
     public Func<CustomerId, Task<Return<DmoCustomer>>> RecordRequestAsync
-        => id => id.IsDefault 
-            ? NewRecordRequestAsync(id) 
-            : ExistingRecordRequestAsync(id);
+        => id => id.IsNew 
+            ? Task.FromResult(ReturnT.Read(new DmoCustomer { Id = CustomerId.NewId }))
+            : _mediator.DispatchAsync(new CustomerRecordRequest(id));
 
     public Func<DmoCustomer, RecordState, Task<Return<CustomerId>>> RecordCommandAsync
         => (record, state) => _mediator.DispatchAsync(new CustomerCommandRequest(record, state));
@@ -44,10 +44,4 @@ public class CustomerUIConnector
 
     public IRecordMutor<DmoCustomer> GetRecordMutor(DmoCustomer customer)
         => CustomerRecordMutor.Load(customer);
-
-    private Func<CustomerId, Task<Return<DmoCustomer>>> ExistingRecordRequestAsync
-        => id => _mediator.DispatchAsync(new CustomerRecordRequest(id));
-
-    private Func<CustomerId, Task<Return<DmoCustomer>>> NewRecordRequestAsync
-        => id => Task.FromResult(ReturnT.Read(new DmoCustomer { Id = CustomerId.NewId() }));
 }

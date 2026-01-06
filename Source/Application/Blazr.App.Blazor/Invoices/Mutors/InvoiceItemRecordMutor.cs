@@ -3,7 +3,7 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.App.Core;
+namespace Blazr.App.Presentation;
 
 public sealed class InvoiceItemRecordMutor : RecordMutor<DmoInvoiceItem> ,IRecordMutor<DmoInvoiceItem>
 {

@@ -3,13 +3,13 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.App.Core;
+namespace Blazr.App.Presentation;
 
-public class CustomerRecordMutorValidator : AbstractValidator<CustomerRecordMutor>
+public class InvoiceRecordMutorValidator : AbstractValidator<InvoiceRecordMutor>
 {
-    public CustomerRecordMutorValidator()
+    public InvoiceRecordMutorValidator()
     {
-        this.RuleFor(p => p.Name)
+        this.RuleFor(p => p.Customer.Name.Value)
             .MinimumLength(3)
             .WithState(p => p);
     }

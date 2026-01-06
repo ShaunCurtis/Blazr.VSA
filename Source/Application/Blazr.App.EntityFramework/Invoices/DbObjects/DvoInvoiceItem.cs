@@ -17,8 +17,8 @@ public sealed record DvoInvoiceItem
     public static DmoInvoiceItem Map(DvoInvoiceItem item)
         => new()
         {
-            Id = new(item.InvoiceItemID),
-            InvoiceId = new(item.InvoiceID),
+            Id = InvoiceItemId.Load (item.InvoiceItemID),
+            InvoiceId = InvoiceId.Load(item.InvoiceID),
             Amount = new(item.Amount),
             Description = new(item.Description),
         };

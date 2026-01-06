@@ -7,10 +7,10 @@ namespace Blazr.App.Core.Invoices;
 
 public static class InvoiceEntityFactory
 {
-    internal static InvoiceEntity Create() =>
+    public static InvoiceEntity Create() =>
         InvoiceEntity.Load(DmoInvoice.CreateNew(), Enumerable.Empty<DmoInvoiceItem>());
 
-    internal static InvoiceEntity Create(DmoInvoice invoice) =>
+    public static InvoiceEntity Create(DmoInvoice invoice) =>
         InvoiceEntity.Load(invoice, Enumerable.Empty<DmoInvoiceItem>());
 
     /// <summary>
@@ -39,7 +39,7 @@ public static class InvoiceEntityFactory
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
-    internal static Return<InvoiceEntity> CheckEntityRules(InvoiceEntity entity)
+    public static Return<InvoiceEntity> CheckEntityRules(InvoiceEntity entity)
         => entity.InvoiceItems.Sum(item => item.Amount.Value) == entity.InvoiceRecord.TotalAmount.Value
             ? Return<InvoiceEntity>.Success(entity)
             : Return<InvoiceEntity>.Failure("The Invoice Total Amount is incorrect.");
@@ -49,7 +49,7 @@ public static class InvoiceEntityFactory
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
-    internal static InvoiceEntity ApplyEntityRules(InvoiceEntity entity)
+    public static InvoiceEntity ApplyEntityRules(InvoiceEntity entity)
         => InvoiceEntity.Load(
             invoice: entity.InvoiceRecord with { TotalAmount = new(entity.InvoiceItems.Sum(item => item.Amount.Value)) },
             invoiceItems: entity.InvoiceItems);

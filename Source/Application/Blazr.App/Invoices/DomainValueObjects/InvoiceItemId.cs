@@ -5,19 +5,29 @@
 /// ============================================================
 namespace Blazr.App.Core;
 
-public readonly record struct InvoiceItemId(Guid Value) : IEntityId, IEquatable<InvoiceItemId>
+public readonly record struct InvoiceItemId : IEntityId, IEquatable<InvoiceItemId>
 {
-    public bool IsDefault => this == Default;
+    public Guid Value { get; private init; }
     public bool IsNew { get; private init; }
 
-    public static InvoiceItemId NewId() => new(Guid.CreateVersion7()) { IsNew = true };
-    public static InvoiceItemId Default => new(Guid.Empty);
+    public InvoiceItemId()
+    {
+        Value = Guid.CreateVersion7();
+        IsNew = true;
+    }
+
+    public static InvoiceItemId Load(Guid id)
+        => id == Guid.Empty
+        ? throw new InvalidGuidIdException()
+        : new InvoiceItemId() { Value = id };
+
+    public static InvoiceItemId NewId => new() { IsNew = true };
 
     public override string ToString()
-        => this.IsDefault ? "Default" : Value.ToString();
+        => this.IsNew ? "New" : Value.ToString();
 
     public string ToString(bool shortform)
-        => this.IsDefault ? "Default" : Value.ToString().Substring(28);
+        => this.IsNew ? "New" : Value.ToString().Substring(28);
 
     public bool Equals(InvoiceItemId other)
         => this.Value == other.Value;

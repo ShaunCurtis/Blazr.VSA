@@ -2,7 +2,7 @@
 
 public sealed record DmoInvoice
 {
-    public InvoiceId Id { get; init; } = InvoiceId.Default;
+    public InvoiceId Id { get; init; } = InvoiceId.NewId;
     public FkoCustomer Customer { get; init; } =  FkoCustomer.Default;
     public Money TotalAmount { get; init; } = Money.Default;
     public Date Date { get; init; }

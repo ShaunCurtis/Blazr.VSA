@@ -5,11 +5,8 @@
 /// ============================================================
 namespace Blazr.Diode;
 
-/// <summary>
-/// Defines Entity Id's so we can deal with them in generic componenta
-/// </summary>
-public interface IEntityId
+public class InvalidGuidIdException : Exception
 {
-    public bool IsNew { get; }
+    public InvalidGuidIdException() : base("The Id provided was invalid.  It was almost certainly an empty GUID.") { }
+    public InvalidGuidIdException(string message) : base(message) { }
 }
-

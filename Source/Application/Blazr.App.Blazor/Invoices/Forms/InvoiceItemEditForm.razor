@@ -1,5 +1,4 @@
 ﻿@namespace Blazr.App.UI
-
 @inject IJSRuntime Js
 
 <PageTitle>@this.FormTitle</PageTitle>
@@ -69,7 +68,7 @@
 @code {
     [CascadingParameter] private InvoiceEntityMutor EntityMutor { get; set; } = default!;
     [CascadingParameter] private IModalDialog? ModalDialog { get; set; }
-    [Parameter] public InvoiceItemId Uid { get; set; } = InvoiceItemId.NewId();
+    [Parameter] public InvoiceItemId Uid { get; set; } = InvoiceItemId.NewId;
     [Parameter] public bool LockNavigation { get; set; } = true;
 
     private Return LastResult { get; set; } = Return.Success();
@@ -79,7 +78,7 @@
     private bool _loading = true;
     private string FormTitle = $"Invoice Item Editor";
 
-    private bool IsNewRecord => this.Uid.IsNew || this.Uid.IsDefault;
+    private bool IsNewRecord => this.Uid.IsNew;
 
     protected override void OnInitialized()
     {

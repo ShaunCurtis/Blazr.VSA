@@ -15,7 +15,7 @@ public sealed record DvoCustomer
     public static DmoCustomer Map(DvoCustomer item)
         => new()
         {
-            Id = new(item.CustomerID),
+            Id = CustomerId.Load(item.CustomerID),
             Name = new (item.CustomerName ?? string.Empty)
         };
 

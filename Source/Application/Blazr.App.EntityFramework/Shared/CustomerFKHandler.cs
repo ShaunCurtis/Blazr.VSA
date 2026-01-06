@@ -34,6 +34,6 @@ public record FkCustomer
     public string Name { get; init; } = string.Empty;
 
     public FkoCustomer Map
-        => new(new(this.Id), new(this.Name));
+        => new(CustomerId.Load(this.Id), new(this.Name));
 }
 

@@ -9,7 +9,7 @@ using Blazr.Diode.Mediator;
 using Blazr.Gallium;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Blazr.App.Core;
+namespace Blazr.App.Presentation;
 
 /// <summary>
 /// Service to create InvoiceEntity Mutors 
@@ -33,7 +33,7 @@ public sealed class InvoiceMutorFactory
 
     public async Task<InvoiceEntityMutor> CreateInvoiceEntityMutorAsync()
     {
-        var mutor = ActivatorUtilities.CreateInstance<InvoiceEntityMutor>(_serviceProvider, new object[] { InvoiceId.Default });
+        var mutor = ActivatorUtilities.CreateInstance<InvoiceEntityMutor>(_serviceProvider, new object[] { InvoiceId.NewId });
         await mutor.LoadTask;
         return mutor;
     }
@@ -80,13 +80,14 @@ public sealed class InvoiceEntityMutor
 
     private async Task LoadAsync(InvoiceId id)
     {
-        if (id.IsDefault || id.IsNew)
+        if (id.IsNew)
         {
             this.Set(InvoiceEntityFactory.Create());
             return;
         }
 
-        await _mediator.DispatchAsync(InvoiceEntityRequest.Create(id))
+        await _mediator
+            .DispatchAsync(InvoiceEntityRequest.Create(id))
             .SetReturnAsync(ret => this.LastResult = ret)
             .NotifyAsync(
                 hasValue: this.Set,

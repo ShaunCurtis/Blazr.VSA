@@ -18,12 +18,12 @@ public sealed record DvoInvoice
     public static DmoInvoice Map(DvoInvoice item)
     => new()
     {
-        Id = new(item.InvoiceID),
-        Customer = new(new(item.CustomerID), new(item.CustomerName)),
+        Id = InvoiceId.Load(item.InvoiceID),
+        Customer = new(CustomerId.Load(item.CustomerID), new(item.CustomerName)),
         TotalAmount = new(item.TotalAmount),
         Date = new(item.Date)
     };
 
-    public static Return<DmoInvoice> MapToReturn(DvoInvoice item)
+    public static Return<DmoInvoice> MapToReturn(DvoInvoice item) 
         => Return<DmoInvoice>.Read(Map(item));
 }

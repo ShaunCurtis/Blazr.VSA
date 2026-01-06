@@ -9,24 +9,24 @@ namespace Blazr.App.Core.Invoices;
 /// Invoice Entity methods used exclusively within the Core Domain
 /// By the Actions
 /// </summary>
-internal static class InvoiceEntityExtensions
+public static class InvoiceEntityExtensions
 {
     extension(InvoiceEntity entity)
     {
-        internal Return<InvoiceEntity> ToReturnT => Return<InvoiceEntity>.Read(entity);
+        public Return<InvoiceEntity> ToReturnT => Return<InvoiceEntity>.Read(entity);
 
-        internal bool IsDirty(InvoiceEntity control) => !entity.Equals(control);
+        public bool IsDirty(InvoiceEntity control) => !entity.Equals(control);
 
-        internal Return<DmoInvoiceItem> GetInvoiceItem(InvoiceItemId id)
+        public Return<DmoInvoiceItem> GetInvoiceItem(InvoiceItemId id)
             => Return<DmoInvoiceItem>.Read(
                 value: entity.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
                 errorMessage: "The record does not exist in the Invoice Items");
 
-        internal Return<InvoiceEntity> Mutate(DmoInvoice invoice)
+        public Return<InvoiceEntity> Mutate(DmoInvoice invoice)
             => InvoiceEntityFactory.Load(invoice, entity.InvoiceItems)
                 .Map(InvoiceEntityFactory.ApplyEntityRules);
 
-        internal Return<InvoiceEntity> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
+        public Return<InvoiceEntity> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
             => InvoiceEntityFactory.Load(entity.InvoiceRecord, invoiceItems)
                 .Map(InvoiceEntityFactory.ApplyEntityRules);
     }

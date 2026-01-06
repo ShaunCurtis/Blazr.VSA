@@ -58,7 +58,7 @@ public partial class InvoiceTests
     {
 
         // Get a test item and it's Id from the Test Provider
-        var controlId = new InvoiceId(_testDataProvider.Invoices.Skip(Random.Shared.Next(3)).First().InvoiceID);
+        var controlId = InvoiceId.Load(_testDataProvider.Invoices.Skip(Random.Shared.Next(3)).First().InvoiceID);
 
         // Get the Invoice Entity
         var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(controlId));
@@ -71,7 +71,7 @@ public partial class InvoiceTests
     private async Task<InvoiceEntity> GetASampleDirtyEntityAsync(IMediatorBroker mediator)
     {
 
-        var controlId = new InvoiceId(_testDataProvider.Invoices.Skip(3).First().InvoiceID);
+        var controlId = InvoiceId.Load(_testDataProvider.Invoices.Skip(3).First().InvoiceID);
 
         // Get the Invoice Entity
         var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(controlId));
@@ -86,7 +86,7 @@ public partial class InvoiceTests
         var customer = _testDataProvider.Customers.First(item => item.CustomerID == invoice.CustomerID);
         return new DmoInvoice
            {
-               Id = new InvoiceId(invoice.InvoiceID),
+               Id = InvoiceId.Load(invoice.InvoiceID),
                Customer = AsCustomer(customer),
                Date = new Date(invoice.Date),
                TotalAmount = new Money(invoice.TotalAmount),
@@ -96,8 +96,8 @@ public partial class InvoiceTests
     private DmoInvoiceItem AsDmoInvoiceItem(DboInvoiceItem invoiceItem)
         => new DmoInvoiceItem
         {
-            Id = new InvoiceItemId(invoiceItem.InvoiceItemID),
-            InvoiceId = new InvoiceId(invoiceItem.InvoiceID),
+            Id = InvoiceItemId.Load(invoiceItem.InvoiceItemID),
+            InvoiceId = InvoiceId.Load(invoiceItem.InvoiceID),
             Description = new(invoiceItem.Description),
             Amount = new Money(invoiceItem.Amount),
         };
@@ -105,7 +105,7 @@ public partial class InvoiceTests
     private FkoCustomer AsCustomer(DboCustomer customer)
         => new FkoCustomer
         (
-             new(customer.CustomerID),
+             CustomerId.Load(customer.CustomerID),
              new(customer.CustomerName)
         );
 }

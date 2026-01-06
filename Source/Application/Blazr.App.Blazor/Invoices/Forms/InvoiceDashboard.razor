@@ -1,4 +1,5 @@
 ﻿@namespace Blazr.App.UI
+@using Blazr.App.Presentation
 
 @inject NavigationManager NavManager
 @inject IToastService ToastService
@@ -70,7 +71,7 @@
 </CascadingValue>
 
 @code {
-    [Parameter] public InvoiceId InvoiceId { get; set; } = InvoiceId.Default;
+    [Parameter] public InvoiceId InvoiceId { get; set; } = InvoiceId.NewId;
 
     private bool _loading = true;
     private bool _isError = false;
@@ -89,7 +90,7 @@
     {
         this.Mutor = await MutorFactory.GetInvoiceEntityMutorAsync(this.InvoiceId);
 
-        _showAddInvoiceForm = this.InvoiceId.IsDefault;
+        _showAddInvoiceForm = this.InvoiceId.IsNew;
         _loading = false;
         this.MessageBus.Subscribe<InvoiceEntity>(OnContextStateChanged);
     }

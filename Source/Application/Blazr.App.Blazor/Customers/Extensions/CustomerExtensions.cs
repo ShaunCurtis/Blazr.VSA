@@ -3,14 +3,13 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-namespace Blazr.App.Core;
+namespace Blazr.App.Presentation;
 
-public class InvoiceRecordMutorValidator : AbstractValidator<InvoiceRecordMutor>
+public static class CustomerExtensions
 {
-    public InvoiceRecordMutorValidator()
+    extension(CustomerCommandRequest @this)
     {
-        this.RuleFor(p => p.Customer.Name.Value)
-            .MinimumLength(3)
-            .WithState(p => p);
+        public static CustomerCommandRequest Create(CustomerRecordMutor mutor)
+            => new CustomerCommandRequest(mutor.Record, mutor.State);
     }
 }

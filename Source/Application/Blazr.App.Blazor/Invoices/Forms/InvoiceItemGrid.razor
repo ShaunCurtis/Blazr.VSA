@@ -64,7 +64,7 @@
     private async Task OnAddAsync()
     {
         var options = new ModalOptions();
-        options.ControlParameters.Add("Uid", InvoiceItemId.Default);
+        options.ControlParameters.Add("Uid", InvoiceItemId.NewId);
 
         await _modalDialog.ShowAsync(typeof(InvoiceItemEditForm), options);
     }

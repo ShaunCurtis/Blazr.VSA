@@ -6,6 +6,7 @@
 
 using Blazr.App.Core;
 using Blazr.App.Core.Invoices;
+using Blazr.App.Presentation;
 using Blazr.Diode.Mediator;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,7 +30,7 @@ public partial class InvoiceTests
         var entityMutor = await mutorFactory.GetInvoiceEntityMutorAsync(entity.InvoiceRecord.Id);
 
         // Get the Item Mutor
-        var itemMutor = entityMutor.GetInvoiceItemRecordMutor(InvoiceItemId.Default);
+        var itemMutor = entityMutor.GetInvoiceItemRecordMutor(InvoiceItemId.NewId);
 
         itemMutor.Description = "Added Plane";
         itemMutor.Amount = 77;
