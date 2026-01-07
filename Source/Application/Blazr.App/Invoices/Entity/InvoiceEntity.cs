@@ -10,7 +10,7 @@ namespace Blazr.App.Core;
 /// <summary>
 /// Invoice Entity for the InvoiceMutor
 /// </summary>
-public sealed record InvoiceEntity
+public sealed record InvoiceEntity : IEquatable<InvoiceEntity>
 {
     public DmoInvoice InvoiceRecord { get; private init; }
     public ImmutableList<DmoInvoiceItem> InvoiceItems { get; private init; }
@@ -21,7 +21,7 @@ public sealed record InvoiceEntity
         this.InvoiceItems = invoiceInvoiceItems.ToImmutableList();
     }
 
-    internal static InvoiceEntity Load(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) 
+    public static InvoiceEntity Load(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) 
         => new InvoiceEntity(invoice, invoiceItems);
 
     public bool Equals(InvoiceEntity? other)

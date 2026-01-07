@@ -16,18 +16,21 @@ public readonly record struct InvoiceItemId : IEntityId, IEquatable<InvoiceItemI
         IsNew = true;
     }
 
+    private InvoiceItemId(Guid value)
+        => Value = value;
+
     public static InvoiceItemId Load(Guid id)
         => id == Guid.Empty
         ? throw new InvalidGuidIdException()
-        : new InvoiceItemId() { Value = id };
+        : new InvoiceItemId(id);
 
     public static InvoiceItemId NewId => new() { IsNew = true };
 
     public override string ToString()
-        => this.IsNew ? "New" : Value.ToString();
+        => Value.ToString();
 
     public string ToString(bool shortform)
-        => this.IsNew ? "New" : Value.ToString().Substring(28);
+        => Value.ToString().Substring(28);
 
     public bool Equals(InvoiceItemId other)
         => this.Value == other.Value;

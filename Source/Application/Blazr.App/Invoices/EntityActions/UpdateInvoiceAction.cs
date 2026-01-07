@@ -15,7 +15,8 @@ public record UpdateInvoiceAction
         => _invoice = invoice;
 
     public Return<InvoiceEntity> Dispatcher(InvoiceEntity entity)
-        => entity.Mutate(_invoice);
+        // return a new Entity with the provided invoice
+        => entity.Mutate(_invoice).ToReturnT;
 
     public static UpdateInvoiceAction Create(DmoInvoice invoice)
             => (new UpdateInvoiceAction(invoice));

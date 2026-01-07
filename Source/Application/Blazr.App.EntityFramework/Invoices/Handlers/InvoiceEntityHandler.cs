@@ -43,6 +43,6 @@ public sealed class InvoiceEntityHandler : IRequestHandler<InvoiceEntityRequest,
             return Return<InvoiceEntity>.Failure(invoiceItemsResult.Exception!);
 
         // loads the entity even if it doesn't pass the entity rues.  The Mutor should take care of any updates required.
-        return InvoiceEntityFactory.Load(invoiceResult.Value!, invoiceItemsResult.Value!);
+        return InvoiceEntityFactory.Load(invoiceResult.Value!, invoiceItemsResult.Value!).ToReturnT;
     }
 }

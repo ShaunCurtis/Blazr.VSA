@@ -29,16 +29,15 @@
 
                 <BlazrSelectControl class="form-control mb-2"
                                     ColumnCss="col-12 col-md-6 mb-2"
-                                    Label="Group"
+                                    Label="Customer"
                                     TValue="Guid"
                                     TListItem="FkoCustomer"
-                                    @bind-Value=this.EditMutor.CustomerId
+                                    @bind-Value="this.EditMutor.CustomerId"
                                     @bind-Value:after="this.OnCustomerUpdate"
-                                    DisplayOptionsItems=_customerList
+                                    DisplayOptionsItems="_customerList"
                                     OptionValueDelegate="item => item.Id.Value.ToString()"
                                     OptionTextDelegate="item => item.Name.Value"
                                     PlaceholderText="Choose a Customer" />
-
             </div>
 
         </div>
@@ -54,14 +53,6 @@
 
         </div>
 
-@*
-                 <div class="row">
-            <div class="text-end">
-                <UIButton Type="button" ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Exit ClickEvent=this.OnExit>Exit</UIButton>
-                <UIButton Type="submit" Hidden=@_isClean ButtonSize=UIButtonSize.Small ButtonColourType=UIButtonColourType.Save>Continue</UIButton>
-            </div>
-        </div>
- *@
     </EditForm>
 </LoadingSpinner>
 

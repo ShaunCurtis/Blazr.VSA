@@ -26,6 +26,9 @@ public readonly record struct CustomerId : IEntityId, IEquatable<CustomerId>
     public Guid Value { get; private init; }
     public bool IsNew { get; private init; }
 
+    private CustomerId(Guid value)
+        => Value = value;
+
     public CustomerId()
     {
         Value = Guid.CreateVersion7();
@@ -34,16 +37,16 @@ public readonly record struct CustomerId : IEntityId, IEquatable<CustomerId>
 
     public static CustomerId Load(Guid id)
         => id == Guid.Empty
-        ? throw new InvalidGuidIdException()
-        : new CustomerId() { Value = id };
+            ? throw new InvalidGuidIdException()
+            : new CustomerId(id);
 
     public static CustomerId NewId => new() { IsNew = true };
 
     public override string ToString()
-        => this.IsNew ? "New" : Value.ToString();
+        => Value.ToString();
 
     public string ToString(bool shortform)
-        => this.IsNew ? "New" : Value.ToString().Substring(28);
+        => Value.ToString().Substring(28);
 
     public bool Equals(CustomerId other)
         => this.Value == other.Value;

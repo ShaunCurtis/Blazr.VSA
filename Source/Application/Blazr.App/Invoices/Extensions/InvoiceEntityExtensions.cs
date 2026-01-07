@@ -11,23 +11,26 @@ namespace Blazr.App.Core.Invoices;
 /// </summary>
 public static class InvoiceEntityExtensions
 {
-    extension(InvoiceEntity entity)
+    extension(InvoiceEntity @this)
     {
-        public Return<InvoiceEntity> ToReturnT => Return<InvoiceEntity>.Read(entity);
+        public Return<InvoiceEntity> ToReturnT => Return<InvoiceEntity>.Read(@this);
 
-        public bool IsDirty(InvoiceEntity control) => !entity.Equals(control);
+        public InvoiceEntity Map(Func<InvoiceEntity, InvoiceEntity> func)
+            => func.Invoke(@this);
+
+        public bool IsDirty(InvoiceEntity control) => !@this.Equals(control);
 
         public Return<DmoInvoiceItem> GetInvoiceItem(InvoiceItemId id)
             => Return<DmoInvoiceItem>.Read(
-                value: entity.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
+                value: @this.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
                 errorMessage: "The record does not exist in the Invoice Items");
 
-        public Return<InvoiceEntity> Mutate(DmoInvoice invoice)
-            => InvoiceEntityFactory.Load(invoice, entity.InvoiceItems)
+        public InvoiceEntity Mutate(DmoInvoice invoice)
+            => InvoiceEntityFactory.Load(invoice, @this.InvoiceItems)
                 .Map(InvoiceEntityFactory.ApplyEntityRules);
 
-        public Return<InvoiceEntity> Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
-            => InvoiceEntityFactory.Load(entity.InvoiceRecord, invoiceItems)
+        public InvoiceEntity Mutate(IEnumerable<DmoInvoiceItem> invoiceItems)
+            => InvoiceEntityFactory.Load(@this.InvoiceRecord, invoiceItems)
                 .Map(InvoiceEntityFactory.ApplyEntityRules);
     }
 }

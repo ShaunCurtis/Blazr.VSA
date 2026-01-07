@@ -11,5 +11,5 @@
 @code {
     [Parameter] public Guid Id { get; set; } = Guid.Empty;
 
-    private InvoiceId _invoiceId => InvoiceId.Load(Id);
+    private InvoiceId _invoiceId => Id == Guid.Empty ? InvoiceId.NewId : InvoiceId.Load(Id);
 }

@@ -31,8 +31,8 @@ public static class InvoiceEntityFactory
     /// <param name="invoiceItems">The collection of items associated with the invoice. Cannot be null.</param>
     /// <returns>A result containing the created invoice entity if all rules are satisfied; otherwise, a result indicating validation
     /// errors.</returns>
-    public static Return<InvoiceEntity> Load(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
-        InvoiceEntity.Load(invoice, invoiceItems).ToReturnT;
+    public static InvoiceEntity Load(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
+        InvoiceEntity.Load(invoice, invoiceItems);
 
     /// <summary>
     /// Checks the entity against the rules set.  If it fails it returns a failed ReturnT

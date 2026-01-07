@@ -16,14 +16,14 @@ namespace Blazr.Cadmium.UI;
 public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     : ComponentBase, IDisposable
     where TRecord : class, new()
-    where TKey : notnull, IEntityId
+    where TKey : notnull, IEntityId, new()
     where TRecordMutor : class, IRecordMutor<TRecord>
 {
     [Inject] private IJSRuntime Js { get; set; } = default!;
     [Inject] private IUIConnector<TRecord, TKey> UIConnector { get; set; } = default!;
 
     [CascadingParameter] private IModalDialog? ModalDialog { get; set; }
-    [Parameter, EditorRequired] public TKey Uid { get; set; } = default!;
+    [Parameter, EditorRequired] public TKey Uid { get; set; } = new();
     [Parameter] public bool LockNavigation { get; set; } = true;
 
     protected Return LastResult { get; set; } = Return.Success();

@@ -11,11 +11,11 @@
 @typeparam TListItem
 
 <InputSelect @attributes=AdditionalAttributes
-             @ref="_input"
+            @ref="_input"
              TValue="TValue"
-             Value=this.Value
+             Value=_value
              ValueChanged=this.OnChange
-             ValueExpression=this.ValueExpression>
+             ValueExpression=this.ItemExpression>
 
     @if (this.Value is null)
     {
@@ -30,21 +30,24 @@
 </InputSelect>
 
 @code {
-    [Parameter] public TValue? Value { get; set; }
-    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
-    [Parameter] public EventCallback<TListItem?> ItemChanged { get; set; }
-    [Parameter] public Expression<Func<TValue>>? ValueExpression { get; set; }
-    [Parameter] public EventCallback<TValue?> AfterValueChanged { get; set; }
+    [Parameter] public TListItem Value { get; set; } = default!;
+    [Parameter] public EventCallback<TListItem?> ValueChanged { get; set; }
+    [Parameter] public Expression<Func<TListItem>>? ValueExpression { get; set; }
+    [Parameter] public EventCallback<TListItem?> AfterValueChanged { get; set; }
+    [Parameter] public Expression<Func<TValue>>? ItemExpression { get; set; }
 
     [Parameter, EditorRequired] public IEnumerable<TListItem> DisplayOptionsItems { get; set; } = default!;
     [Parameter, EditorRequired] public Func<TListItem, string> OptionValueDelegate { get; set; } = default!;
     [Parameter, EditorRequired] public Func<TListItem, string> OptionTextDelegate { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<TListItem, TValue> ValueSelectDelegate { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<TValue, TListItem> ValueLookupDelegate { get; set; } = default!;
 
     [Parameter] public string PlaceholderText { get; set; } = " -- Select an Option -- ";
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
     [Parameter] public bool SetFirstFocus { get; set; }
 
     private InputSelect<TValue>? _input;
+    private TValue _value => this.ValueSelectDelegate(Value);
 
     protected override void OnInitialized()
     {
@@ -52,12 +55,15 @@
         ArgumentNullException.ThrowIfNull(this.DisplayOptionsItems);
         ArgumentNullException.ThrowIfNull(this.OptionValueDelegate);
         ArgumentNullException.ThrowIfNull(this.OptionTextDelegate);
+        ArgumentNullException.ThrowIfNull(this.ValueSelectDelegate);
+        ArgumentNullException.ThrowIfNull(this.ValueLookupDelegate);
     }
 
     private async Task OnChange(TValue value)
     {
-        await this.ValueChanged.InvokeAsync(value);
-        await this.AfterValueChanged.InvokeAsync(value);
+        var lookup = this.ValueLookupDelegate(value);
+        await this.ValueChanged.InvokeAsync(lookup);
+        await this.AfterValueChanged.InvokeAsync(lookup);
     }
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
