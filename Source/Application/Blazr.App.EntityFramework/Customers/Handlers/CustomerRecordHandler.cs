@@ -21,6 +21,6 @@ public sealed class CustomerRecordHandler : IRequestHandler<CustomerRecordReques
 
         return await dbContext
             .GetRecordAsync<DvoCustomer>(new RecordQueryRequest<DvoCustomer>(item => item.CustomerID == request.Id.Value))
-            .BindAsync<DvoCustomer, DmoCustomer>(DvoCustomer.MapToBool);
+            .BindAsync<DvoCustomer, DmoCustomer>(DvoCustomer.MapToReturn);
     }
 }

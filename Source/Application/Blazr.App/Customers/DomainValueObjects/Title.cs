@@ -10,7 +10,7 @@ public readonly record struct Title
 {
     public string Value { get; private init; }
 
-    public static readonly string DefaultValue = "No Value Set";
+    public static readonly string DefaultValue = "[NO TITLE SET]";
 
     public bool IsDefault => this.Value.Equals(DefaultValue);
 
@@ -18,23 +18,21 @@ public readonly record struct Title
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            this.Value = string.Empty;
+            this.Value = DefaultValue;
             return;
         }
 
-        if (name.Length > 100)
+        if (name.Length > 256)
         {
-            this.Value = string.Empty;
+            this.Value = string.Concat(name.Substring(254), "..") ;
             return;
         }
 
         this.Value = name.Trim();
     }
 
-    public static Title Default => new() { Value = DefaultValue};
+    public static Title Default => new(DefaultValue);
 
     public override string ToString()
-    {
-        return Value.ToString();
-    }
+        => Value.ToString();
 }

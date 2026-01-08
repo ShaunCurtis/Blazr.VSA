@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Blazr.App.Infrastructure;
 
-public sealed record DvoCustomer
+internal sealed record DvoCustomer
 {
     [Key] public Guid CustomerID { get; init; } = Guid.Empty;
     public string? CustomerName { get; set; }
@@ -16,9 +16,9 @@ public sealed record DvoCustomer
         => new()
         {
             Id = CustomerId.Load(item.CustomerID),
-            Name = new (item.CustomerName ?? string.Empty)
+            Name = new (item.CustomerName ?? Title.DefaultValue)
         };
 
-    public static Return<DmoCustomer> MapToBool(DvoCustomer item)
+    public static Return<DmoCustomer> MapToReturn(DvoCustomer item)
         => Return<DmoCustomer>.Read(Map(item));
 }

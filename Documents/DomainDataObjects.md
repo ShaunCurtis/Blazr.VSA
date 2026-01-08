@@ -1,51 +1,143 @@
 # Domain Data Objects
 
-The domain data objects (DMOs) are the core data objects used in a functional programming style application.  Before delving into functional programming, you need to understand some fundimental differences from the data objects you've probably familair with in OOP.
+The domain data objects (DMOs) are the core data objects used in a functional programming style application.  Domain data objects implement three design principles:
 
-## Immutability
+1. Immutability
+2. Validity
+3. Unique Identity
 
-If you already use immutable objects in OOP, you can gloss over this section.  The chances are though, you aren't.
-
-Consider the `Invoice` record used in the DotNet templates.
+Consider this imperitive style data object representing a customer:
 
 ```csharp
-public class DmoInvoice
+public class Customer
 {
-    public Guid Id { get; set; }
-    public Guid Customer { get; set; }
-    public Decimal TotalAmount { get; set; }
-    public DateTime Date { get; set; }
+    public Guid Id { get; init; }
+    public string Name { get; init; }
 }
 ```
 
-This is mutable.  There are some major problems with this behaviour:
+It makes life simple because you can use the same object to get the data from the database an edit it in the UI.  
+
+Now consider the downside:
 
 1. Anyone can change it: It's full of side effects.
 1. You have to write a custom comparitor to chack if two records are equal.
-1. It's full of primitive types that don't represent real world things.
+1. It's has primitive types that don't represent real world things.
 
-### The new DmoInvoice 
+Even though it's extemely basic consider it's state.  Is `Guid.Empty` a valid state for CustomerId? You need to write defensive code all over the place to constantly check it's validity. 
+
+### The New Customer 
+
+First somw value objects.
+
+`CustomerId` looks like this.
+
+1. It's a `readonly record struct`.
+1. Creation is controlled: youcan't just new up an instance.
+1. It has a mechanism for differentiating between a new and an existing id
+1. It has a custom comparator that only compares the Guid.
+1. It has a custom `ToString()` to display the Id.
 
 ```csharp
-public sealed record DmoInvoice
+public readonly record struct CustomerId : IEquatable<CustomerId>
 {
-    public InvoiceId Id { get; init; } = InvoiceId.Default;
-    public FkoCustomer Customer { get; init; } =  FkoCustomer.Default;
-    public Money TotalAmount { get; init; } = Money.Default;
-    public Date Date { get; init; }
+    public Guid Value { get; private init; }
+    public bool IsNew { get; private init; }
 
-    public static DmoInvoice CreateNew()
-        => new() { Id = InvoiceId.Create, Date = new(DateTime.Now) };
+    private CustomerId(Guid value)
+        => Value = value;
+
+    public CustomerId()
+    {
+        Value = Guid.CreateVersion7();
+        IsNew = true;
+    }
+
+    public static CustomerId Load(Guid id)
+        => id == Guid.Empty
+            ? throw new InvalidGuidIdException()
+            : new CustomerId(id);
+
+    public static CustomerId NewId => new() { IsNew = true };
+
+    public override string ToString()
+        => Value.ToString();
+
+    public string ToString(bool shortform)
+        => Value.ToString().Substring(28);
+
+    public bool Equals(CustomerId other)
+        => this.Value == other.Value;
+
+    public override int GetHashCode()
+        => HashCode.Combine(this.Value);
 }
 ```
 
-It's immutable and sealed: there's no valid reason to inherit from this object.  Everything is now a value object that represents a real world thing.
+`Title` presents the standard `string` problems.  In this case:
+
+1. The field is restricted to 100 characters, and automatically handle anything greater.
+2. There's a default value if nothing is entered.
+1. There's a custom `ToString()`. 
+
+```csharp
+public readonly record struct Title
+{
+    public string Value { get; private init; }
+    public static readonly string DefaultValue = "[NO TITLE SET]";
+    public bool IsDefault => this.Value.Equals(DefaultValue);
+
+    public Title(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            this.Value = DefaultValue;
+            return;
+        }
+
+        if (name.Length > 100)
+        {
+            this.Value = string.Concat(name.Substring(98), "..") ;
+            return;
+        }
+
+        this.Value = name.Trim();
+    }
+
+    public static Title Default => new() { Value = DefaultValue};
+
+    public override string ToString()
+        => Value.ToString();
+}
+```
+
+Anf finally `DmoCustomer`
+
+```csharp
+public sealed record DmoCustomer : ICommandEntity
+{
+    public CustomerId Id { get; init; }
+    public Title Name { get; init; }
+
+    public static DmoCustomer NewCustomer()
+        => new DmoCustomer() { Id = CustomerId.NewId };
+}
+```
+
+1. It's immutable and sealed: there's no valid reason to inherit from this object.  1. Everything is now a value object that represents a real world thing.
+1. It has constrolled state.  No more defensive code, or bugs caused by invalid state.   
 
 ## Primitive Obsession
 
-Is `MyColdestDay.TemperatureC = -10000000` a valid temperature?  To protect against such assignments, we write defensive validation code whenever we generate a `WeatherForecast`.  The solution to this problem is to create a value object that represents temperature and only contains a valid entry.
+**Primitive Obsession** is the use of primitive objects, such as `int`, `decimal` or `string` to represent domain concepts such as record Ids, Titles, Money and Temperature.  Temperature is a good example to consider. 
 
-Here's one implementation that throws an exception if the decimal is out of range.  
+Is `MyColdestDay.TemperatureC = -10000000` a valid temperature?
+
+Using a primite means we need to write defensive code to guard against assigning invalid temperatures.
+
+The solution is to create a value object that represents temperature and only contains a valid entry.
+
+This implementation that throws an exception if the decimal is out of range.  
 
 ```csharp
 public readonly record struct Temperature
@@ -62,7 +154,7 @@ public readonly record struct Temperature
     public Temperature(decimal temperatureAsDegCelcius)
     {
         if (temperatureAsDegCelcius < -273)
-            throw new ArgumentOutOfRangeException("The temperature is outside thw valid range ( -273 to decimal.Max)");
+            throw new ArgumentOutOfRangeException("The temperature is outside the valid range ( -273 to decimal.Max)");
 
         this.TemperatureC = temperatureAsDegCelcius;
     }
@@ -72,178 +164,26 @@ public readonly record struct Temperature
 }
 ```
 
-And a slightly different one that takes a more functional approach.
+## The Data Pipeline
+
+*Core* domain code has no dependencies with I/O.  No Entity Framework attributes, no Dapper annotations, no UI stuff, nothing.
+
+In the demo, EF Core is restricted to the *Infrastructure* domain.  The application implements CQS so has different query and command pipelines.
+
+Query objects are *Data View Objects* - *Dvo* which implement a `Map` function builds a `DmoInvoice` object from the *Dvo*.  *Dvo* objects use data types that match the data store objects. 
 
 ```csharp
-public readonly record struct Temperature
+public sealed record DvoCustomer
 {
-    public decimal TemperatureC { get; init; } = -273;
-    public decimal TemperatureF => 32 + (this.TemperatureC / 0.5556m);
-    public bool IsValid { get; private init; } = false;
-    public string? Error { get; private init; }
+    [Key] public Guid CustomerID { get; init; } = Guid.Empty;
+    public string? CustomerName { get; set; }
 
-    public Temperature() { }
-
-    /// <summary>
-    /// temperature should be provided in degrees Celcius
-    /// </summary>
-    /// <param name="temperature"></param>
-    public Temperature(decimal temperatureAsDegCelcius)
-    {
-        if (temperatureAsDegCelcius < -273)
-            this.Error = "The temperature is outside thw valid range ( -273 to decimal.Max)";
-
-        this.IsValid = true;
-        this.TemperatureC = temperatureAsDegCelcius;
-    }
-
-    public override string ToString()
-        => this.IsValid ? TemperatureC.ToString() : "Not Valid";
-}
-```
-
-In `DmoInvoice` everything is a value object.
-
-#### InvoiceId
-
-This is still based on a `Guid` but it represents a real world thing: an invoice identifier.  You can't accidentally assign a `Guid` to an `InvoiceId`, or search for an invoice with a customer Id.  You'll also notice custom methods for creating new Ids, checking for default values and string output.
-
-The id can be in one of three states:
-
-1. Default: `InvoiceId.Default` which is a guid of all zeros.
-1. New: `InvoiceId.Create` which generates a new v7 guid.
-1. Existing: An existing guid value, almost certainly pulled from a data pipeline.
-
-```csharp
-public readonly record struct InvoiceId(Guid Value) : IEntityId
-{
-    public bool IsDefault => this == Default;
-    public static InvoiceId Create => new(Guid.CreateVersion7());
-    public static InvoiceId Default => new(Guid.Empty);
-
-    public override string ToString()
-        => this.IsDefault ? "Default" : Value.ToString();
-
-    public string ToString(bool shortform)
-        => this.IsDefault ? "Default" : Value.ToString().Substring(28);
-}
-```
-
-#### Date
-
-Follows a similar pattern:
-
-```csharp
-public readonly record struct Date
-{
-    public DateOnly Value { get; init; }
-    public bool IsValid { get; private init; }
-
-    public Date() { }
-
-    public Date(DateOnly date)
-    {
-        this.Value = date;
-        if (date > DateOnly.MinValue)
-            this.IsValid = true;
-    }
-
-    public Date(DateTime date)
-    {
-        this.Value = DateOnly.FromDateTime(date);
-        if (date > DateTime.MinValue)
-            this.IsValid = true;
-    }
-
-    public Date(DateTimeOffset date)
-    {
-        this.Value = DateOnly.FromDateTime(date.DateTime);
-        if (date > DateTime.MinValue)
-            this.IsValid = true;
-    }
-
-    public override string ToString()
-        => this.IsValid ? this.Value.ToString("dd-MMM-yy")  : "Not Valid";
-}
-```
-### Money
-
-As does money whih also adds the basic arithmetic operators.
-
-```csharp
-public readonly record struct Money
-{
-    public decimal Value { get; private init; }
-    public bool HasValue { get; private init; }
-
-    public bool IsZero => Value != 0;
-
-    public static Money Default => new(0);
-
-    public Money(decimal value)
-    {
-        if (value >= 0)
+    public static DmoCustomer Map(DvoCustomer item)
+        => new()
         {
-            Value = value;
-            HasValue = true;
-            return;
-        }
-        Value = 0;
-        HasValue = false;
-    }
-
-    public override string ToString()
-    {
-        if (this.HasValue)
-            return Value.ToString("C", CultureInfo.CreateSpecificCulture("en-GB"));
-
-        return "Not Set";
-    }
-
-    public static Money operator +(Money one, Money two)
-        => new Money(one.Value + two.Value);
-
-    public static Money operator -(Money one, Money two)
-        => new Money(one.Value - two.Value);
-
-    public static Money operator *(Money one, Money two)
-        => new Money(one.Value * two.Value);
-
-    public static Money operator /(Money one, Money two)
-        => new Money(Decimal.Round(one.Value / two.Value, 2, MidpointRounding.AwayFromZero));
-}
-```
-
-Some notes on these objects:
-
-1. All are `readonly record struct`.  They are value types with value sematics.
-2. They're all immutable, like `int` and `bool`.
-
-## Integrating with the Data Pipeline
-
-First, the *Core* application layer has no dependencies on any data pipeline technology.  No Entity Framework attributes, no Dapper annotations, nothing.
-
-In the demo, we convert from the EF Core entity to the DMO in the repository layer - *Blazr.App.Infrastructure*.
-
-First the data store to Domain object.  *Dvo* is a *Data View Object*.  Note it brngs in the relavant foreign key data.  `Map` builds a `DmoInvoice` object from the *Dvo*. 
-
-```csharp
-public sealed record DvoInvoice
-{
-    [Key] public Guid InvoiceID { get; init; }
-    public Guid CustomerID { get; init; }
-    public string CustomerName { get; init; } = string.Empty;
-    public decimal TotalAmount { get; init; }
-    public DateTime Date { get; init; }
-
-    public static DmoInvoice Map(DvoInvoice item)
-    => new()
-    {
-        Id = new(item.InvoiceID),
-        Customer = new(new(item.CustomerID), new(item.CustomerName)),
-        TotalAmount = new(item.TotalAmount),
-        Date = new(item.Date)
-    };
+            Id = CustomerId.Load(item.CustomerID),
+            Name = new (item.CustomerName ?? Title.DefaultValue)
+        };
 }
 ```
 
