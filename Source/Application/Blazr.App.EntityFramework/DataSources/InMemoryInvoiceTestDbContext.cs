@@ -8,9 +8,9 @@ namespace Blazr.App.EntityFramework;
 public sealed class InMemoryInvoiceTestDbContext
     : DbContext
 {
-    internal DbSet<DboCustomer> Customers { get; set; } = default!;
+    public DbSet<DboCustomer> Customers { get; set; } = default!;
 
-    internal DbSet<DvoCustomer> DvoCustomers { get; set; } = default!;
+    public DbSet<DvoCustomer> DvoCustomers { get; set; } = default!;
 
     public DbSet<FkCustomer> FkCustomers { get; set; } = default!;
 

@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Blazr.App.Infrastructure;
 
-internal sealed record DvoCustomer
+public sealed record DvoCustomer
 {
     [Key] public Guid CustomerID { get; init; } = Guid.Empty;
     public string? CustomerName { get; set; }
