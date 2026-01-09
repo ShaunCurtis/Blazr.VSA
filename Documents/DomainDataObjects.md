@@ -16,19 +16,22 @@ public class Customer
 }
 ```
 
-It makes life simple because you can use the same object to get the data from the database an edit it in the UI.  
+It appears to make life simple: the same object to get the data from the database, display and edit it in the UI.  
 
 Now consider the downside:
 
 1. Anyone can change it: It's full of side effects.
 1. You have to write a custom comparitor to chack if two records are equal.
 1. It's has primitive types that don't represent real world things.
+1. The compiler is *blind*.  It doesn't know your code ia submitting an Invoice `Id` as a customer `Id`.
 
-Even though it's extemely basic consider it's state.  Is `Guid.Empty` a valid state for CustomerId? You need to write defensive code all over the place to constantly check it's validity. 
+Even though it's extemely basic consider state.  Is `Guid.Empty` a valid state for CustomerId? You need to write defensive code all over the place to constantly check it's validity. 
+
+> Forget restricting the number of data objects is good practice.  It isn't.
 
 ### The New Customer 
 
-First somw value objects.
+First some value objects.
 
 `CustomerId` looks like this.
 
@@ -170,7 +173,7 @@ public readonly record struct Temperature
 
 In the demo, EF Core is restricted to the *Infrastructure* domain.  The application implements CQS so has different query and command pipelines.
 
-Query objects are *Data View Objects* - *Dvo* which implement a `Map` function builds a `DmoInvoice` object from the *Dvo*.  *Dvo* objects use data types that match the data store objects. 
+Query objects are *Data View Objects* - *Dvo*s implement a `Map` function which build a `DmoInvoice` object from the *Dvo*.  *Dvo* objects use data types that match the data store objects. 
 
 ```csharp
 public sealed record DvoCustomer
@@ -187,23 +190,108 @@ public sealed record DvoCustomer
 }
 ```
 
-Next the Domain to Data Store object *Dbo* is a *Database Object*.
+Command objects are *Database Objects* - *Dbo*.  They implement a static `Map` function to build a `Dbo` from a `Dmo`.
 
 ```csharp
-public sealed record DboInvoice 
+public sealed record DboCustomer
 {
-    [Key] public Guid InvoiceID { get; init; }
-    public Guid CustomerID { get; init; }
-    public decimal TotalAmount { get; init; }
-    public DateTime Date { get; init; }
+    [Key] public Guid CustomerID { get; init; } = Guid.Empty;
+    public string CustomerName { get; init; } = string.Empty;
 
-    public static DboInvoice Map(DmoInvoice item)
-    => new()
+    public static DboCustomer Map(DmoCustomer item)
+        => new()
+        {
+            CustomerID = item.Id.Value,
+            CustomerName = item.Name.Value
+        };
+}
+```
+
+## The UI
+
+Mutating a simple domain object is as easy as:
+
+```csharp
+var mutatedCustomer = OldCustomer with { CustomerName = "Updated Name" };
+```
+
+However, in an edit form you need to provide a editable properties.  My framework uses what I've named the *Mutor Pattern*.
+
+First an interface:
+
+```csharp
+public interface IRecordMutor<TRecord>
+    where TRecord : class
+{
+    public TRecord BaseRecord { get; }
+    public bool IsDirty { get; }
+    public bool IsNew { get; }
+    public TRecord Record { get; }
+    public void Reset();
+    public RecordState State { get; }
+}
+```
+
+And an abstract base class:
+
+```csharp
+public abstract class RecordMutor<TRecord>
+    where TRecord : class
+{
+    public TRecord BaseRecord { get; protected set; } = default!;
+    public bool IsDirty => !this.Record.Equals(BaseRecord);
+    public virtual bool IsNew { get; }
+    public virtual TRecord Record { get; } = default!;
+
+    public RecordState State => (this.IsNew, this.IsDirty) switch
     {
-        InvoiceID = item.Id.Value,
-        CustomerID = item.Customer.Id.Value,
-        TotalAmount = item.TotalAmount.Value,
-        Date = item.Date.ToDateTime
+        (true, _) => RecordState.NewState,
+        (false, false) =>RecordState.CleanState,
+        (false, true) => RecordState.DirtyState,
     };
 }
 ```
+
+And the `CustomerRecordMutor`.
+
+```csharp
+public sealed class CustomerRecordMutor : RecordMutor<DmoCustomer>, IRecordMutor<DmoCustomer>
+{
+    [TrackState] public string? Name { get; set; }
+    public override bool IsNew => BaseRecord.Id.IsNew;
+
+    private CustomerRecordMutor(DmoCustomer record)
+    {
+        this.BaseRecord = record;
+        this.SetFields();
+    }
+
+    private void SetFields()
+    {
+        this.Name = this.BaseRecord.Name.Value;
+    }
+
+    public override DmoCustomer Record => this.BaseRecord with
+    {
+        Name = new(this.Name ?? "No Name Set")
+    };
+
+    public void Reset()
+        => this.SetFields();
+
+    public static CustomerRecordMutor Load(DmoCustomer record)
+        => new CustomerRecordMutor(record);
+
+    public static CustomerRecordMutor NewMutor()
+        => new CustomerRecordMutor(DmoCustomer.NewCustomer());
+}
+```
+Notes:
+
+1. It's a presentation domain object.
+1. `[TrackState]` is a Blazor UI `EditStateTracker` Component attribute.
+1. It can only be created through one of two static methods.
+1. It tracks overall state.
+1. It has an interface soit can be used in boilerplate generic forms.
+
+Whle it's not *Pure*, it basically follows the same pattern as a *FP* `Map` function.  It takes in a `DmoCustomer` and outputs a `DmoCustomer`.

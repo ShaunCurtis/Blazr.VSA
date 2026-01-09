@@ -8,6 +8,7 @@ namespace Blazr.App.Presentation;
 public sealed class CustomerRecordMutor : RecordMutor<DmoCustomer>, IRecordMutor<DmoCustomer>
 {
     [TrackState] public string? Name { get; set; }
+    public override bool IsNew => BaseRecord.Id.IsNew;
 
     private CustomerRecordMutor(DmoCustomer record)
     {
@@ -24,8 +25,6 @@ public sealed class CustomerRecordMutor : RecordMutor<DmoCustomer>, IRecordMutor
     {
         Name = new(this.Name ?? "No Name Set")
     };
-
-    public override bool IsNew => BaseRecord.Id.IsNew;
 
     public void Reset()
         => this.SetFields();
