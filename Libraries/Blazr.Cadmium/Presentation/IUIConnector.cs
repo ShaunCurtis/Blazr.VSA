@@ -20,11 +20,11 @@ public interface IUIConnector<TRecord, TKey>
     public Type? ViewForm { get; }
     public string Url { get; }
 
-    public Task<Return<GridItemsProviderResult<TRecord>>> GetItemsAsync(GridState<TRecord> state);
+    public Task<Result<GridItemsProviderResult<TRecord>>> GetItemsAsync(GridState<TRecord> state);
 
-    public Func<TKey, Task<Return<TRecord>>> RecordRequestAsync { get; }
+    public Func<TKey, Task<Result<TRecord>>> RecordRequestAsync { get; }
 
-    public Func<TRecord, RecordState, Task<Return<TKey>>> RecordCommandAsync { get; }
+    public Func<TRecord, RecordState, Task<Result<TKey>>> RecordCommandAsync { get; }
 
     public IRecordMutor<TRecord> GetRecordMutor(TRecord record);
 }

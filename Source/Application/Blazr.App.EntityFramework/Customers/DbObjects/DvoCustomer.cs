@@ -12,13 +12,10 @@ public sealed record DvoCustomer
     [Key] public Guid CustomerID { get; init; } = Guid.Empty;
     public string? CustomerName { get; set; }
 
-    public static DmoCustomer Map(DvoCustomer item)
+    public static DmoCustomer MapToDomainEntity(DvoCustomer item)
         => new()
         {
             Id = CustomerId.Load(item.CustomerID),
             Name = new (item.CustomerName ?? Title.DefaultValue)
         };
-
-    public static Return<DmoCustomer> MapToReturn(DvoCustomer item)
-        => Return<DmoCustomer>.Read(Map(item));
 }

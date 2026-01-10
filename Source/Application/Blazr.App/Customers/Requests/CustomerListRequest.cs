@@ -9,10 +9,10 @@ using Blazr.Diode.Mediator;
 
 namespace Blazr.App.Core;
 
-public record CustomerListRequest : BaseListRequest, IRequest<Return<ListItemsProvider<DmoCustomer>>>
+public record CustomerListRequest : BaseListRequest, IRequest<Result<ListItemsProvider<DmoCustomer>>>
 {
-    public static Return<CustomerListRequest> FromGridState(GridState<DmoCustomer> state)
-        => Return<CustomerListRequest>.Read(new CustomerListRequest()
+    public static Result<CustomerListRequest> FromGridState(GridState<DmoCustomer> state)
+        => Result<CustomerListRequest>.Successful(new CustomerListRequest()
         {
             PageSize = state.PageSize,
             StartIndex = state.StartIndex,

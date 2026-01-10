@@ -1,4 +1,6 @@
-﻿/// ============================================================
+﻿using Blazr.Manganese;
+
+/// ============================================================
 /// Author: Shaun Curtis, Cold Elm Coders
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
@@ -8,7 +10,7 @@ namespace Blazr.App.EntityFramework;
 /// <summary>
 /// Mediator Handler for executing commands against a Customer Entity in an Entity Framework Context
 /// </summary>
-public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandRequest, Return<CustomerId>>
+public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandRequest, Result<CustomerId>>
 {
     private readonly IMessageBus _messageBus;
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
@@ -19,13 +21,13 @@ public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandReq
         _messageBus = messageBus;
     }
 
-    public async Task<Return<CustomerId>> HandleAsync(CustomerCommandRequest request, CancellationToken cancellationToken)
+    public async Task<Result<CustomerId>> HandleAsync(CustomerCommandRequest request, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 
         // Get the record result
         var result = await dbContext
-            .ExecuteCommandAsync<DboCustomer>(new CommandRequest<DboCustomer>(
+            .ExecuteCommandnDatastoreAsync<DboCustomer>(new CommandRequest<DboCustomer>(
                     Item: DboCustomer.Map(request.Item),
                     State: request.State
                 ),
@@ -37,7 +39,7 @@ public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandReq
             {
                 var id = CustomerId.Load(record.CustomerID);
                 _messageBus.Publish<DmoCustomer>(id);
-                return ReturnT.Read(id);
+                return Result<CustomerId>.Successful(id);
             }
         );
     }

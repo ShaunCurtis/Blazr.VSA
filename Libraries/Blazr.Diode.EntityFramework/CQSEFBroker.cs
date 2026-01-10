@@ -13,12 +13,12 @@ namespace Blazr.Diode.Infrastructure.EntityFramework;
 internal static class CQSEFBroker<TDbContext>
     where TDbContext : DbContext
 {
-    //TODO - need to fix the switch statement
-    public static async Task<Return<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
+    //TODO - need to fix the switch statemen???t
+    public static async Task<Result<TRecord>> ExecuteCommandAsync<TRecord>(TDbContext dbContext, CommandRequest<TRecord> request, CancellationToken cancellationToken = new())
         where TRecord : class
     {
         if ((request.Item is not ICommandEntity))
-            return Return<TRecord>.Failure($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly.");
+            return Result<TRecord>.Failure($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly.");
 
         var stateRecord = request.Item;
         var result = 0;
@@ -29,31 +29,31 @@ internal static class CQSEFBroker<TDbContext>
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
                 return result == 1
-                    ? Return<TRecord>.Success(request.Item)
-                    : Return<TRecord>.Failure("Error adding Record");
+                    ? Result<TRecord>.Successful(request.Item)
+                    : Result<TRecord>.Failure("Error adding Record");
 
             case RecordState.Deleted:
                 dbContext.Remove<TRecord>(request.Item);
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
                 return result == 1
-                    ? Return<TRecord>.Success(request.Item)
-                    : Return<TRecord>.Failure("Error deleting Record");
+                    ? Result<TRecord>.Successful(request.Item)
+                    : Result<TRecord>.Failure("Error adding Record");
 
             case RecordState.Dirty:
                 dbContext.Update<TRecord>(request.Item);
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
                 return result == 1
-                    ? Return<TRecord>.Success(request.Item)
-                    : Return<TRecord>.Failure("Error saving Record");
+                    ? Result<TRecord>.Successful(request.Item)
+                    : Result<TRecord>.Failure("Error adding Record");
 
         }
 
-        return Return<TRecord>.Failure("Nothing executed.  Unrecognised State.");
+        return Result<TRecord>.Failure("Nothing executed.  Unrecognised State.");
     }
 
-    public static async Task<Return<ListItemsProvider<TRecord>>> GetItemsAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
+    public static async Task<Result<ListItemsProvider<TRecord>>> GetItemsFromDatastoreAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
         where TRecord : class
     {
         int totalRecordCount;
@@ -92,10 +92,10 @@ internal static class CQSEFBroker<TDbContext>
             ? await query.ToListAsync().ConfigureAwait(ConfigureAwaitOptions.None)
             : query.ToList();
 
-        return Return<ListItemsProvider<TRecord>>.Success(new ListItemsProvider<TRecord>(list, totalRecordCount));
+        return Result<ListItemsProvider<TRecord>>.Successful(new ListItemsProvider<TRecord>(list, totalRecordCount));
     }
 
-    public static async Task<Return<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
+    public static async Task<Result<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
         where TRecord : class
     {
         dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
@@ -105,8 +105,8 @@ internal static class CQSEFBroker<TDbContext>
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (record is null)
-            return Return<TRecord>.Failure($"No record retrieved with the Key provided");
+            return Result<TRecord>.Failure($"No record retrieved with the Key provided");
 
-        return Return<TRecord>.Success(record);
+        return Result<TRecord>.Successful(record);
     }
 }

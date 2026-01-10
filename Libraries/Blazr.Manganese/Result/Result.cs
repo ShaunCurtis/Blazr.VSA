@@ -19,3 +19,11 @@ public abstract record Result<T>
     public static Result<T> Failure(string message) => new Result<T>.Failed(message);
     public static Result<T> Exception(Exception exception) => new Result<T>.Error(exception);
 }
+
+public static class ResultT
+{
+    public static Result<T> Successful<T>(T value) => Result<T>.Successful(value);
+    public static Result<T> Successful<T>() => Result<T>.Successful();
+    public static Result<T> Failure<T>(string message) => Result<T>.Failure(message);
+    public static Result<T> Exception<T>(Exception exception) => Result<T>.Exception(exception);
+}

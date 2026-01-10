@@ -28,16 +28,16 @@ public class CustomerUIConnector
         _mediator = mediator;
     }
 
-    public Func<CustomerId, Task<Return<DmoCustomer>>> RecordRequestAsync
+    public Func<CustomerId, Task<Result<DmoCustomer>>> RecordRequestAsync
         => id => id.IsNew 
-            ? Task.FromResult(ReturnT.Read(new DmoCustomer { Id = CustomerId.NewId }))
+            ? Task.FromResult(ResultT.Successful(new DmoCustomer { Id = CustomerId.NewId }))
             : _mediator.DispatchAsync(new CustomerRecordRequest(id));
 
-    public Func<DmoCustomer, RecordState, Task<Return<CustomerId>>> RecordCommandAsync
+    public Func<DmoCustomer, RecordState, Task<Result<CustomerId>>> RecordCommandAsync
         => (record, state) => _mediator.DispatchAsync(new CustomerCommandRequest(record, state));
 
-    public Task<Return<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
-        => state.ToReturnT
+    public Task<Result<GridItemsProviderResult<DmoCustomer>>> GetItemsAsync(GridState<DmoCustomer> state)
+        => state.ToResultT
             .Bind(CustomerListRequest.FromGridState)
             .BindAsync(request => _mediator.DispatchAsync(request))
             .MapAsync(itemsProvider => itemsProvider.ToGridItemsProviderResult());

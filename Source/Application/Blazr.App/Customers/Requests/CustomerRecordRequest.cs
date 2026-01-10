@@ -8,7 +8,7 @@ using Blazr.Diode.Mediator;
 namespace Blazr.App.Core;
 
 public readonly record struct CustomerRecordRequest(CustomerId Id) 
-    : IRequest<Return<DmoCustomer>>
+    : IRequest<Result<DmoCustomer>>
 {
     public static CustomerRecordRequest Create(CustomerId Id)
         => new(Id);

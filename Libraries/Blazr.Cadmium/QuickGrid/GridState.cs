@@ -39,7 +39,7 @@ public record GridState<TRecord> : IGridState<TRecord>, IScopedState
             SortField = sortField
         };
     }
-    public Return<GridState<TRecord>> ToReturnT
-        => Return<GridState<TRecord>>.Read(this);
+    public Result<GridState<TRecord>> ToResultT
+        => ResultT.Successful(this);
 
 }
