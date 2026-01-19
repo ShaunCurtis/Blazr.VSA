@@ -6,9 +6,8 @@
 
 using Blazr.App.Core;
 using Blazr.App.Presentation;
-using Blazr.Diode;
 using Blazr.Diode.Mediator;
-using FluentValidation;
+using Blazr.Manganese;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.Test;
@@ -32,7 +31,7 @@ public partial class CustomerTests
         Assert.True(customerResult.HasValue);
 
         // Load the mutor
-        var mutor = CustomerRecordMutor.Load(customerResult.Value!);
+        var mutor = CustomerRecordMutor.Load(customerResult.AsSuccess.Value);
 
         // emulate a UI Edit
         mutor.Name = $"{mutor.Name} - Update";
@@ -51,6 +50,6 @@ public partial class CustomerTests
 
         // check it matches the test record
         Assert.False(customerResult.HasException);
-        Assert.Equivalent(editedRecord, customerResult.Value);
+        Assert.Equivalent(editedRecord, customerResult.AsSuccess.Value);
     }
 }

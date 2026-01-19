@@ -44,10 +44,10 @@ public sealed class InvoiceRecordMutor : RecordMutor<DmoInvoice>, IRecordMutor<D
 
     public override bool IsNew => BaseRecord.Id.IsNew;
 
-    public Func<InvoiceEntity, Return<InvoiceEntity>> Dispatcher
+    public Func<InvoiceEntity, Result<InvoiceEntity>> Dispatcher
         => entity => this.IsDirty || this.IsNew
             ? UpdateInvoiceAction.Create(this.Record).Dispatcher(entity)
-            : ReturnT.Read(entity);
+            : ResultT.Successful(entity);
 
     public static InvoiceRecordMutor Load(DmoInvoice record)
         => new InvoiceRecordMutor(record);

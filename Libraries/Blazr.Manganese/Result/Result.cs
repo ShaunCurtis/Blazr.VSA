@@ -5,25 +5,23 @@
 /// ============================================================
 namespace Blazr.Manganese;
 
-public abstract record Result<T>
+public abstract record Result
 {
     private Result() { }
 
-    public sealed record SuccessWithValue(T Value) : Result<T>;
-    public sealed record SuccessWithoutValue() : Result<T>;
-    public sealed record Failed(string message) : Result<T>;
-    public sealed record Error(Exception exception) : Result<T>;
+    public sealed record Success() : Result;
+    public sealed record Failed(string Message) : Result;
 
-    public static Result<T> Successful(T Value) => new Result<T>.SuccessWithValue(Value);
-    public static Result<T> Successful() => new Result<T>.SuccessWithoutValue();
-    public static Result<T> Failure(string message) => new Result<T>.Failed(message);
-    public static Result<T> Exception(Exception exception) => new Result<T>.Error(exception);
-}
+    public static Result Successful() => new Result.Success();
+    public static Result Failure(string message) => new Result.Failed(message);
 
-public static class ResultT
-{
-    public static Result<T> Successful<T>(T value) => Result<T>.Successful(value);
-    public static Result<T> Successful<T>() => Result<T>.Successful();
-    public static Result<T> Failure<T>(string message) => Result<T>.Failure(message);
-    public static Result<T> Exception<T>(Exception exception) => Result<T>.Exception(exception);
+    public Result Match(Action? success = null, Action<string>? failure = null)
+    {
+        if (this is Result.Failed failed)
+            failure?.Invoke(failed.Message);
+        else
+            success?.Invoke();
+
+        return this;
+    }
 }

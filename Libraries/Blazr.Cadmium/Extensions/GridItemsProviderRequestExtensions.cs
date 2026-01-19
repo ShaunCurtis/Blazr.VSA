@@ -12,7 +12,7 @@ namespace Blazr.Cadmium
     {
         extension<TRecord>(GridItemsProviderRequest<TRecord> @this) where TRecord : class
         {
-            public UpdateGridRequest<TRecord> ToUpdateGridRequest(bool defaultSortDescending = false, string? defaultSortField = null)
+            public UpdateGridRequest<TRecord> ConvertToUpdateGridRequest(bool defaultSortDescending = false, string? defaultSortField = null)
             {
                 var column = @this.SortByColumn as SortedPropertyColumn<TRecord>;
 

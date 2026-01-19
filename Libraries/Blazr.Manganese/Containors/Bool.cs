@@ -5,6 +5,8 @@
 /// ============================================================
 namespace Blazr.Manganese;
 
+
+
 public readonly record struct Bool(bool Value)
 {
     public bool Write()

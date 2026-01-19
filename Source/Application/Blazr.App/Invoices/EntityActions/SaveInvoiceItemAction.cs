@@ -14,16 +14,16 @@ public record SaveInvoiceItemAction
     public SaveInvoiceItemAction(DmoInvoiceItem invoiceItem)
         => _invoiceItem = invoiceItem;
 
-    public Return<InvoiceEntity> Dispatcher(InvoiceEntity entity)
+    public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
         => entity.InvoiceItems.Any(_item => _invoiceItem.Id.Equals(_item.Id))
             ? Update(entity, _invoiceItem)
             : Add(entity, _invoiceItem);
 
-    public static Return<InvoiceEntity> Add(InvoiceEntity entity, DmoInvoiceItem invoiceItem)
-        => ReturnT.Read(entity.InvoiceItems.Add(invoiceItem))
+    public static Result<InvoiceEntity> Add(InvoiceEntity entity, DmoInvoiceItem invoiceItem)
+        => ResultT.Successful(entity.InvoiceItems.Add(invoiceItem))
             .Map(items => entity.Mutate(items));
 
-    public static Return<InvoiceEntity> Update(InvoiceEntity entity, DmoInvoiceItem invoiceItem)
+    public static Result<InvoiceEntity> Update(InvoiceEntity entity, DmoInvoiceItem invoiceItem)
         => entity.GetInvoiceItem(invoiceItem.Id)
             .Map(item => entity.InvoiceItems.Replace(item, invoiceItem))
             .Map(items => entity.Mutate(items));

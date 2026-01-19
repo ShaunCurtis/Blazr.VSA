@@ -4,19 +4,18 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
-using Blazr.App;
 using Blazr.App.Core;
 using Blazr.App.EntityFramework;
 using Blazr.App.Infrastructure;
-using Blazr.Cadmium.Presentation;
 using Blazr.Diode.Mediator;
 using Blazr.Gallium;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
 namespace Blazr.Test;
+
+using Blazr.Manganese;
 
 public partial class InvoiceTests
 {
@@ -65,7 +64,7 @@ public partial class InvoiceTests
 
         Assert.False(entityResult.HasException);
 
-        return entityResult.Value!;
+        return entityResult.AsSuccess.Value;
     }
 
     private async Task<InvoiceEntity> GetASampleDirtyEntityAsync(IMediatorBroker mediator)
@@ -78,19 +77,19 @@ public partial class InvoiceTests
 
         Assert.False(entityResult.HasException);
 
-        return entityResult.Value!;
+        return entityResult.AsSuccess.Value;
     }
 
     private DmoInvoice AsDmoInvoice(DboInvoice invoice)
     {
         var customer = _testDataProvider.Customers.First(item => item.CustomerID == invoice.CustomerID);
         return new DmoInvoice
-           {
-               Id = InvoiceId.Load(invoice.InvoiceID),
-               Customer = AsCustomer(customer),
-               Date = new Date(invoice.Date),
-               TotalAmount = new Money(invoice.TotalAmount),
-           };
+        {
+            Id = InvoiceId.Load(invoice.InvoiceID),
+            Customer = AsCustomer(customer),
+            Date = new Date(invoice.Date),
+            TotalAmount = new Money(invoice.TotalAmount),
+        };
     }
 
     private DmoInvoiceItem AsDmoInvoiceItem(DboInvoiceItem invoiceItem)

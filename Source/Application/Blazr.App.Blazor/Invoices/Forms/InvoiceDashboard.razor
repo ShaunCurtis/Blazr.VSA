@@ -74,7 +74,7 @@
     [Parameter] public InvoiceId InvoiceId { get; set; } = InvoiceId.NewId;
 
     private bool _loading = true;
-    private bool _isError = false;
+    //private bool _isError = false;
     private bool _showAddInvoiceForm = false;
     private IModalDialog _modalDialog = default!;
 
@@ -82,7 +82,9 @@
     private bool _isDirty => this.Mutor.IsDirty;
     private bool _isClean => !this.Mutor.IsDirty;
     private bool _isNew => this.Mutor.IsNew;
-    private string _message => _isError ? this.Mutor.LastResult.Exception?.Message ?? "Unspecified Error" : "Invoice changes are not currently saved to the data store!";
+    private string _message => this.Mutor.LastResult.IsFailure 
+        ? this.Mutor.LastResult.AsFailure.Message 
+        : "Invoice changes are not currently saved to the data store!";
 
     private InvoiceEntityMutor Mutor = default!;
 
@@ -126,8 +128,8 @@
     /// </summary>
     /// <returns></returns>
     private async Task SaveAndExitAsync()
-        => await this.Mutor.SaveAsync()
-            .NotifyAsync(ExitWithoutSaving);
+        => (await this.Mutor.SaveAsync())
+        .Match(success: ExitWithoutSaving);
 
     /// <summary>
     /// Standard exit button handler - will abort if dirty

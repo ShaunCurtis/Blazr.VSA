@@ -8,8 +8,8 @@ using Blazr.App.Core;
 using Blazr.App.Core.Invoices;
 using Blazr.App.Presentation;
 using Blazr.Diode.Mediator;
+using Blazr.Manganese;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel.DataAnnotations;
 
 namespace Blazr.Test;
 
@@ -38,7 +38,7 @@ public partial class InvoiceTests
         var action = DeleteInvoiceItemAction.Create(itemToDelete);
         var deleteActionResult = entityMutor.Dispatch(action.Dispatcher);
 
-        Assert.True(deleteActionResult.Succeeded);
+        Assert.True(deleteActionResult.IsSuccess);
 
         // Get the current Mutor Entity
         var updatedEntity = entityMutor.InvoiceEntity;
@@ -46,14 +46,14 @@ public partial class InvoiceTests
         // Commit the changes to the data store
         var commandResult = await mediator.DispatchAsync(InvoiceEntityCommandRequest.Create(entityMutor.InvoiceEntity, entityMutor.State));
 
-        Assert.True(commandResult.Succeeded);
+        Assert.True(commandResult.HasSucceeded);
 
         // Get the Invoice Entity from the Data Store
         var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(Id));
 
         Assert.False(entityResult.HasException);
 
-        var dbEntity = entityResult.Value!;
+        var dbEntity = entityResult.AsSuccess.Value;
 
         // Check the stored data is the same as the edited entity
         Assert.Equivalent(updatedEntity, dbEntity);

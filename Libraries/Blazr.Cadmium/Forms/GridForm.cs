@@ -3,7 +3,6 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.Cadmium.Core;
 using Blazr.Cadmium.Presentation;
 using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode;
@@ -32,7 +31,7 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
     protected QuickGrid<TRecord> quickGrid = default!;
     protected PaginationState Pagination = new PaginationState { ItemsPerPage = 10 };
     protected GridState<TRecord> GridState = new();
-    protected Return LastResult = Return.Success();
+    protected Result LastResult = Result.Successful();
 
     protected string formTitle => this.FormTitle ?? $"List of {this.UIConnector?.PluralDisplayName ?? "Items"}";
 
@@ -46,8 +45,8 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
 
         // Get the current grid state from the store if one exists
         this.LastResult = this.GetGridState
-            .Notify(state => this.GridState = state)
-            .ToReturn();
+            .Match(successAction: state => this.GridState = state)
+            .AsResult;
 
         // Subscribe to record change messages so we can refresh the grid if a record is changed
         _messageBus.Subscribe<TKey>(OnRecordChanged);
@@ -67,17 +66,17 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
         ArgumentNullException.ThrowIfNull(this.quickGrid);
     }
 
-    private void SetLastResult(Return result) => this.LastResult = result;
+    private void SetLastResult(Result result) => this.LastResult = result;
 
-    protected Return<GridState<TRecord>> SetGridState(UpdateGridRequest<TRecord> request)
+    protected Result<GridState<TRecord>> SetGridState(UpdateGridRequest<TRecord> request)
         => _gridStateStore.Dispatch(request.ToGridState(this.GridContextId));
 
-    protected Return<GridState<TRecord>> GetGridState
+    protected Result<GridState<TRecord>> GetGridState
         => this.ResetGridContext
             ? this.ResetGridState()
             : _gridStateStore.GetState<GridState<TRecord>>(GridContextId);
 
-    protected Return<GridState<TRecord>> ResetGridState()
+    protected Result<GridState<TRecord>> ResetGridState()
         => _gridStateStore.Dispatch(new GridState<TRecord>
         {
             Key = this.GridContextId,
@@ -88,13 +87,17 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
         });
 
     protected async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
-        => await gridRequest
-            .ToUpdateGridRequest()
-            .ToReturnT()
-            .Bind(this.SetGridState)
-            .BindAsync(UIConnector.GetItemsAsync)
-            .SetReturnAsync(this.SetLastResult)
-            .WriteAsync(defaultValue: GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+    {
+        var result = await ResultT.Successful(gridRequest
+             .ConvertToUpdateGridRequest())
+             .Bind(this.SetGridState)
+             .BindAsync(UIConnector.GetItemsAsync);
+
+        LastResult = result.AsResult;
+
+        return result
+            .Write(defaultValue: GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+    }
 
     protected virtual async Task OnEditAsync(TKey id)
     {
@@ -142,4 +145,4 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
     {
         _messageBus.UnSubscribe<TKey>(OnRecordChanged);
     }
-}   
+}

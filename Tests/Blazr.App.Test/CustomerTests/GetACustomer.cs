@@ -5,9 +5,8 @@
 /// ============================================================
 
 using Blazr.App.Core;
-using Blazr.Diode;
 using Blazr.Diode.Mediator;
-using FluentValidation;
+using Blazr.Manganese;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.Test;
@@ -31,6 +30,6 @@ public partial class CustomerTests
         Assert.False(customerResult.HasException);
 
         // check it matches the test record
-        Assert.Equivalent(controlRecord, customerResult.Value);
+        Assert.Equivalent(controlRecord, customerResult.AsSuccess.Value);
     }
 }

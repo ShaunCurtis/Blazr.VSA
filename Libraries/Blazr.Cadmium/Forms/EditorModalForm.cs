@@ -26,7 +26,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     [Parameter, EditorRequired] public TKey Uid { get; set; } = new();
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    protected Return LastResult { get; set; } = Return.Success();
+    protected Result LastResult { get; set; } = Result.Successful();
     protected TRecordMutor EditMutor { get; set; } = default!;
     protected EditContext EditContext { get; set; } = default!;
 
@@ -45,10 +45,13 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
         // Check we have a Uid.  If not then we can't proceed so throw an exception
         ArgumentNullException.ThrowIfNull(Uid);
 
-        this.EditMutor = await this.UIConnector.RecordRequestAsync(this.Uid)
-            .SetReturnAsync(this.SetLastResult)
-            .MapAsync(record => (TRecordMutor)this.UIConnector.GetRecordMutor(record))
-            .WriteAsync(defaultValue: default!);
+        var result = await this.UIConnector.RecordRequestAsync(this.Uid);
+
+        LastResult = result.AsResult;
+
+        this.EditMutor = result
+            .Map(record => (TRecordMutor)this.UIConnector.GetRecordMutor(record))
+            .Write(defaultValue: default!);
 
         this.EditContext = new EditContext(EditMutor);
 
@@ -57,32 +60,28 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
         this.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
     }
 
-    private void SetLastResult(Return result) => this.LastResult = result;
-
     protected virtual async Task OnSave()
     {
-        await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, this.EditMutor.State)
-            .SetReturnAsync(this.SetLastResult);
+        this.LastResult = await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, this.EditMutor.State)
+            .AsResultAsync();
 
         this.OnExit();
     }
 
     protected virtual async Task OnDelete()
     {
-        if ((await ConfirmAsync()).Failed)
+        if (await ConfirmAsync())
             return;
 
-        await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, RecordState.DeletedState)
-            .SetReturnAsync(this.SetLastResult);
+        this.LastResult = await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, RecordState.DeletedState)
+            .AsResultAsync();
 
         this.OnExit();
     }
 
-    protected async Task<Return> ConfirmAsync()
-        => await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?")
-            ? Return.Success()
-            : Return.Failure();
-
+    protected async Task<bool> ConfirmAsync()
+        => await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?");
+ 
     protected virtual void OnExit()
         => ModalDialog?.Close(new ModalResult());
 

@@ -16,20 +16,20 @@ namespace Blazr.App.EntityFramework;
 ///  - remove each item from the all items list
 ///  - remove any remaining items in th all items list from the database
 /// </summary>
-public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceEntityCommandRequest, Return>
+public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceEntityCommandRequest, Result<InvoiceEntity>>
 {
     private readonly IMessageBus _messageBus;
     private readonly IDbContextFactory<InMemoryInvoiceTestDbContext> _factory;
-    private readonly IRequestHandler<InvoiceEntityRequest, Return<InvoiceEntity>> _recordRequestHandler;
+    private readonly IRequestHandler<InvoiceEntityRequest, Result<InvoiceEntity>> _recordRequestHandler;
 
-    public AltInvoiceCommandHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus, IRequestHandler<InvoiceEntityRequest, Return<InvoiceEntity>> requestHandler)
+    public AltInvoiceCommandHandler(IDbContextFactory<InMemoryInvoiceTestDbContext> factory, IMessageBus messageBus, IRequestHandler<InvoiceEntityRequest, Result<InvoiceEntity>> requestHandler)
     {
         _factory = factory;
         _messageBus = messageBus;
         _recordRequestHandler = requestHandler;
     }
 
-    public async Task<Return> HandleAsync(InvoiceEntityCommandRequest request, CancellationToken cancellationToken)
+    public async Task<Result<InvoiceEntity>> HandleAsync(InvoiceEntityCommandRequest request, CancellationToken cancellationToken)
     {
         if (request.State is RecordState.Deleted)
             return await this.DeleteEntityAsync(request.Item.InvoiceRecord.Id, cancellationToken);
@@ -37,16 +37,16 @@ public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceEntityCom
         return await this.SaveEntityAsync(request.Item, cancellationToken);
     }
 
-    private async Task<Return> DeleteEntityAsync(InvoiceId id, CancellationToken cancellationToken)
+    private async Task<Result<InvoiceEntity>> DeleteEntityAsync(InvoiceId id, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
 
         var recordResult = await _recordRequestHandler.HandleAsync(new InvoiceEntityRequest(id), cancellationToken);
 
-        if (recordResult.HasException)
-            return recordResult.ToReturn();
+        if (recordResult.HasNotSucceeded)
+            return recordResult;
 
-        var entity = recordResult.Value!;
+        var entity = recordResult.AsSuccess.Value;
 
         dbContext.Remove<DboInvoice>(DboInvoice.Map(entity.InvoiceRecord));
 
@@ -56,12 +56,12 @@ public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceEntityCom
         var addedItems = await dbContext.SaveChangesAsync(cancellationToken);
 
         if (addedItems != entity.InvoiceItems.Count + 1)
-            return Return.Failure("The Invoice was not added corectly.  Check the result.");
+            return Result<InvoiceEntity>.Failure("The Invoice was not added corectly.  Check the result.");
 
-        return Return.Success();
+        return ResultT.Successful(entity);
     }
 
-    private async Task<Return> SaveEntityAsync(InvoiceEntity entity, CancellationToken cancellationToken)
+    private async Task<Result<InvoiceEntity>> SaveEntityAsync(InvoiceEntity entity, CancellationToken cancellationToken)
     {
         var itemList = await this.GetInvoiceItemsAsync(entity.InvoiceRecord.Id);
 
@@ -97,9 +97,9 @@ public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceEntityCom
         var addedItems = await dbContext.SaveChangesAsync(cancellationToken);
 
         if (addedItems != transactionCount)
-            return Return.Failure("The Invoice was not added correctly.  Check the result.");
+            return Result<InvoiceEntity>.Failure("The Invoice was not added correctly.  Check the result.");
 
-        return Return.Success();
+        return Result<InvoiceEntity>.Successful(entity);
     }
 
     private async Task<List<DboInvoiceItem>> GetInvoiceItemsAsync(InvoiceId id)

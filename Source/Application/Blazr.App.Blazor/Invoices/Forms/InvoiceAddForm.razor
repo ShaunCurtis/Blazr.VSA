@@ -80,16 +80,17 @@
     private bool _isDirty;
     private bool _isClean => !_isDirty;
     private bool _loading = true;
-    private Return LastResult = Return.Success();
+    private Result LastResult = Result.Successful();
 
     protected async override Task OnInitializedAsync()
     {
         ArgumentNullException.ThrowIfNull(this.EntityMutor);
         this.EditContext = new(EditMutor);
 
-        var result = await this.FKProvider.GetCustomerFKAsync();
+        var result = (await this.FKProvider.GetCustomerFKAsync())
+            .Match(failureAction: message => this.ToastService.ShowError(message));
 
-        LastResult = result.ToReturn();
+        LastResult = result.AsResult;
 
         _customerList = result
             .Write(Enumerable.Empty<FkoCustomer>())
@@ -98,9 +99,6 @@
         _loading = false;
 
         this.EditContext.OnFieldChanged += OnEditStateMayHaveChanged;
-
-        if (this.LastResult.Failed)
-            this.ToastService.ShowError(this.LastResult.Message);
     }
 
     protected override void OnParametersSet()

@@ -12,8 +12,7 @@ public static class ResultMonadExtensions
         public Result<TOut> Bind<TOut>(Func<T, Result<TOut>> bind)
         => @this switch
         {
-            Result<T>.SuccessWithValue @true => bind.Invoke(@true.Value),
-            Result<T>.SuccessWithoutValue => new Result<TOut>.SuccessWithoutValue(),
+            Result<T>.Success @true => bind.Invoke(@true.Value),
             Result<T>.Failed @false => new Result<TOut>.Failed(@false.message),
             Result<T>.Error @error => new Result<TOut>.Error(error.exception),
             _ => throw new PatternMatchException()
@@ -22,8 +21,7 @@ public static class ResultMonadExtensions
         public async Task<Result<TOut>> BindAsync<TOut>(Func<T, Task<Result<TOut>>> bind)
             => @this switch
             {
-                Result<T>.SuccessWithValue @true => await bind.Invoke(@true.Value).ContinueWith(AsyncHelpers.CheckForTaskException),
-                Result<T>.SuccessWithoutValue => new Result<TOut>.SuccessWithoutValue(),
+                Result<T>.Success @true => await bind.Invoke(@true.Value).ContinueWith(AsyncHelpers.CheckForTaskException),
                 Result<T>.Failed @false => new Result<TOut>.Failed(@false.message),
                 Result<T>.Error @error => new Result<TOut>.Error(error.exception),
                 _ => throw new PatternMatchException()
@@ -32,8 +30,7 @@ public static class ResultMonadExtensions
         public Result<TOut> Map<TOut>(Func<T, TOut> map)
             => @this switch
             {
-                Result<T>.SuccessWithValue @true => TryMap<T, TOut>(map, @true),
-                Result<T>.SuccessWithoutValue => new Result<TOut>.SuccessWithoutValue(),
+                Result<T>.Success @true => TryMap<T, TOut>(map, @true),
                 Result<T>.Failed @false => new Result<TOut>.Failed(@false.message),
                 Result<T>.Error @error => new Result<TOut>.Error(error.exception),
                 _ => throw new PatternMatchException()
@@ -42,18 +39,30 @@ public static class ResultMonadExtensions
         public async Task<Result<TOut>> MapAsync<TOut>(Func<T, Task<TOut>> map)
             => @this switch
             {
-                Result<T>.SuccessWithValue @true => await map.Invoke(@true.Value).ContinueWith(AsyncHelpers.CheckForTaskException),
-                Result<T>.SuccessWithoutValue => new Result<TOut>.SuccessWithoutValue(),
+                Result<T>.Success @true => await map.Invoke(@true.Value).ContinueWith(AsyncHelpers.CheckForTaskException),
                 Result<T>.Failed @false => new Result<TOut>.Failed(@false.message),
                 Result<T>.Error @error => new Result<TOut>.Error(error.exception),
                 _ => throw new PatternMatchException()
             };
 
+        public Result<T> Match(Action<T>? successAction = null, Action<string>? failureAction = null, Action<Exception>? exceptionAction = null)
+        {
+            if (@this is Result<T>.Success @true)
+                successAction?.Invoke(@true.Value);
+            else if (@this is Result<T>.Failed @false)
+                failureAction?.Invoke(@false.message);
+            else if (@this is Result<T>.Error @error && exceptionAction is null)
+                failureAction?.Invoke(@error.exception.Message);
+            else if (@this is Result<T>.Error @exception)
+                exceptionAction?.Invoke(exception.exception);
+
+            return @this;
+        }
+
         public Result<T> Transform(Func<T> transform)
             => @this switch
             {
-                Result<T>.SuccessWithValue @true => TryMap<T>(transform, @this),
-                Result<T>.SuccessWithoutValue => new Result<T>.SuccessWithoutValue(),
+                Result<T>.Success @true => TryMap<T>(transform, @this),
                 Result<T>.Failed @false => new Result<T>.Failed(@false.message),
                 Result<T>.Error @error => new Result<T>.Error(error.exception),
                 _ => throw new PatternMatchException()
@@ -61,7 +70,7 @@ public static class ResultMonadExtensions
 
         public Result<T> Write(Action<T> writer, T defaultValue)
         {
-            if (@this is Result<T>.SuccessWithValue @result)
+            if (@this is Result<T>.Success @result)
                 writer.Invoke(@result.Value);
             else
                 writer.Invoke(defaultValue);
@@ -72,8 +81,7 @@ public static class ResultMonadExtensions
         public T Write(T defaultValue)
             => @this switch
             {
-                Result<T>.SuccessWithValue @true => @true.Value,
-                Result<T>.SuccessWithoutValue @false => defaultValue,
+                Result<T>.Success @true => @true.Value,
                 Result<T>.Failed @false => defaultValue,
                 Result<T>.Error @error => defaultValue,
                 _ => throw new PatternMatchException()
@@ -81,7 +89,7 @@ public static class ResultMonadExtensions
 
     }
 
-    private static Result<TOut> TryMap<T, TOut>(Func<T, TOut> map, Result<T>.SuccessWithValue result)
+    private static Result<TOut> TryMap<T, TOut>(Func<T, TOut> map, Result<T>.Success result)
         {
             try
             {
@@ -98,7 +106,7 @@ public static class ResultMonadExtensions
 
     private static Result<T> TryMap<T>(Func<T> map, Result<T> result)
     {
-        if (result is Result<T>.SuccessWithValue || result is Result<T>.SuccessWithoutValue)
+        if (result is Result<T>.Success)
         {
             try
             {

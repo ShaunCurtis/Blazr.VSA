@@ -5,7 +5,7 @@
 /// ============================================================
 namespace Blazr.Manganese;
 
-public static class ResultAsyncExtensions
+public static class ResultAsyncMonadExtensions
 {
     public static async Task<Result<TOut>> MapAsync<T, TOut>(this Task<Result<T>> @this, Func<T, TOut> map)
         => await Task<Result<TOut>>.FromResult((await @this.ContinueWith(AsyncHelpers.CheckForTaskException))
@@ -14,6 +14,11 @@ public static class ResultAsyncExtensions
     public static async Task<Result<TOut>> MapAsync<T, TOut>(this Task<Result<T>> @this, Func<T, Task<TOut>> map)
         => await @this.ContinueWith(AsyncHelpers.CheckForTaskException)
         .MapAsync(map);
+
+    public static async Task<Result<T>> MatchAsync<T>(this Task<Result<T>> @this, Action<T>? successAction = null, Action<string>? failureAction = null, Action<Exception>? exceptionAction = null)
+        => await Task<Result<T>>.FromResult((await @this.ContinueWith(AsyncHelpers.CheckForTaskException))
+        .Match(successAction, failureAction, exceptionAction));
+
 
     public static async Task<Result<TOut>> BindAsync<T, TOut>(this Task<Result<T>> @this, Func<T, Result<TOut>> bind)
         => await Task<Result<TOut>>.FromResult((await @this.ContinueWith(AsyncHelpers.CheckForTaskException))
@@ -30,4 +35,8 @@ public static class ResultAsyncExtensions
     public static async Task<T> WriteAsync<T>(this Task<Result<T>> @this, T defaultValue)
         => (await @this.ContinueWith(AsyncHelpers.CheckForTaskException))
         .Write(defaultValue);
+
+    public static async Task<Result> AsResultAsync<T>(this Task<Result<T>> @this)
+        => (await @this.ContinueWith(AsyncHelpers.CheckForTaskException))
+            .AsResult;
 }

@@ -29,7 +29,7 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
     protected string FormTitle => $"{this.UIConnector.SingleDisplayName} Viewer";
 
     protected TRecord Item { get; set; } = new TRecord();
-    protected Return LastResult { get; set; } = Return.Success();
+    protected Result LastResult { get; set; } = Result.Successful();
 
     protected async override Task OnInitializedAsync()
     {
@@ -46,15 +46,16 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
     {
         // Load the record
         // if it can't be found, create a new blank record
-        this.Item = await UIConnector.RecordRequestAsync(Uid)
-             .SetReturnAsync(this.SetLastResult)
-             .WriteAsync(defaultValue: new TRecord());
+        var result = await UIConnector.RecordRequestAsync(Uid);
+
+        this.LastResult = result.AsResult;
+
+        this.Item =result
+             .Write(defaultValue: new TRecord());
     }
 
-    private void SetLastResult(Return result) => this.LastResult = result;
-
     protected virtual async void OnRecordChanged(object? sender)
-    {
+    { 
         // Check to see if the changed record is the one we are viewing
         // if so, reload it
         if (sender is TKey key && this.Uid.Equals(key))

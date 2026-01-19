@@ -2,12 +2,12 @@
 
 @using Blazr.Manganese
 
-<div hidden="@Result.Succeeded">
+<div hidden="@Result.IsSuccess">
     <div class="alert alert-danger d-flex align-items-center my-2 p-2" role="alert">
-        @Result.Message
+        @Result.AsFailure..Message
     </div>
 </div>
 
 @code {
-    [Parameter, EditorRequired] public Return Result { get; set; }
+    [Parameter, EditorRequired] public Result Result { get; set; }
 }

@@ -25,14 +25,14 @@ public class InvoiceUIConnector
         _mediator = mediator;
     }
 
-    public Func<InvoiceId, Task<Return<DmoInvoice>>> RecordRequestAsync
+    public Func<InvoiceId, Task<Result<DmoInvoice>>> RecordRequestAsync
         => throw new NotImplementedException();
 
-    public Func<DmoInvoice, RecordState, Task<Return<InvoiceId>>> RecordCommandAsync
+    public Func<DmoInvoice, RecordState, Task<Result<InvoiceId>>> RecordCommandAsync
         => throw new NotImplementedException();
 
-    public Task<Return<GridItemsProviderResult<DmoInvoice>>> GetItemsAsync(GridState<DmoInvoice> state)
-        => state.ToReturnT
+    public Task<Result<GridItemsProviderResult<DmoInvoice>>> GetItemsAsync(GridState<DmoInvoice> state)
+        => ResultT.Successful(state)
             .Bind(InvoiceListRequest.FromGridState)
             .BindAsync((request) => _mediator.DispatchAsync(request))
             .MapAsync(itemsProvider => itemsProvider.ToGridItemsProviderResult());

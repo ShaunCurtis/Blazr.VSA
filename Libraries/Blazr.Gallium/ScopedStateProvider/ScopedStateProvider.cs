@@ -10,11 +10,11 @@ namespace Blazr.Gallium;
 public interface IScopedStateProvider<TKey, TData>
      where TData : class
 {
-    public Return Dispatch(TKey key, TData data);
+    public Result Dispatch(TKey key, TData data);
 
-    public Return ClearState(TKey key);
+    public Result ClearState(TKey key);
 
-    public Return<T> GetState<T>(TKey key) where T : class;
+    public Result<T> GetState<T>(TKey key) where T : class;
 }
 
 public class ScopedStateProvider : IScopedStateProvider<Guid, object>
@@ -27,7 +27,7 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
     private Dictionary<Guid, StateSubscription> _subscriptions = new();
     private TimeSpan StateTTL = TimeSpan.FromMinutes(60);
 
-    public Return Dispatch(Guid key, object data)
+    public Result Dispatch(Guid key, object data)
     {
         if (_subscriptions.ContainsKey(key))
             _subscriptions[key] = new(data);
@@ -36,10 +36,10 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
 
         this.ClearExpiredStates();
 
-        return Return.Success();
+        return Result.Successful();
     }
 
-    public Return<T> Dispatch<T>(T data) where T : class, IScopedState
+    public Result<T> Dispatch<T>(T data) where T : class, IScopedState
         {
         if (_subscriptions.ContainsKey(data.Key))
             _subscriptions[data.Key] = new(data);
@@ -48,21 +48,21 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
 
         this.ClearExpiredStates();
 
-        return Return<T>.Success(data);
+        return Result<T>.Successful(data);
     }
 
-    public Return ClearState(Guid key)
+    public Result ClearState(Guid key)
     {
         if (_subscriptions.ContainsKey(key))
             _subscriptions.Remove(key);
 
-        return Return.Success();
+        return Result.Successful();
     }
 
-    public Return<T> GetState<T>(Guid key) where T : class
+    public Result<T> GetState<T>(Guid key) where T : class
         => _subscriptions.ContainsKey(key)
-            ? Return<T>.Read(_subscriptions[key].Data as T)
-            : Return<T>.Failure($"No state found for key {key}");
+            ? Result<T>.Read(_subscriptions[key].Data as T)
+            : Result<T>.Failure($"No state found for key {key}");
         
     private void ClearExpiredStates()
     {

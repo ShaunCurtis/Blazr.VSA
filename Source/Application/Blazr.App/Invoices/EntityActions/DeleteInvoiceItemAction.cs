@@ -15,7 +15,7 @@ public record DeleteInvoiceItemAction
     public DeleteInvoiceItemAction(DmoInvoiceItem invoiceItem)
         => _invoiceItem = invoiceItem;
 
-    public Return<InvoiceEntity> Dispatcher(InvoiceEntity entity)
+    public Result<InvoiceEntity> Dispatcher(InvoiceEntity entity)
             => entity
                 // Get the invoice Item
                 .GetInvoiceItem(_invoiceItem.Id)

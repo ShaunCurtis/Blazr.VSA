@@ -9,6 +9,7 @@ using Blazr.App.Core.Invoices;
 using Blazr.App.Presentation;
 using Blazr.Diode.Mediator;
 using Microsoft.Extensions.DependencyInjection;
+using Blazr.Manganese;
 
 namespace Blazr.Test;
 
@@ -34,6 +35,6 @@ public partial class InvoiceTests
         // Commit the changes to the data store
         var commandResult = await entityMutor.DeleteAsync();
 
-        Assert.True(commandResult.Succeeded);
+        Assert.True(commandResult.IsSuccess);
     }
 }

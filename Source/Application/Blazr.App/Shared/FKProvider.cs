@@ -14,6 +14,6 @@ public sealed record FKProvider
     public FKProvider(IMediatorBroker mediatorBroker)
         => _mediatorBroker = mediatorBroker;
 
-    public Task<Return<IEnumerable<FkoCustomer>>> GetCustomerFKAsync()
+    public Task<Result<IEnumerable<FkoCustomer>>> GetCustomerFKAsync()
         => _mediatorBroker.DispatchAsync(new CustomerFKRequest());
 }

@@ -71,7 +71,7 @@
     [Parameter] public InvoiceItemId Uid { get; set; } = InvoiceItemId.NewId;
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    private Return LastResult { get; set; } = Return.Success();
+    private Result LastResult { get; set; } = Result.Successful();
     private InvoiceItemRecordMutor EditMutor { get; set; } = default!;
     private EditContext EditContext { get; set; } = default!;
     private EditFormButtonsOptions editFormButtonsOptions = new();
@@ -91,20 +91,34 @@
 
     private async Task OnDeleteAsync()
     {
-        this.LastResult = await this.ConfirmDeleteAsync()
-            .BindAsync(() => EntityMutor.Dispatch(DeleteInvoiceItemAction.Create(EditMutor.Record).Dispatcher))
-            .NotifyAsync(this.OnExit);
+        this.LastResult = await this.ConfirmDeleteAsync();
+
+        if(this.LastResult.IsSuccess)
+        {
+            var dispatcher = DeleteInvoiceItemAction
+                .Create(EditMutor.Record)
+                .Dispatcher;
+
+            this.LastResult = EntityMutor.Dispatch(dispatcher);
+        }
+
+        this.LastResult
+            .Match(success: this.OnExit);
     }
 
-    private async Task<Return> ConfirmDeleteAsync()
+    private async Task<Result> ConfirmDeleteAsync()
         => await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?")
-            ? Return.Success()    
-            : Return.Failure("The user aborted the deletion");
+            ? Result.Successful()    
+            : Result.Failure("The user aborted the deletion");
 
     private void OnSave()
     {
-        this.LastResult = EntityMutor.Dispatch(SaveInvoiceItemAction.Create(EditMutor.Record).Dispatcher)
-            .Notify(this.OnExit);
+        var dispatcher = SaveInvoiceItemAction
+            .Create(EditMutor.Record)
+            .Dispatcher;
+
+        this.LastResult = EntityMutor.Dispatch(dispatcher)
+            .Match(success: this.OnExit);
     }
 
     private void ResetRecord()

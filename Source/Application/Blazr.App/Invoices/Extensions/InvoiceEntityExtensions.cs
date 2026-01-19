@@ -13,15 +13,15 @@ public static class InvoiceEntityExtensions
 {
     extension(InvoiceEntity @this)
     {
-        public Return<InvoiceEntity> ToReturnT => Return<InvoiceEntity>.Read(@this);
+        public Result<InvoiceEntity> ToResultT => Result<InvoiceEntity>.Read(@this);
 
         public InvoiceEntity Map(Func<InvoiceEntity, InvoiceEntity> func)
             => func.Invoke(@this);
 
         public bool IsDirty(InvoiceEntity control) => !@this.Equals(control);
 
-        public Return<DmoInvoiceItem> GetInvoiceItem(InvoiceItemId id)
-            => Return<DmoInvoiceItem>.Read(
+        public Result<DmoInvoiceItem> GetInvoiceItem(InvoiceItemId id)
+            => Result<DmoInvoiceItem>.Read(
                 value: @this.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
                 errorMessage: "The record does not exist in the Invoice Items");
 

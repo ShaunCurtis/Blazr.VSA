@@ -7,7 +7,7 @@
 using Blazr.App.Core;
 using Blazr.Diode;
 using Blazr.Diode.Mediator;
-using FluentValidation;
+using Blazr.Manganese;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.Test;

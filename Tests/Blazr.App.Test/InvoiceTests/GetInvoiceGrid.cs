@@ -7,8 +7,8 @@
 using Blazr.App.Core;
 using Blazr.App.Core.Invoices;
 using Blazr.Diode.Mediator;
+using Blazr.Manganese;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel.DataAnnotations;
 
 namespace Blazr.Test;
 
@@ -39,7 +39,7 @@ public partial class InvoiceTests
         var listResult = await mediator.DispatchAsync(request);
 
         Assert.True(listResult.HasValue);
-        Assert.Equal(testCount, listResult.Value!.TotalCount);
-        Assert.Equal(testPageCount, listResult.Value!.Items.Count());
+        Assert.Equal(testCount, listResult.AsSuccess.Value.TotalCount);
+        Assert.Equal(testPageCount, listResult.AsSuccess.Value.Items.Count());
     }
 }

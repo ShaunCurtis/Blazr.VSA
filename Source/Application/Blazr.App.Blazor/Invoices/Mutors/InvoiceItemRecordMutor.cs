@@ -31,10 +31,10 @@ public sealed class InvoiceItemRecordMutor : RecordMutor<DmoInvoiceItem> ,IRecor
     public void Reset()
         => this.SetFields();
 
-    public Func<InvoiceEntity, Return<InvoiceEntity>> Dispatcher =>
+    public Func<InvoiceEntity, Result<InvoiceEntity>> Dispatcher =>
         entity => this.IsDirty
             ? SaveInvoiceItemAction.Create(this.Record).Dispatcher(entity)
-            : ReturnT.Read(entity);
+            : ResultT.Successful(entity);
 
     public override bool IsNew => BaseRecord.Id.IsNew;
 
