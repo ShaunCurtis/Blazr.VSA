@@ -9,6 +9,10 @@ public abstract record Result<T>
 {
     private Result() { }
 
+    public sealed record Success(T Value) : Result<T>;
+    public sealed record Failed(string message) : Result<T>;
+    public sealed record Error(Exception exception) : Result<T>;
+
     public Result AsResult
         => this switch
         {
@@ -27,10 +31,6 @@ public abstract record Result<T>
         => value is null
             ? ResultT.Failure<T>(errorMessage)
             : ResultT.Successful(value);
-
-    public sealed record Success(T Value) : Result<T>;
-    public sealed record Failed(string message) : Result<T>;
-    public sealed record Error(Exception exception) : Result<T>;
 
     public static Result<T> Successful(T Value) => new Result<T>.Success(Value);
     public static Result<T> Failure(string message) => new Result<T>.Failed(message);

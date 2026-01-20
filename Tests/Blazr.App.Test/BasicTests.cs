@@ -16,9 +16,5 @@ public partial class BasicTests
         var test = customer with { };
 
         Assert.Equivalent(customer, test);
-
-       
-
     }
-
 }
