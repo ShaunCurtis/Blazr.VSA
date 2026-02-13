@@ -71,7 +71,7 @@
     [Parameter] public InvoiceItemId Uid { get; set; } = InvoiceItemId.NewId;
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    private Result LastResult { get; set; } = Result.Successful();
+    private Result LastResult { get; set; } = Result.Succeeded;
     private InvoiceItemRecordMutor EditMutor { get; set; } = default!;
     private EditContext EditContext { get; set; } = default!;
     private EditFormButtonsOptions editFormButtonsOptions = new();
@@ -93,7 +93,7 @@
     {
         this.LastResult = await this.ConfirmDeleteAsync();
 
-        if(this.LastResult.IsSuccess)
+        if(this.LastResult.Success)
         {
             var dispatcher = DeleteInvoiceItemAction
                 .Create(EditMutor.Record)
@@ -108,8 +108,8 @@
 
     private async Task<Result> ConfirmDeleteAsync()
         => await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?")
-            ? Result.Successful()    
-            : Result.Failure("The user aborted the deletion");
+            ? Result.Succeeded    
+            : Result.Failed("The user aborted the deletion");
 
     private void OnSave()
     {

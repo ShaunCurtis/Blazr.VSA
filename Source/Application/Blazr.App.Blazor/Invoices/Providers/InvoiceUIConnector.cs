@@ -32,7 +32,7 @@ public class InvoiceUIConnector
         => throw new NotImplementedException();
 
     public Task<Result<GridItemsProviderResult<DmoInvoice>>> GetItemsAsync(GridState<DmoInvoice> state)
-        => ResultT.Successful(state)
+        => ResultT.Read(state)
             .Bind(InvoiceListRequest.FromGridState)
             .BindAsync((request) => _mediator.DispatchAsync(request))
             .MapAsync(itemsProvider => itemsProvider.ToGridItemsProviderResult());

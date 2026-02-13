@@ -47,7 +47,7 @@ public sealed class InvoiceRecordMutor : RecordMutor<DmoInvoice>, IRecordMutor<D
     public Func<InvoiceEntity, Result<InvoiceEntity>> Dispatcher
         => entity => this.IsDirty || this.IsNew
             ? UpdateInvoiceAction.Create(this.Record).Dispatcher(entity)
-            : ResultT.Successful(entity);
+            : ResultT.Read(entity);
 
     public static InvoiceRecordMutor Load(DmoInvoice record)
         => new InvoiceRecordMutor(record);

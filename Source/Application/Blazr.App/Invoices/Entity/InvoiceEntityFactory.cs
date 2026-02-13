@@ -21,7 +21,7 @@ public static class InvoiceEntityFactory
     /// <param name="invoiceItems">The collection of items associated with the invoice. Cannot be null.</param>
     /// <returns>A <see cref="Return{InvoiceEntity}"/> that contains the loaded invoice entity if validation succeeds; otherwise,
     /// contains validation errors.</returns>
-    public static Return<InvoiceEntity> TryLoad(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
+    public static Result<InvoiceEntity> TryLoad(DmoInvoice invoice, IEnumerable<DmoInvoiceItem> invoiceItems) =>
         CheckEntityRules(InvoiceEntity.Load(invoice, invoiceItems));
 
     /// <summary>
@@ -39,10 +39,10 @@ public static class InvoiceEntityFactory
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
-    public static Return<InvoiceEntity> CheckEntityRules(InvoiceEntity entity)
+    public static Result<InvoiceEntity> CheckEntityRules(InvoiceEntity entity)
         => entity.InvoiceItems.Sum(item => item.Amount.Value) == entity.InvoiceRecord.TotalAmount.Value
-            ? Return<InvoiceEntity>.Success(entity)
-            : Return<InvoiceEntity>.Failure("The Invoice Total Amount is incorrect.");
+            ? ResultT.Read(entity)
+            : ResultT.Fail<InvoiceEntity>("The Invoice Total Amount is incorrect.");
 
     /// <summary>
     /// Applies the entity rules to the supplied entity and updates the entity if necessary.

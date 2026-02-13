@@ -13,7 +13,7 @@ public static class InvoiceEntityExtensions
 {
     extension(InvoiceEntity @this)
     {
-        public Result<InvoiceEntity> ToResultT => Result<InvoiceEntity>.Read(@this);
+        public Result<InvoiceEntity> ToResultT => ResultT.Read(@this);
 
         public InvoiceEntity Map(Func<InvoiceEntity, InvoiceEntity> func)
             => func.Invoke(@this);
@@ -21,9 +21,9 @@ public static class InvoiceEntityExtensions
         public bool IsDirty(InvoiceEntity control) => !@this.Equals(control);
 
         public Result<DmoInvoiceItem> GetInvoiceItem(InvoiceItemId id)
-            => Result<DmoInvoiceItem>.Read(
+            => ResultT.Read(
                 value: @this.InvoiceItems.SingleOrDefault(_item => _item.Id == id),
-                errorMessage: "The record does not exist in the Invoice Items");
+                exceptionMessage: $"The record with id {id} does not exist in the Invoice Items");
 
         public InvoiceEntity Mutate(DmoInvoice invoice)
             => InvoiceEntityFactory.Load(invoice, @this.InvoiceItems)

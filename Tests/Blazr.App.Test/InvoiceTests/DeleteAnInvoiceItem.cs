@@ -38,7 +38,7 @@ public partial class InvoiceTests
         var action = DeleteInvoiceItemAction.Create(itemToDelete);
         var deleteActionResult = entityMutor.Dispatch(action.Dispatcher);
 
-        Assert.True(deleteActionResult.IsSuccess);
+        Assert.True(deleteActionResult.Success);
 
         // Get the current Mutor Entity
         var updatedEntity = entityMutor.InvoiceEntity;
@@ -51,9 +51,9 @@ public partial class InvoiceTests
         // Get the Invoice Entity from the Data Store
         var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(Id));
 
-        Assert.False(entityResult.HasException);
+        Assert.False(entityResult.HasNotSucceeded);
 
-        var dbEntity = entityResult.AsSuccess.Value;
+        var dbEntity = entityResult.Write(InvoiceEntityFactory.Create());
 
         // Check the stored data is the same as the edited entity
         Assert.Equivalent(updatedEntity, dbEntity);

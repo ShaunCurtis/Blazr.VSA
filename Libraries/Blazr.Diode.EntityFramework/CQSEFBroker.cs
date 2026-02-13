@@ -18,7 +18,7 @@ internal static class CQSEFBroker<TDbContext>
         where TRecord : class
     {
         if ((request.Item is not ICommandEntity))
-            return Result<TRecord>.Failure($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly.");
+            return ResultT.Fail<TRecord>($"{request.Item.GetType().Name} Does not implement ICommandEntity and therefore you can't Update/Add/Delete it directly.");
 
         var stateRecord = request.Item;
         var result = 0;
@@ -29,28 +29,28 @@ internal static class CQSEFBroker<TDbContext>
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
                 return result == 1
-                    ? Result<TRecord>.Successful(request.Item)
-                    : Result<TRecord>.Failure("Error adding Record");
+                    ? ResultT.Read(request.Item)
+                    : ResultT.Fail<TRecord>("Error adding Record");
 
             case RecordState.Deleted:
                 dbContext.Remove<TRecord>(request.Item);
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
                 return result == 1
-                    ? Result<TRecord>.Successful(request.Item)
-                    : Result<TRecord>.Failure("Error adding Record");
+                    ? ResultT.Read(request.Item)
+                    : ResultT.Fail<TRecord>("Error adding Record");
 
             case RecordState.Dirty:
                 dbContext.Update<TRecord>(request.Item);
                 result = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
                 return result == 1
-                    ? Result<TRecord>.Successful(request.Item)
-                    : Result<TRecord>.Failure("Error adding Record");
+                    ? ResultT.Read(request.Item)
+                    : ResultT.Fail<TRecord>("Error adding Record");
 
         }
 
-        return Result<TRecord>.Failure("Nothing executed.  Unrecognised State.");
+        return ResultT.Fail<TRecord>("Nothing executed.  Unrecognised State.");
     }
 
     public static async Task<Result<ListItemsProvider<TRecord>>> GetItemsFromDatastoreAsync<TRecord>(TDbContext dbContext, ListQueryRequest<TRecord> request)
@@ -92,7 +92,7 @@ internal static class CQSEFBroker<TDbContext>
             ? await query.ToListAsync().ConfigureAwait(ConfigureAwaitOptions.None)
             : query.ToList();
 
-        return Result<ListItemsProvider<TRecord>>.Successful(new ListItemsProvider<TRecord>(list, totalRecordCount));
+        return ResultT.Read(new ListItemsProvider<TRecord>(list, totalRecordCount));
     }
 
     public static async Task<Result<TRecord>> GetRecordAsync<TRecord>(TDbContext dbContext, RecordQueryRequest<TRecord> request)
@@ -105,8 +105,8 @@ internal static class CQSEFBroker<TDbContext>
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (record is null)
-            return Result<TRecord>.Failure($"No record retrieved with the Key provided");
+            return ResultT.Fail<TRecord>($"No record retrieved with the Key provided");
 
-        return Result<TRecord>.Successful(record);
+        return ResultT.Read(record);
     }
 }

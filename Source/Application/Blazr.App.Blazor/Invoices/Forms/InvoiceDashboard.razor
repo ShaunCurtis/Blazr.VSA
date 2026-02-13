@@ -82,8 +82,8 @@
     private bool _isDirty => this.Mutor.IsDirty;
     private bool _isClean => !this.Mutor.IsDirty;
     private bool _isNew => this.Mutor.IsNew;
-    private string _message => this.Mutor.LastResult.IsFailure 
-        ? this.Mutor.LastResult.AsFailure.Message 
+    private string _message => this.Mutor.LastResult.Failure 
+        ? this.Mutor.LastResult.Message 
         : "Invoice changes are not currently saved to the data store!";
 
     private InvoiceEntityMutor Mutor = default!;

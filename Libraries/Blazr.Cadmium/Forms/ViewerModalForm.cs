@@ -29,7 +29,7 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
     protected string FormTitle => $"{this.UIConnector.SingleDisplayName} Viewer";
 
     protected TRecord Item { get; set; } = new TRecord();
-    protected Result LastResult { get; set; } = Result.Successful();
+    protected Result LastResult { get; set; } = Result.Succeeded;
 
     protected async override Task OnInitializedAsync()
     {
@@ -48,10 +48,10 @@ public abstract partial class ViewerModalForm<TRecord, TKey> : ComponentBase, ID
         // if it can't be found, create a new blank record
         var result = await UIConnector.RecordRequestAsync(Uid);
 
-        this.LastResult = result.AsResult;
+        this.LastResult = result.ToResult();
 
         this.Item =result
-             .Write(defaultValue: new TRecord());
+             .Write(failureValue: new TRecord());
     }
 
     protected virtual async void OnRecordChanged(object? sender)

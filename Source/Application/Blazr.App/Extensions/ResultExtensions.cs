@@ -8,12 +8,20 @@ namespace Blazr.App.Core;
 
 public static class ResultExtensions
 {
-    public static Return<DmoCustomer> ToResult(this DmoCustomer item)
-        => Return<DmoCustomer>.Success(item);
+    extension<T>(Result<T> @this)
+    {
+        public bool HasNotSucceeded
+            => @this is FailureResult<T>;
 
-    public static Return<DmoInvoice> ToResult(this DmoInvoice item)
-        => Return<DmoInvoice>.Success(item);
+        public bool HasSucceeded
+            => @this is SuccessResult<T>;
 
-    public static Return<DmoInvoiceItem> ToResult(this DmoInvoiceItem item)
-        => Return<DmoInvoiceItem>.Success(item);
+        public Result<TOut> Convert<TOut>(TOut value)
+            => @this switch
+                {
+                    SuccessResult<T> success => ResultT.Read(value),
+                    FailureResult<T> failure => ResultT.Read<TOut>(failure.Exception),
+                    _ => throw new InvalidOperationException("Unknown result type")
+                };
+    }
 }

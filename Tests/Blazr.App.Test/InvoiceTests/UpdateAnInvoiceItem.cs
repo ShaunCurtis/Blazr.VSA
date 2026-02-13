@@ -39,21 +39,21 @@ public partial class InvoiceTests
         // Update the Entity Mutor by dispatching the itemMutor's Dispatcher
         var actionResult = entityMutor.Dispatch(itemMutor.Dispatcher);
 
-        Assert.True(actionResult.IsSuccess);
+        Assert.True(actionResult.Success);
 
         // Commit the changes to the data store
         var commandResult = await entityMutor.SaveAsync();
 
-        Assert.True(commandResult.IsSuccess);
+        Assert.True(commandResult.Success);
 
         // Get the Invoice Entity from the Data Store
         var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(Id));
 
-        Assert.True(entityResult.HasValue);
+        Assert.True(entityResult.HasSucceeded);
 
         // Get the Mutor Entities
         var updatedEntity = entityMutor.InvoiceEntity;
-        var dbEntity = entityResult.AsSuccess.Value;
+        var dbEntity = entityResult.Write(InvoiceEntityFactory.Create());
 
         // Check the stored data is the same as the edited entity
         Assert.Equal(updatedEntity, dbEntity);

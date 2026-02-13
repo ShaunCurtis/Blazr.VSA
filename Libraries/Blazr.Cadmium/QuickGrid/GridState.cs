@@ -40,6 +40,6 @@ public record GridState<TRecord> : IGridState<TRecord>, IScopedState
         };
     }
     public Result<GridState<TRecord>> ToResultT
-        => ResultT.Successful(this);
+        => ResultT.Read(this);
 
 }

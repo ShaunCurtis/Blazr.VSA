@@ -16,6 +16,6 @@ public sealed record DvoCustomer
         => new()
         {
             Id = CustomerId.Load(item.CustomerID),
-            Name = new (item.CustomerName ?? Title.DefaultValue)
+            Name = new(item.CustomerName ?? Title.DefaultValue)
         };
 }

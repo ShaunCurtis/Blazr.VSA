@@ -8,7 +8,7 @@ namespace Blazr.Cadmium.QuickGrid;
 public readonly record struct UpdateGridRequest<TRecord>(int StartIndex, int PageSize, bool SortDescending, string? SortField)
     where TRecord : class
 {
-    public Return<UpdateGridRequest<TRecord>> ToReturnT() => Return<UpdateGridRequest<TRecord>>.Success(this);
+    public Result<UpdateGridRequest<TRecord>> ToReturnT() => ResultT.Read(this);
 
     public GridState<TRecord> ToGridState(Guid contextId) => new()
     {

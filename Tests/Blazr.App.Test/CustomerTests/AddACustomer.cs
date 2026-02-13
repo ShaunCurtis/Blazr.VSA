@@ -24,7 +24,7 @@ public partial class CustomerTests
 
         var customerAddResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(newCustomer, RecordState.NewState));
 
-        Assert.IsType<Result<CustomerId>.Success>(customerAddResult);
+        Assert.IsType<SuccessResult<CustomerId>>(customerAddResult);
 
         var customerResult = await mediator.DispatchAsync(new CustomerRecordRequest(newCustomer.Id));
 
@@ -32,7 +32,7 @@ public partial class CustomerTests
 
         // NewCustomer has the isNew flag set in the record so we need to fix that to make a compare
         var customer = newCustomer with { Id = CustomerId.Load(newCustomer.Id.Value) };
-        Assert.True(customerResult.HasValue);
-        Assert.Equivalent(customer, customerResult.AsSuccess.Value);
+        Assert.True(customerResult.HasSucceeded);
+        Assert.Equivalent(customer, customerResult.Write(DmoCustomer.NewCustomer()));
     }
 }

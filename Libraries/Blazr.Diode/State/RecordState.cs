@@ -18,5 +18,4 @@ public abstract record RecordState
     public static RecordState DirtyState => new RecordState.Dirty();
     public static RecordState CleanState => new RecordState.Clean();
     public static RecordState DeletedState => new RecordState.Deleted();
-
 }

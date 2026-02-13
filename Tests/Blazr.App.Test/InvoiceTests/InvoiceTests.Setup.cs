@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using System.Reflection;
 namespace Blazr.Test;
 
+using Blazr.App.Core.Invoices;
 using Blazr.Manganese;
 
 public partial class InvoiceTests
@@ -62,9 +63,9 @@ public partial class InvoiceTests
         // Get the Invoice Entity
         var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(controlId));
 
-        Assert.False(entityResult.HasException);
+        Assert.True(entityResult.HasSucceeded);
 
-        return entityResult.AsSuccess.Value;
+        return entityResult.Write(InvoiceEntityFactory.Create());
     }
 
     private async Task<InvoiceEntity> GetASampleDirtyEntityAsync(IMediatorBroker mediator)
@@ -75,9 +76,9 @@ public partial class InvoiceTests
         // Get the Invoice Entity
         var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(controlId));
 
-        Assert.False(entityResult.HasException);
+        Assert.True(entityResult.HasSucceeded);
 
-        return entityResult.AsSuccess.Value;
+        return entityResult.Write(InvoiceEntityFactory.Create());
     }
 
     private DmoInvoice AsDmoInvoice(DboInvoice invoice)

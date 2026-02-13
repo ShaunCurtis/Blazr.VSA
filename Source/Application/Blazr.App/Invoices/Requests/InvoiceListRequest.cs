@@ -12,7 +12,7 @@ public record InvoiceListRequest
     : BaseListRequest, IRequest<Result<ListItemsProvider<DmoInvoice>>>
 {
     public static Result<InvoiceListRequest> FromGridState(GridState<DmoInvoice> state)
-        => Result<InvoiceListRequest>.Successful(new InvoiceListRequest()
+        => ResultT.Read(new InvoiceListRequest()
         {
             PageSize = state.PageSize,
             StartIndex = state.StartIndex,

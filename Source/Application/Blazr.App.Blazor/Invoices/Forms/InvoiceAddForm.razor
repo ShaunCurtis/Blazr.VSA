@@ -80,17 +80,18 @@
     private bool _isDirty;
     private bool _isClean => !_isDirty;
     private bool _loading = true;
-    private Result LastResult = Result.Successful();
+    private Result LastResult = Result.Succeeded;
 
     protected async override Task OnInitializedAsync()
     {
         ArgumentNullException.ThrowIfNull(this.EntityMutor);
         this.EditContext = new(EditMutor);
 
-        var result = (await this.FKProvider.GetCustomerFKAsync())
-            .Match(failureAction: message => this.ToastService.ShowError(message));
+        var result = await this.FKProvider.GetCustomerFKAsync();
 
-        LastResult = result.AsResult;
+        result.Match(failure: exception => this.ToastService.ShowError(exception.Message));
+
+        LastResult = result.ToResult();
 
         _customerList = result
             .Write(Enumerable.Empty<FkoCustomer>())

@@ -39,7 +39,7 @@ public sealed record CustomerCommandHandler : IRequestHandler<CustomerCommandReq
             {
                 var id = CustomerId.Load(record.CustomerID);
                 _messageBus.Publish<DmoCustomer>(id);
-                return Result<CustomerId>.Successful(id);
+                return ResultT.Read<CustomerId>(id);
             }
         );
     }

@@ -36,7 +36,7 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
 
         this.ClearExpiredStates();
 
-        return Result.Successful();
+        return Result.Succeeded;
     }
 
     public Result<T> Dispatch<T>(T data) where T : class, IScopedState
@@ -48,7 +48,7 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
 
         this.ClearExpiredStates();
 
-        return Result<T>.Successful(data);
+        return ResultT.Read(data);
     }
 
     public Result ClearState(Guid key)
@@ -56,13 +56,13 @@ public class ScopedStateProvider : IScopedStateProvider<Guid, object>
         if (_subscriptions.ContainsKey(key))
             _subscriptions.Remove(key);
 
-        return Result.Successful();
+        return Result.Succeeded;
     }
 
     public Result<T> GetState<T>(Guid key) where T : class
         => _subscriptions.ContainsKey(key)
-            ? Result<T>.Read(_subscriptions[key].Data as T)
-            : Result<T>.Failure($"No state found for key {key}");
+            ? ResultT.Read(_subscriptions[key].Data as T)
+            : ResultT.Fail<T>($"No state found for key {key}");
         
     private void ClearExpiredStates()
     {

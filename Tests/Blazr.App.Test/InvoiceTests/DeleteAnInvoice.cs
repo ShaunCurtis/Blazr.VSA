@@ -35,6 +35,6 @@ public partial class InvoiceTests
         // Commit the changes to the data store
         var commandResult = await entityMutor.DeleteAsync();
 
-        Assert.True(commandResult.IsSuccess);
+        Assert.True(commandResult.Success);
     }
 }

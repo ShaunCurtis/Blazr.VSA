@@ -7,7 +7,6 @@
 using Blazr.App.Core;
 using Blazr.Diode;
 using Blazr.Diode.Mediator;
-using Blazr.Manganese;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazr.Test;
@@ -27,11 +26,11 @@ public partial class CustomerTests
 
         var customerAddResult = await mediator.DispatchAsync(CustomerCommandRequest.Create(controlRecord, RecordState.DeletedState));
 
-        Assert.False(customerAddResult.HasException);
+        Assert.True(customerAddResult.HasSucceeded);
 
         var customerResult = await mediator.DispatchAsync(new CustomerRecordRequest(controlId));
 
         // check it matches the test record
-        Assert.True(customerResult.HasException);
+        Assert.True(customerResult.HasNotSucceeded);
     }
 }

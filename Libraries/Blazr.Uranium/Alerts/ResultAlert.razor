@@ -2,9 +2,9 @@
 
 @using Blazr.Manganese
 
-<div hidden="@Result.IsSuccess">
+<div hidden="@Result.Success">
     <div class="alert alert-danger d-flex align-items-center my-2 p-2" role="alert">
-        @Result.AsFailure..Message
+        @Result.Message
     </div>
 </div>
 

@@ -8,6 +8,7 @@ using Blazr.Cadmium.QuickGrid;
 using Blazr.Diode;
 using Blazr.Gallium;
 using Blazr.Uranium;
+using Blazr.Manganese;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
 
@@ -31,7 +32,7 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
     protected QuickGrid<TRecord> quickGrid = default!;
     protected PaginationState Pagination = new PaginationState { ItemsPerPage = 10 };
     protected GridState<TRecord> GridState = new();
-    protected Result LastResult = Result.Successful();
+    protected Result LastResult = Result.Succeeded;
 
     protected string formTitle => this.FormTitle ?? $"List of {this.UIConnector?.PluralDisplayName ?? "Items"}";
 
@@ -44,9 +45,11 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
         this.Pagination.ItemsPerPage = this.PageSize;
 
         // Get the current grid state from the store if one exists
-        this.LastResult = this.GetGridState
-            .Match(successAction: state => this.GridState = state)
-            .AsResult;
+        var result = this.GetGridState;
+
+        result.Match(success: state => this.GridState = state);
+
+        this.LastResult = result.ToResult();
 
         // Subscribe to record change messages so we can refresh the grid if a record is changed
         _messageBus.Subscribe<TKey>(OnRecordChanged);
@@ -88,15 +91,17 @@ public abstract class GridForm<TRecord, TKey> : ComponentBase, IDisposable
 
     protected async ValueTask<GridItemsProviderResult<TRecord>> GetItemsAsync(GridItemsProviderRequest<TRecord> gridRequest)
     {
-        var result = await ResultT.Successful(gridRequest
-             .ConvertToUpdateGridRequest())
+        var result = await gridRequest
+             .ConvertToUpdateGridRequest()
+             .ToResult
              .Bind(this.SetGridState)
-             .BindAsync(UIConnector.GetItemsAsync);
+            .BindAsync(UIConnector.GetItemsAsync);
+    
 
-        LastResult = result.AsResult;
+        LastResult = result.ToResult();
 
         return result
-            .Write(defaultValue: GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
+            .Write(failureValue: GridItemsProviderResult.From<TRecord>(new List<TRecord>(), 0));
     }
 
     protected virtual async Task OnEditAsync(TKey id)

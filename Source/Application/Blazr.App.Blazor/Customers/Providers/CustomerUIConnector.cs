@@ -30,7 +30,7 @@ public class CustomerUIConnector
 
     public Func<CustomerId, Task<Result<DmoCustomer>>> RecordRequestAsync
         => id => id.IsNew 
-            ? Task.FromResult(ResultT.Successful(new DmoCustomer { Id = CustomerId.NewId }))
+            ? Task.FromResult(ResultT.Read(new DmoCustomer { Id = CustomerId.NewId }))
             : _mediator.DispatchAsync(new CustomerRecordRequest(id));
 
     public Func<DmoCustomer, RecordState, Task<Result<CustomerId>>> RecordCommandAsync

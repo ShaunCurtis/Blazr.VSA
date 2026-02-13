@@ -5,6 +5,7 @@
 /// ============================================================
 
 using Blazr.App.Core;
+using Blazr.Diode;
 using Blazr.Diode.Mediator;
 using Blazr.Manganese;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,8 +36,10 @@ public partial class CustomerTests
             SortDescending = false
         });
 
-        Assert.False(customerListResult.HasException);
-        Assert.Equal(testCount, customerListResult.AsSuccess.Value.TotalCount);
-        Assert.Equal(pageSize, customerListResult.AsSuccess.Value.Items.Count());
+        var listResult = customerListResult.Write(new ListItemsProvider<DmoCustomer>(Enumerable.Empty<DmoCustomer>(), 0));
+
+        Assert.True(customerListResult.HasSucceeded);
+        Assert.Equal(testCount, listResult.TotalCount);
+        Assert.Equal(pageSize, listResult.Items.Count());
     }
 }

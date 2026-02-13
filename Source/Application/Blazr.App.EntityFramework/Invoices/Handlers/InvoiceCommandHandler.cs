@@ -3,8 +3,6 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
-using Blazr.App.Core.Invoices;
-
 namespace Blazr.App.EntityFramework;
 
 /// <summary>
@@ -42,7 +40,7 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceEntityComman
 
         // Result if it was a delete command - everything is done
         if (request.State is RecordState.Deleted)
-            return ResultT.Successful(entity);
+            return ResultT.Read(entity);
 
         // We're either add or update so we add the record
         var addResult = (await this.AddEntityAsync(request.Item, cancellationToken))
@@ -54,7 +52,7 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceEntityComman
     private Result<InvoiceEntity> Notify(InvoiceEntity entity)
     {
         _messageBus.Publish<InvoiceEntity>(entity.InvoiceRecord.Id);
-        return ResultT.Successful(entity);
+        return ResultT.Read(entity);
     }
 
     private async Task<Result<InvoiceEntity>> DeleteEntityAsync(InvoiceEntity entity)
@@ -69,9 +67,9 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceEntityComman
         var addedItems = await dbContext.SaveChangesAsync(_cancellationToken);
 
         if (addedItems != entity.InvoiceItems.Count + 1)
-            return Result<InvoiceEntity>.Failure("The Invoice was not added corectly.  Check the result.");
+            return ResultT.Fail<InvoiceEntity>("The Invoice was not added corectly.  Check the result.");
 
-        return ResultT.Successful(entity);
+        return ResultT.Read(entity);
     }
 
     private async Task<Result<InvoiceEntity>> AddEntityAsync(InvoiceEntity entity, CancellationToken cancellationToken)
@@ -86,8 +84,8 @@ public sealed record InvoiceCommandHandler : IRequestHandler<InvoiceEntityComman
         var addedItems = await dbContext.SaveChangesAsync(cancellationToken);
 
         if (addedItems != entity.InvoiceItems.Count + 1)
-            return Result<InvoiceEntity>.Failure("The Invoice was not added corectly.  Check the result.");
+            return ResultT.Fail<InvoiceEntity>("The Invoice was not added corectly.  Check the result.");
 
-        return ResultT.Successful(entity);
+        return ResultT.Read(entity);
     }
 }

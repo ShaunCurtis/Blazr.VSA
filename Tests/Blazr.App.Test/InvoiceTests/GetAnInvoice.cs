@@ -32,8 +32,10 @@ public partial class InvoiceTests
 
         var entityResult = await mediator.DispatchAsync(new InvoiceEntityRequest(controlId));
 
-        Assert.True(entityResult.HasValue);
-        Assert.Equal(controlInvoiceItems.Count, entityResult.AsSuccess.Value.InvoiceItems.Count);
-        Assert.Contains(entityResult.AsSuccess.Value.InvoiceItems.First(), controlInvoiceItems);
+        var entity = entityResult.Write(InvoiceEntityFactory.Create());
+        
+        Assert.True(entityResult.HasSucceeded);
+        Assert.Equal(controlInvoiceItems.Count, entity.InvoiceItems.Count);
+        Assert.Contains(entity.InvoiceItems.First(), controlInvoiceItems);
     }
 }

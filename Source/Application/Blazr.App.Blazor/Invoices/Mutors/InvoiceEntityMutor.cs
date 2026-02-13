@@ -50,7 +50,7 @@ public sealed class InvoiceEntityMutor
 
     public InvoiceEntity BaseEntity { get; private set; }
     public InvoiceEntity InvoiceEntity { get; private set; }
-    public Result LastResult { get; private set; } = Result.Successful();
+    public Result LastResult { get; private set; } = Result.Succeeded;
     public bool IsNew => this.BaseEntity.InvoiceRecord.Id.IsNew;
     public Task LoadTask { get; private set; } = Task.CompletedTask;
     public bool IsDirty => !this.InvoiceEntity.Equals(BaseEntity);
@@ -73,11 +73,15 @@ public sealed class InvoiceEntityMutor
 
     public Result Dispatch(Func<InvoiceEntity, Result<InvoiceEntity>> dispatcher)
     {
-        var result = dispatcher.Invoke(InvoiceEntity)
-        .Match(successAction: entity => this.InvoiceEntity = entity)
-        .Match(successAction: entity => _messageBus.Publish<InvoiceEntity>(entity.InvoiceRecord.Id));
+        var result = dispatcher.Invoke(InvoiceEntity);
 
-        this.LastResult = result.AsResult;
+        result.Match(entity => 
+        {
+            this.InvoiceEntity = entity;
+            _messageBus.Publish<InvoiceEntity>(entity.InvoiceRecord.Id);
+        });
+
+        this.LastResult = result.ToResult();
 
         return this.LastResult;
     }
@@ -90,28 +94,30 @@ public sealed class InvoiceEntityMutor
             return;
         }
 
-        this.LastResult = (await _mediator
-            .DispatchAsync(InvoiceEntityRequest.Create(id)))
-            .Match(
-                successAction: this.Set,
-                failureAction: message => this.SetAsNew())
-            .AsResult;
+        var result = await _mediator.DispatchAsync(InvoiceEntityRequest.Create(id));
+
+        this.LastResult = result.ToResult();
+
+        result.Match(
+            success: this.Set,
+            failure: exception => this.SetAsNew());
     }
 
     public async Task<Result> SaveAsync()
     {
         var result = await _mediator.DispatchAsync(new InvoiceEntityCommandRequest(this.InvoiceEntity, RecordState.DirtyState, Guid.NewGuid()));
 
-        this.LastResult = result.AsResult;
+        this.LastResult = result.ToResult();
 
         return this.LastResult;
     }
     public async Task<Result> DeleteAsync()
     {
-        var result = await _mediator.DispatchAsync(new InvoiceEntityCommandRequest(this.InvoiceEntity, RecordState.DeletedState, Guid.NewGuid()))
-            .MatchAsync(successAction: value => this.BaseEntity = this.InvoiceEntity);
+        var result = await _mediator.DispatchAsync(new InvoiceEntityCommandRequest(this.InvoiceEntity, RecordState.DeletedState, Guid.NewGuid()));
 
-        this.LastResult = result.AsResult;
+        result.Match(success: value => this.BaseEntity = this.InvoiceEntity);
+
+        this.LastResult = result.ToResult();
 
         return this.LastResult;
     }
@@ -119,15 +125,15 @@ public sealed class InvoiceEntityMutor
     public InvoiceItemRecordMutor GetInvoiceItemRecordMutor(InvoiceItemId id)
         => this.InvoiceEntity.GetInvoiceItem(id)
             .Map(value => InvoiceItemRecordMutor.Load(value))
-            .Write( defaultValue: InvoiceItemRecordMutor.NewMutor(this.InvoiceEntity.InvoiceRecord.Id));
+            .Write(failureValue: InvoiceItemRecordMutor.NewMutor(this.InvoiceEntity.InvoiceRecord.Id));
 
     public InvoiceItemRecordMutor GetNewInvoiceItemRecordMutor()
         => InvoiceItemRecordMutor.NewMutor(this.BaseEntity.InvoiceRecord.Id);
 
-    public Return Reset()
+    public Result Reset()
     {
         this.Set(this.BaseEntity);
-        return Return.Success();
+        return Result.Succeeded;
     }
 
     private void Set(InvoiceEntity entity)
@@ -137,8 +143,8 @@ public sealed class InvoiceEntityMutor
 
         // Checks the entity business rules and applies any changes which changes the state of the mutor
         this.LastResult = this.IsDirty
-            ? this.LastResult = Result.Failure("The stored total cost does no match the sum of the entities.  The entity must be saved to fix the problem.")
-            : Result.Successful();
+            ? this.LastResult = Result.Failed("The stored total cost does no match the sum of the entities.  The entity must be saved to fix the problem.")
+            : Result.Succeeded;
     }
 
     private void SetAsNew()

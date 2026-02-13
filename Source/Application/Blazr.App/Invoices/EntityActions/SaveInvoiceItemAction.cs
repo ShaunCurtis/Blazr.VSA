@@ -20,7 +20,7 @@ public record SaveInvoiceItemAction
             : Add(entity, _invoiceItem);
 
     public static Result<InvoiceEntity> Add(InvoiceEntity entity, DmoInvoiceItem invoiceItem)
-        => ResultT.Successful(entity.InvoiceItems.Add(invoiceItem))
+        => ResultT.Read(entity.InvoiceItems.Add(invoiceItem))
             .Map(items => entity.Mutate(items));
 
     public static Result<InvoiceEntity> Update(InvoiceEntity entity, DmoInvoiceItem invoiceItem)

@@ -26,7 +26,7 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
     [Parameter, EditorRequired] public TKey Uid { get; set; } = new();
     [Parameter] public bool LockNavigation { get; set; } = true;
 
-    protected Result LastResult { get; set; } = Result.Successful();
+    protected Result LastResult { get; set; } = Result.Succeeded;
     protected TRecordMutor EditMutor { get; set; } = default!;
     protected EditContext EditContext { get; set; } = default!;
 
@@ -47,11 +47,11 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
 
         var result = await this.UIConnector.RecordRequestAsync(this.Uid);
 
-        LastResult = result.AsResult;
+        LastResult = result.ToResult();
 
         this.EditMutor = result
             .Map(record => (TRecordMutor)this.UIConnector.GetRecordMutor(record))
-            .Write(defaultValue: default!);
+            .Write(failureValue: default!);
 
         this.EditContext = new EditContext(EditMutor);
 
@@ -62,26 +62,28 @@ public abstract class EditorModalForm<TRecord, TRecordMutor, TKey>
 
     protected virtual async Task OnSave()
     {
-        this.LastResult = await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, this.EditMutor.State)
-            .AsResultAsync();
+        var result = await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, this.EditMutor.State);
+
+        this.LastResult = result.ToResult();
 
         this.OnExit();
     }
 
     protected virtual async Task OnDelete()
     {
-        if (await ConfirmAsync())
+        if (!await ConfirmAsync())
             return;
 
-        this.LastResult = await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, RecordState.DeletedState)
-            .AsResultAsync();
+        var result = await this.UIConnector.RecordCommandAsync(this.EditMutor.Record, RecordState.DeletedState);
+
+        this.LastResult = result.ToResult();
 
         this.OnExit();
     }
 
     protected async Task<bool> ConfirmAsync()
         => await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?");
- 
+
     protected virtual void OnExit()
         => ModalDialog?.Close(new ModalResult());
 

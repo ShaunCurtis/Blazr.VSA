@@ -25,5 +25,5 @@ public sealed record DvoInvoice
     };
 
     public static Result<DmoInvoice> MapToResult(DvoInvoice item) 
-        => Result<DmoInvoice>.Read(Map(item));
+        => ResultT.Read(Map(item));
 }

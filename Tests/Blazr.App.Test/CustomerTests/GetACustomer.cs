@@ -27,9 +27,9 @@ public partial class CustomerTests
 
         var customerResult = await mediator.DispatchAsync(new CustomerRecordRequest(controlId));
 
-        Assert.False(customerResult.HasException);
+        Assert.True(customerResult.HasSucceeded);
 
         // check it matches the test record
-        Assert.Equivalent(controlRecord, customerResult.AsSuccess.Value);
+        Assert.Equivalent(controlRecord, customerResult.Write(DmoCustomer.NewCustomer()));
     }
 }

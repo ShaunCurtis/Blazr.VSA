@@ -34,7 +34,7 @@ public sealed class InvoiceItemRecordMutor : RecordMutor<DmoInvoiceItem> ,IRecor
     public Func<InvoiceEntity, Result<InvoiceEntity>> Dispatcher =>
         entity => this.IsDirty
             ? SaveInvoiceItemAction.Create(this.Record).Dispatcher(entity)
-            : ResultT.Successful(entity);
+            : ResultT.Read(entity);
 
     public override bool IsNew => BaseRecord.Id.IsNew;
 

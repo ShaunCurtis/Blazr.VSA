@@ -28,10 +28,10 @@ public partial class CustomerTests
 
         // Get the record from the data pipeline
         var customerResult = await mediator.DispatchAsync(new CustomerRecordRequest(controlId));
-        Assert.True(customerResult.HasValue);
+        Assert.True(customerResult.HasSucceeded);
 
         // Load the mutor
-        var mutor = CustomerRecordMutor.Load(customerResult.AsSuccess.Value);
+        var mutor = CustomerRecordMutor.Load(customerResult.Write(DmoCustomer.NewCustomer()));
 
         // emulate a UI Edit
         mutor.Name = $"{mutor.Name} - Update";
@@ -49,7 +49,7 @@ public partial class CustomerTests
         customerResult = await mediator.DispatchAsync(new CustomerRecordRequest(controlId));
 
         // check it matches the test record
-        Assert.False(customerResult.HasException);
-        Assert.Equivalent(editedRecord, customerResult.AsSuccess.Value);
+        Assert.True(customerResult.HasSucceeded);
+        Assert.Equivalent(editedRecord, customerResult.Write(DmoCustomer.NewCustomer()));
     }
 }

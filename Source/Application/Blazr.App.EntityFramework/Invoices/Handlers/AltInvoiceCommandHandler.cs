@@ -38,15 +38,12 @@ public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceEntityCom
     }
 
     private async Task<Result<InvoiceEntity>> DeleteEntityAsync(InvoiceId id, CancellationToken cancellationToken)
+        => await _recordRequestHandler.HandleAsync(new InvoiceEntityRequest(id), cancellationToken)
+            .BindAsync(entity => this.DeleteEntityRecordsAsync(entity, cancellationToken));
+
+    private async Task<Result<InvoiceEntity>> DeleteEntityRecordsAsync(InvoiceEntity entity, CancellationToken cancellationToken)
     {
         using var dbContext = _factory.CreateDbContext();
-
-        var recordResult = await _recordRequestHandler.HandleAsync(new InvoiceEntityRequest(id), cancellationToken);
-
-        if (recordResult.HasNotSucceeded)
-            return recordResult;
-
-        var entity = recordResult.AsSuccess.Value;
 
         dbContext.Remove<DboInvoice>(DboInvoice.Map(entity.InvoiceRecord));
 
@@ -56,10 +53,11 @@ public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceEntityCom
         var addedItems = await dbContext.SaveChangesAsync(cancellationToken);
 
         if (addedItems != entity.InvoiceItems.Count + 1)
-            return Result<InvoiceEntity>.Failure("The Invoice was not added corectly.  Check the result.");
+            return ResultT.Fail<InvoiceEntity>("The Invoice was not added corectly.  Check the result.");
 
-        return ResultT.Successful(entity);
+        return ResultT.Read(entity);
     }
+
 
     private async Task<Result<InvoiceEntity>> SaveEntityAsync(InvoiceEntity entity, CancellationToken cancellationToken)
     {
@@ -97,9 +95,9 @@ public sealed record AltInvoiceCommandHandler : IRequestHandler<InvoiceEntityCom
         var addedItems = await dbContext.SaveChangesAsync(cancellationToken);
 
         if (addedItems != transactionCount)
-            return Result<InvoiceEntity>.Failure("The Invoice was not added correctly.  Check the result.");
+            return ResultT.Fail<InvoiceEntity>("The Invoice was not added correctly.  Check the result.");
 
-        return Result<InvoiceEntity>.Successful(entity);
+        return ResultT.Read(entity);
     }
 
     private async Task<List<DboInvoiceItem>> GetInvoiceItemsAsync(InvoiceId id)
